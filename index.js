@@ -216,6 +216,7 @@ async function getPanels(guildId) {
 
 function reportGuildData(guildId) {
   const guild = client.guilds.cache.get(guildId);
+    console.log('[GUILD] Reportando guild:', guildId); // ← agrega esto
   if (!guild) return;
   const channels   = guild.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name }));
   const categories = guild.channels.cache.filter(c => c.type === ChannelType.GuildCategory).map(c => ({ id: c.id, name: c.name }));
@@ -228,6 +229,7 @@ function reportGuildData(guildId) {
 
 function sendBotStatus() {
   const guildIds = client.guilds.cache.map(g => g.id);
+    console.log('[STATUS] Enviando status, guilds:', guildIds); 
   apiFetch(`${BASE_URL}/api/bot-status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ online: true, tag: client.user.tag, guilds: guildIds })
