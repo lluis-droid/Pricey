@@ -279,7 +279,7 @@ client.on(Events.GuildDelete, () => sendBotStatus());
 
 async function pollActions() {
   try {
-    const r = await apiFetch('${BASE_URL}/api/bot-actions');
+    const r = await apiFetch(`${BASE_URL}/api/bot-actions`);
     if (!r) return;
     const actions = await r.json();
     for (const action of actions) {
