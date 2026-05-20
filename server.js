@@ -39,7 +39,7 @@ passport.deserializeUser((user, done) => done(null, user));
 passport.use(new Strategy({
   clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL || '${BASE_URL}/auth/callback',
+  callbackURL: process.env.CALLBACK_URL,
   scope: ['identify', 'guilds']
 }, (accessToken, refreshToken, profile, done) => {
   profile.accessToken = accessToken;
@@ -52,11 +52,13 @@ function requireAuth(req, res, next) {
 }
 
 async function fetchUserGuilds(accessToken) {
-  const r = await fetch('https://discord.com/api/v10/users/@me/guilds', {
-    headers: { Authorization: `Bearer ${accessToken}` }
-  });
-  if (!r.ok) return null;
-  return r.json();
+  try {
+    const r = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!r.ok) return null;
+    return r.json();
+  } catch { return null; }
 }
 
 let botStatus = { online: false, tag: '', guilds: [] };
@@ -64,15 +66,18 @@ let pendingBotActions = [];
 function notifyBot(type, data) { pendingBotActions.push({ type, data }); }
 
 /* ===== BOT COMMUNICATION ===== */
-app.post('/api/bot-status', (req, res) => { 
-  botStatus = req.body; 
+app.post('/api/bot-status', (req, res) => {
+  botStatus = req.body;
   console.log('[SERVER] Bot status recibido, guilds:', botStatus.guilds);
-  res.json({ ok: true }); 
+  res.json({ ok: true });
 });
+
 app.get('/api/bot-actions', (req, res) => res.json(pendingBotActions.splice(0)));
+
 app.post('/api/bot-guild-data', (req, res) => {
   if (!botStatus.guildData) botStatus.guildData = {};
   botStatus.guildData[req.body.guildId] = req.body.data;
+  console.log('[SERVER] Guild data recibido para:', req.body.guildId);
   res.json({ ok: true });
 });
 
@@ -101,13 +106,17 @@ app.get('/api/me', (req, res) => {
 });
 
 app.get('/api/guilds', requireAuth, async (req, res) => {
+  console.log('[GUILDS] botStatus.guilds:', botStatus.guilds);
   const fresh = await fetchUserGuilds(req.user.accessToken);
+  console.log('[GUILDS] fresh count:', fresh?.length);
   const all = fresh || req.user.guilds || [];
   if (fresh) {
     req.user.guilds = fresh;
     await new Promise(resolve => req.session.save(resolve));
   }
   const admin = all.filter(g => (BigInt(g.permissions) & BigInt(0x20)) === BigInt(0x20));
+  console.log('[GUILDS] admin guilds:', admin.map(g => g.id));
+  console.log('[GUILDS] inBot:', admin.filter(g => botStatus.guilds.includes(g.id)).map(g => g.id));
   res.json({
     inBot: admin.filter(g => botStatus.guilds.includes(g.id)),
     notInBot: admin.filter(g => !botStatus.guilds.includes(g.id))
@@ -164,46 +173,39 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
-
   if (action === 'set-typing') {
     ticket.canType = !!value;
     writeJSON(ticketsPath(guildId), tickets);
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
-
   if (action === 'approve') {
     ticket.status = 'approved';
     writeJSON(ticketsPath(guildId), tickets);
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
-
   if (action === 'reject') {
     ticket.status = 'rejected';
     writeJSON(ticketsPath(guildId), tickets);
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
-
   if (action === 'close') {
     ticket.status = 'closed';
     writeJSON(ticketsPath(guildId), tickets);
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
-
   if (action === 'clear-chat') {
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
-
   if (action === 'send-message') {
     if (!value?.trim()) return res.status(400).json({ error: 'Empty message' });
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
-
   if (action === 'new-ticket') {
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
@@ -243,5 +245,6 @@ app.get('/server/:id', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Running on port ${PORT}`));
