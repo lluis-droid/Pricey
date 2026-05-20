@@ -188,6 +188,8 @@ const T = {
   }
 };
 
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+
 function getLang(config) { return T[config?.language] || T.en; }
 
 async function apiFetch(url, opts, retries = 3) {
@@ -204,11 +206,11 @@ async function apiFetch(url, opts, retries = 3) {
 }
 
 async function getConfig(guildId) {
-  try { const r = await apiFetch(`http://localhost:3000/internal/config/${guildId}`); return r ? r.json() : {}; }
+  try { const r = await apiFetch(`${BASE_URL}/internal/config/${guildId}`); return r ? r.json() : {}; }
   catch { return {}; }
 }
 async function getPanels(guildId) {
-  try { const r = await apiFetch(`http://localhost:3000/internal/panels/${guildId}`); return r ? r.json() : []; }
+  try { const r = await apiFetch(`${BASE_URL}/internal/panels/${guildId}`); return r ? r.json() : []; }
   catch { return []; }
 }
 
@@ -218,7 +220,7 @@ function reportGuildData(guildId) {
   const channels   = guild.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name }));
   const categories = guild.channels.cache.filter(c => c.type === ChannelType.GuildCategory).map(c => ({ id: c.id, name: c.name }));
   const roles      = guild.roles.cache.map(r => ({ id: r.id, name: r.name }));
-  apiFetch('http://localhost:3000/api/bot-guild-data', {
+  apiFetch(`${BASE_URL}/api/bot-guild-data`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ guildId, data: { channels, categories, roles } })
   }).catch(() => {});
@@ -226,7 +228,7 @@ function reportGuildData(guildId) {
 
 function sendBotStatus() {
   const guildIds = client.guilds.cache.map(g => g.id);
-  apiFetch('http://localhost:3000/api/bot-status', {
+  apiFetch(`${BASE_URL}/api/bot-status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ online: true, tag: client.user.tag, guilds: guildIds })
   }).catch(() => {});
@@ -234,7 +236,7 @@ function sendBotStatus() {
 
 function syncTicket(session) {
   if (!session?.guildId || !session?.channelId) return;
-  apiFetch('http://localhost:3000/api/bot-ticket-update', {
+  apiFetch(`${BASE_URL}/api/bot-ticket-update`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       guildId: session.guildId,
@@ -277,7 +279,7 @@ client.on(Events.GuildDelete, () => sendBotStatus());
 
 async function pollActions() {
   try {
-    const r = await apiFetch('http://localhost:3000/api/bot-actions');
+    const r = await apiFetch('${BASE_URL}/api/bot-actions');
     if (!r) return;
     const actions = await r.json();
     for (const action of actions) {
