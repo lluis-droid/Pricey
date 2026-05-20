@@ -1,0 +1,419 @@
+[
+  {
+    "channelId": "1506163159470182410",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Buy Robux",
+      "type": "currency",
+      "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Can you provide us yout phone number?",
+          "type": "number",
+          "required": false,
+          "maxLength": 12
+        }
+      ],
+      "baseAmount": 400,
+      "basePrice": 3.99,
+      "margin": 10
+    },
+    "status": "rejected",
+    "selectedProduct": "2.500 Buy Robux",
+    "currencyAmount": 2500,
+    "totalDisplay": "$114.296,88 COP",
+    "paymentMethod": "transferencia",
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": {
+      "text": "lolo",
+      "imageUrl": null
+    },
+    "answers": [
+      {
+        "question": "What is your username / in-game ID?",
+        "answer": "Uwu",
+        "type": "text"
+      },
+      {
+        "question": "Can you provide us yout phone number?",
+        "answer": "*(skipped)*",
+        "type": "number"
+      }
+    ],
+    "canType": false,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779167680938
+  },
+  {
+    "channelId": "1506161651441733733",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Buy Robux",
+      "type": "currency",
+      "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Can you provide us yout phone number?",
+          "type": "number",
+          "required": false,
+          "maxLength": 12
+        }
+      ],
+      "baseAmount": 400,
+      "basePrice": 3.99,
+      "margin": 10
+    },
+    "status": "open",
+    "selectedProduct": "2.500 Buy Robux",
+    "currencyAmount": 2500,
+    "totalDisplay": "$114.296,88 COP",
+    "paymentMethod": null,
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": null,
+    "answers": [
+      {
+        "question": "What is your username / in-game ID?",
+        "answer": "Michimeowgata1",
+        "type": "text"
+      },
+      {
+        "question": "Can you provide us yout phone number?",
+        "answer": "*(skipped)*",
+        "type": "number"
+      }
+    ],
+    "canType": false,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779167321609
+  },
+  {
+    "channelId": "1506160186480656539",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Buy Robux",
+      "type": "currency",
+      "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Can you provide us yout phone number?",
+          "type": "number",
+          "required": false,
+          "maxLength": 12
+        }
+      ],
+      "baseAmount": 400,
+      "basePrice": 3.99,
+      "margin": 10
+    },
+    "status": "open",
+    "selectedProduct": null,
+    "currencyAmount": null,
+    "totalDisplay": null,
+    "paymentMethod": null,
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": null,
+    "answers": [],
+    "canType": false,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779166973447
+  },
+  {
+    "channelId": "1506159650628964583",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Buy Robux",
+      "type": "currency",
+      "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Can you provide us yout phone number?",
+          "type": "number",
+          "required": false,
+          "maxLength": 12
+        }
+      ],
+      "baseAmount": 400,
+      "basePrice": 3.99,
+      "margin": 10
+    },
+    "status": "closed",
+    "selectedProduct": null,
+    "currencyAmount": null,
+    "totalDisplay": null,
+    "paymentMethod": null,
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": null,
+    "answers": [
+      {
+        "question": "What is your username / in-game ID?",
+        "answer": "lufepa2011",
+        "type": "text"
+      },
+      {
+        "question": "Can you provide us yout phone number?",
+        "answer": "3005039653",
+        "type": "number"
+      }
+    ],
+    "canType": false,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779166844521
+  },
+  {
+    "channelId": "1506154049777438742",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Buy Robux",
+      "type": "currency",
+      "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Can you provide us yout phone number?",
+          "type": "number",
+          "required": false,
+          "maxLength": 12
+        }
+      ],
+      "baseAmount": 400,
+      "basePrice": 3.99,
+      "margin": 10
+    },
+    "status": "closed",
+    "selectedProduct": null,
+    "totalDisplay": null,
+    "paymentMethod": null,
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": null,
+    "answers": [],
+    "canType": false,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779165511489
+  },
+  {
+    "channelId": "1506152653833637888",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Buy Robux",
+      "type": "currency",
+      "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Can you provide us yout phone number?",
+          "type": "number",
+          "required": false,
+          "maxLength": 12
+        }
+      ],
+      "baseAmount": 400,
+      "basePrice": 3.99,
+      "margin": 10
+    },
+    "status": "closed",
+    "selectedProduct": null,
+    "totalDisplay": "$22.859,38 COP",
+    "paymentMethod": "nequi",
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": {
+      "text": "",
+      "imageUrl": "https://cdn.discordapp.com/attachments/1506152653833637888/1506153132777013318/logo-full.png?ex=6a0d39e9&is=6a0be869&hm=8c1f0217c49c2a9aa05d9582f83b1e89c1740aec7c8dd7587cb678376b748ca5&"
+    },
+    "answers": [
+      {
+        "question": "What is your username / in-game ID?",
+        "answer": "lufepa2011",
+        "type": "text"
+      },
+      {
+        "question": "Can you provide us yout phone number?",
+        "answer": "3005039653",
+        "type": "number"
+      }
+    ],
+    "canType": true,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779165176911
+  },
+  {
+    "channelId": "1506150007261102181",
+    "guildId": "1386145365316866048",
+    "userId": "803249557571371028",
+    "username": "nidilin",
+    "panel": {
+      "title": "Robux",
+      "type": "currency",
+      "description": "Buy robux at a cheap price ",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Which server / region are you in?",
+          "type": "text",
+          "required": false,
+          "maxLength": 64
+        }
+      ],
+      "baseAmount": 100,
+      "basePrice": 3,
+      "margin": 15
+    },
+    "status": "closed",
+    "selectedProduct": null,
+    "totalDisplay": "$793.500 COP",
+    "paymentMethod": null,
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": null,
+    "answers": [
+      {
+        "question": "What is your username / in-game ID?",
+        "answer": "Lufepa2011",
+        "type": "text"
+      },
+      {
+        "question": "Which server / region are you in?",
+        "answer": "Why??",
+        "type": "text"
+      }
+    ],
+    "canType": true,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779164545134
+  },
+  {
+    "channelId": "1506149883676065973",
+    "guildId": "1386145365316866048",
+    "userId": "788472076259950602",
+    "username": "luiss4.xo",
+    "panel": {
+      "title": "Robux",
+      "type": "currency",
+      "description": "Buy robux at a cheap price ",
+      "color": "#8B5CF6",
+      "channelId": "1386151962583498872",
+      "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+      "thumbnailUrl": null,
+      "questions": [
+        {
+          "text": "What is your username / in-game ID?",
+          "type": "text",
+          "required": true,
+          "maxLength": 64
+        },
+        {
+          "text": "Which server / region are you in?",
+          "type": "text",
+          "required": false,
+          "maxLength": 64
+        }
+      ],
+      "baseAmount": 100,
+      "basePrice": 3,
+      "margin": 15
+    },
+    "status": "closed",
+    "selectedProduct": null,
+    "totalDisplay": null,
+    "paymentMethod": null,
+    "paymentReference": null,
+    "paymentNote": null,
+    "paymentProof": null,
+    "answers": [],
+    "canType": false,
+    "reported": false,
+    "pastTickets": [],
+    "openedAt": 1779164515975
+  }
+]

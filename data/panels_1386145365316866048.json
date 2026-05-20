@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Buy Robux",
+    "type": "currency",
+    "description": "Why pay more on the official website? Buy Robux for less with Ocobo and save on every purchase. Fast delivery. Better prices. No nonsense.",
+    "color": "#8B5CF6",
+    "channelId": "1386151962583498872",
+    "bannerUrl": "https://cdn.discordapp.com/attachments/1386151962583498872/1506136122462306324/content.png?ex=6a0d2a12&is=6a0bd892&hm=3817c2eafb28ada27c0f4f9e867825d46b019a471b1c8b39006ddaf1acc6ae56&",
+    "thumbnailUrl": null,
+    "questions": [
+      {
+        "text": "What is your username / in-game ID?",
+        "type": "text",
+        "required": true,
+        "maxLength": 64
+      },
+      {
+        "text": "Can you provide us yout phone number?",
+        "type": "number",
+        "required": false,
+        "maxLength": 12
+      }
+    ],
+    "baseAmount": 400,
+    "basePrice": 3.99,
+    "margin": 10
+  }
+]

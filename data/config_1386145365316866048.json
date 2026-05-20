@@ -1,0 +1,11 @@
+{
+  "ticketCategory": "1386146366979444868",
+  "adminRole": "1386146748547989534",
+  "logChannel": "1505040194892730478",
+  "welcomeMsg": "👋 Welcome! Let's get your order started.",
+  "closedMsg": "✅ Thank you! Your order has been received.",
+  "paymentMethods": [],
+  "paymentAccounts": {},
+  "language": "es",
+  "approvedMsg": ""
+}
