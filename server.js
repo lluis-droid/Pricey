@@ -39,7 +39,7 @@ passport.deserializeUser((user, done) => done(null, user));
 passport.use(new Strategy({
   clientID: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL || 'http://localhost:3000/auth/callback',
+  callbackURL: process.env.CALLBACK_URL || '${BASE_URL}/auth/callback',
   scope: ['identify', 'guilds']
 }, (accessToken, refreshToken, profile, done) => {
   profile.accessToken = accessToken;
@@ -64,7 +64,11 @@ let pendingBotActions = [];
 function notifyBot(type, data) { pendingBotActions.push({ type, data }); }
 
 /* ===== BOT COMMUNICATION ===== */
-app.post('/api/bot-status', (req, res) => { botStatus = req.body; res.json({ ok: true }); });
+app.post('/api/bot-status', (req, res) => { 
+  botStatus = req.body; 
+  console.log('[SERVER] Bot status recibido, guilds:', botStatus.guilds);
+  res.json({ ok: true }); 
+});
 app.get('/api/bot-actions', (req, res) => res.json(pendingBotActions.splice(0)));
 app.post('/api/bot-guild-data', (req, res) => {
   if (!botStatus.guildData) botStatus.guildData = {};
