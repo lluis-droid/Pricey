@@ -19,6 +19,7 @@ function writeJSON(file, data) {
 function configPath(id) { return path.join(DATA_DIR, `config_${id}.json`); }
 function panelsPath(id) { return path.join(DATA_DIR, `panels_${id}.json`); }
 function ticketsPath(id) { return path.join(DATA_DIR, `tickets_${id}.json`); }
+function guildDataPath(id) { return path.join(DATA_DIR, `guilddata_${id}.json`); }
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -77,11 +78,11 @@ app.get('/api/bot-actions', (req, res) => res.json(pendingBotActions.splice(0)))
 app.post('/api/bot-guild-data', (req, res) => {
   if (!botStatus.guildData) botStatus.guildData = {};
   botStatus.guildData[req.body.guildId] = req.body.data;
+  writeJSON(guildDataPath(req.body.guildId), req.body.data);
   console.log('[SERVER] Guild data recibido para:', req.body.guildId);
   res.json({ ok: true });
 });
 
-/* Bot reports ticket state updates */
 app.post('/api/bot-ticket-update', (req, res) => {
   const { guildId, ticket } = req.body;
   if (!guildId || !ticket?.channelId) return res.json({ ok: false });
@@ -115,7 +116,6 @@ app.get('/api/guilds', requireAuth, async (req, res) => {
     await new Promise(resolve => req.session.save(resolve));
   }
   const admin = all.filter(g => (BigInt(g.permissions) & BigInt(0x20)) === BigInt(0x20));
-  console.log('[GUILDS] admin guilds:', admin.map(g => g.id));
   console.log('[GUILDS] inBot:', admin.filter(g => botStatus.guilds.includes(g.id)).map(g => g.id));
   res.json({
     inBot: admin.filter(g => botStatus.guilds.includes(g.id)),
@@ -128,7 +128,11 @@ app.get('/api/guild/:id', requireAuth, async (req, res) => {
   const all = fresh || req.user.guilds || [];
   const g = all.find(x => x.id === req.params.id);
   if (!g) return res.status(403).json({ error: 'Forbidden' });
-  const data = (botStatus.guildData || {})[req.params.id] || {};
+  let data = (botStatus.guildData || {})[req.params.id];
+  if (!data || !data.channels?.length) {
+    data = readJSON(guildDataPath(req.params.id), {});
+  }
+  console.log('[GUILD] Sirviendo data para:', req.params.id, '| channels:', data.channels?.length);
   res.json({ name: g.name, icon: g.icon, channels: data.channels || [], roles: data.roles || [], categories: data.categories || [] });
 });
 
