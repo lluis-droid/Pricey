@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/assets/logo-icon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Pricey</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #8B5CF6;
+    --purple-dark: #6D28D9;
+    --blue: #3B82F6;
+    --green: #84CC16;
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --surface2: #161625;
+    --border: #1e1e35;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --grad: linear-gradient(135deg, #8B5CF6, #3B82F6);
+    --grad-green: linear-gradient(135deg, #84CC16, #3B82F6);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .noise {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+  .glow {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, #8B5CF622, transparent),
+      radial-gradient(ellipse 60% 50% at 90% 80%, #3B82F618, transparent),
+      radial-gradient(ellipse 40% 40% at 50% 50%, #84CC1608, transparent);
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(8,8,16,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration:none; }
+  .nav-logo img { height: 32px; }
+  .nav-logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    background: var(--grad);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; font-weight: 600;
+    padding: 10px 20px; border-radius: 10px;
+    text-decoration: none;
+    transition: border-color .2s, transform .15s;
+    font-family: 'Syne', sans-serif;
+  }
+  .btn-secondary:hover { border-color: var(--purple); transform: translateY(-1px); }
+
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 820px; margin: 0 auto;
+    padding: 140px 24px 100px;
+  }
+  .page-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: #60a5fa;
+    font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 100px;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+    font-family: 'Syne', sans-serif;
+  }
+  h1.page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+  }
+  .updated {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+  .legal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+  }
+  .legal-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 36px;
+    margin-bottom: 14px;
+    letter-spacing: -0.3px;
+  }
+  .legal-card h2:first-child { margin-top: 0; }
+  .legal-card p, .legal-card li {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #cbd5e1;
+    margin-bottom: 14px;
+  }
+  .legal-card ul { padding-left: 22px; margin-bottom: 14px; }
+  .legal-card a { color: #60a5fa; text-decoration: none; }
+  .legal-card a:hover { text-decoration: underline; }
+  .legal-card strong { color: var(--text); }
+  .legal-card table {
+    width: 100%; border-collapse: collapse; margin: 8px 0 20px;
+    font-size: 14px;
+  }
+  .legal-card th, .legal-card td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: #cbd5e1;
+  }
+  .legal-card th { color: var(--text); font-family:'Syne',sans-serif; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  .toc {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 44px;
+  }
+  .toc a {
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 100px;
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
+    transition: color .15s, border-color .15s;
+  }
+  .toc a:hover { color: #60a5fa; border-color: var(--blue); }
+
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  footer .brand { display:flex; align-items:center; gap:8px; }
+  footer img { height: 20px; opacity: .6; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="glow"></div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/assets/logo-icon.png" alt="Pricey">
+    <span class="nav-logo-text">Pricey</span>
+  </a>
+  <a href="/" class="btn-secondary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Home
+  </a>
+</nav>
+
+<div class="wrap">
+  <div class="page-badge">Legal</div>
+  <h1 class="page-title">Privacy Policy</h1>
+  <p class="updated">Last updated: July 1, 2026</p>
+
+  <div class="toc">
+    <a href="#intro">1. Introduction</a>
+    <a href="#collect">2. Data We Collect</a>
+    <a href="#use">3. How We Use It</a>
+    <a href="#storage">4. Storage & Retention</a>
+    <a href="#sharing">5. Sharing</a>
+    <a href="#security">6. Security</a>
+    <a href="#rights">7. Your Rights</a>
+    <a href="#children">8. Children's Privacy</a>
+    <a href="#cookies">9. Cookies & Sessions</a>
+    <a href="#thirdparty">10. Discord & Payment Providers</a>
+    <a href="#changes">11. Changes</a>
+    <a href="#contact">12. Contact</a>
+  </div>
+
+  <div class="legal-card">
+    <h2 id="intro">1. Introduction</h2>
+    <p>This Privacy Policy explains how the Pricey team ("we," "us," or "our") collects, uses, stores, and protects information when you interact with the Pricey Discord bot and its web dashboard (together, the "Service"). By using the Service, you agree to the practices described here. If you do not agree, please do not use Pricey.</p>
+
+    <h2 id="collect">2. Information We Collect</h2>
+    <p>We only collect information that is necessary for Pricey to function. Depending on how you use the Service, this may include:</p>
+    <table>
+      <tr><th>Category</th><th>Examples</th></tr>
+      <tr><td>Discord account data</td><td>User ID, username, avatar, and (only when you log into the dashboard) the servers you administer and your role in them, retrieved via Discord's official OAuth2 authorization</td></tr>
+      <tr><td>Server (guild) data</td><td>Server ID and name, bot configuration you set (roles, payment methods, categories, price rules, embeds/panels)</td></tr>
+      <tr><td>Ticket data</td><td>Messages sent inside bot-created ticket channels, purchase details entered into the ticket flow, and payment-proof screenshots uploaded by a buyer for verification purposes</td></tr>
+      <tr><td>Technical data</td><td>Basic logs needed to operate the bot and dashboard, such as timestamps and error logs</td></tr>
+    </table>
+    <p>We do <strong>not</strong> collect your Discord password. Authentication is handled entirely by Discord's own OAuth2 system, and we never see your login credentials.</p>
+    <p>We do not intentionally collect actual payment card numbers, bank credentials, or crypto wallet private keys. Any payment details visible in a ticket (such as a screenshot of a transfer) are provided voluntarily by users as proof of payment and are visible only to the relevant server's staff and, where applicable, to us for the purpose of operating the Service.</p>
+
+    <h2 id="use">3. How We Use Information</h2>
+    <ul>
+      <li>To operate core bot features, such as creating and managing tickets, calculating prices, and posting configured panels;</li>
+      <li>To authenticate you and display the correct servers and settings on the web dashboard;</li>
+      <li>To let server owners configure and customize the bot for their community;</li>
+      <li>To maintain ticket transcripts so server staff can review past purchases or resolve disputes;</li>
+      <li>To monitor, secure, and improve the Service, including diagnosing technical issues;</li>
+      <li>To enforce these Terms and our Privacy Policy and to prevent abuse or fraud.</li>
+    </ul>
+    <p>We do not use your data for targeted advertising, and we do not sell personal data to third parties.</p>
+
+    <h2 id="storage">4. Data Storage & Retention</h2>
+    <p>Configuration data, panels, and ticket records are stored on the infrastructure that hosts the bot, tied to the specific Discord server (guild) they belong to. We retain this data for as long as Pricey remains active on a server, or as needed to comply with legal obligations, resolve disputes, and enforce our agreements. Server owners can request deletion of their server's data by removing the bot and contacting us, or through any in-dashboard deletion tools we provide.</p>
+
+    <h2 id="sharing">5. How We Share Information</h2>
+    <p>We do not sell or rent personal data. We may share information only in the following limited situations:</p>
+    <ul>
+      <li><strong>With Discord</strong>, as necessary to operate the bot and OAuth2 login, subject to Discord's own <a href="https://discord.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>;</li>
+      <li><strong>Within a server</strong>, where ticket contents and configuration are visible to that server's authorized staff and administrators, as configured by the server owner;</li>
+      <li><strong>For legal reasons</strong>, if required to comply with a valid legal process, protect our rights, or prevent fraud or harm;</li>
+      <li><strong>With service providers</strong> who help us host or run the Service under confidentiality obligations, and only to the extent needed to provide the Service.</li>
+    </ul>
+
+    <h2 id="security">6. Data Security</h2>
+    <p>We use reasonable technical and organizational measures to protect the data we store, including restricted access to hosting infrastructure and secure session handling for the dashboard. However, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security.</p>
+
+    <h2 id="rights">7. Your Rights & Choices</h2>
+    <p>Depending on your location, you may have rights to access, correct, or request deletion of your personal data. You can exercise many of these directly by:</p>
+    <ul>
+      <li>Removing Pricey from a server you administer, which stops further data collection for that server;</li>
+      <li>Deleting your own messages inside a ticket, where Discord permits;</li>
+      <li>Contacting us to request a copy or deletion of data associated with your Discord account or server.</li>
+    </ul>
+    <p>We will respond to verified requests within a reasonable timeframe, consistent with applicable law.</p>
+
+    <h2 id="children">8. Children's Privacy</h2>
+    <p>The Service is intended for use in accordance with Discord's own minimum age requirements (currently 13 years old, or higher where required by local law). We do not knowingly collect personal information from children under this age. If we become aware that we have inadvertently collected such information, we will take steps to delete it.</p>
+
+    <h2 id="cookies">9. Cookies & Session Data</h2>
+    <p>The web dashboard uses a session cookie to keep you logged in after authenticating with Discord. This cookie is used solely to maintain your session and is not used for cross-site tracking or advertising purposes.</p>
+
+    <h2 id="thirdparty">10. Discord & Payment Providers</h2>
+    <p>Pricey operates on top of Discord and relies on Discord's platform to function; your use of Discord itself is governed by Discord's own <a href="https://discord.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a>.</p>
+    <p>Where a server owner configures payment methods (such as Nequi, PayPal, cryptocurrency, or Bancolombia), any actual payment processing happens entirely outside of Pricey, directly between the buyer and the seller through that provider. We do not control, and are not responsible for, the privacy practices of those third-party payment providers.</p>
+
+    <h2 id="changes">11. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for legal reasons. We will update the "Last updated" date above when we do. Continued use of the Service after a change takes effect means you accept the revised policy.</p>
+
+    <h2 id="contact">12. Contact Us</h2>
+    <p>If you have questions about this Privacy Policy or want to exercise your data rights, please contact us through our support Discord server or by email at <a href="mailto:support@priceybot.com">support@priceybot.com</a>.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="brand"><img src="/assets/logo-icon.png" alt="Pricey"> Pricey &copy; 2025 — Built for Discord sellers</div>
+  <a href="/terms">Terms of Service</a>
+  <a href="/privacy">Privacy Policy</a>
+</footer>
+</body>
+</html>

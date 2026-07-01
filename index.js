@@ -82,7 +82,7 @@ const T = {
     reference: 'Reference',
     note: 'Note',
     screenshot: 'Screenshot',
-    approveBtn: 'Approve & Deliver',
+    ACroveBtn: 'Approve & Deliver',
     rejectBtn: 'Reject',
     approved: () => 'Your payment was confirmed. Items will be delivered shortly. Thank you!',
     rejected: 'Payment could not be verified. Contact an admin if this is a mistake.\n\nThis channel closes in 2 minutes.',

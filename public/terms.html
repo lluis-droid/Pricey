@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/assets/logo-icon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of Service — Pricey</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #8B5CF6;
+    --purple-dark: #6D28D9;
+    --blue: #3B82F6;
+    --green: #84CC16;
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --surface2: #161625;
+    --border: #1e1e35;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --grad: linear-gradient(135deg, #8B5CF6, #3B82F6);
+    --grad-green: linear-gradient(135deg, #84CC16, #3B82F6);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .noise {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+  .glow {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, #8B5CF622, transparent),
+      radial-gradient(ellipse 60% 50% at 90% 80%, #3B82F618, transparent),
+      radial-gradient(ellipse 40% 40% at 50% 50%, #84CC1608, transparent);
+  }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 16px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(8,8,16,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration:none; }
+  .nav-logo img { height: 32px; }
+  .nav-logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    background: var(--grad);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; font-weight: 600;
+    padding: 10px 20px; border-radius: 10px;
+    text-decoration: none;
+    transition: border-color .2s, transform .15s;
+    font-family: 'Syne', sans-serif;
+  }
+  .btn-secondary:hover { border-color: var(--purple); transform: translateY(-1px); }
+
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 820px; margin: 0 auto;
+    padding: 140px 24px 100px;
+  }
+  .page-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.25);
+    color: #a78bfa;
+    font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 100px;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+    font-family: 'Syne', sans-serif;
+  }
+  h1.page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+  }
+  .updated {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+  .legal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+  }
+  .legal-card h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    margin-top: 36px;
+    margin-bottom: 14px;
+    letter-spacing: -0.3px;
+  }
+  .legal-card h2:first-child { margin-top: 0; }
+  .legal-card p, .legal-card li {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #cbd5e1;
+    margin-bottom: 14px;
+  }
+  .legal-card ul { padding-left: 22px; margin-bottom: 14px; }
+  .legal-card a { color: #a78bfa; text-decoration: none; }
+  .legal-card a:hover { text-decoration: underline; }
+  .legal-card strong { color: var(--text); }
+  .toc {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 44px;
+  }
+  .toc a {
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 100px;
+    text-decoration: none;
+    font-family: 'Syne', sans-serif;
+    transition: color .15s, border-color .15s;
+  }
+  .toc a:hover { color: #a78bfa; border-color: var(--purple); }
+
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  footer .brand { display:flex; align-items:center; gap:8px; }
+  footer img { height: 20px; opacity: .6; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+<div class="glow"></div>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/assets/logo-icon.png" alt="Pricey">
+    <span class="nav-logo-text">Pricey</span>
+  </a>
+  <a href="/" class="btn-secondary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Home
+  </a>
+</nav>
+
+<div class="wrap">
+  <div class="page-badge">Legal</div>
+  <h1 class="page-title">Terms of Service</h1>
+  <p class="updated">Last updated: July 1, 2026</p>
+
+  <div class="toc">
+    <a href="#acceptance">1. Acceptance</a>
+    <a href="#description">2. The Service</a>
+    <a href="#eligibility">3. Eligibility</a>
+    <a href="#accounts">4. Accounts & Servers</a>
+    <a href="#payments">5. Payments</a>
+    <a href="#conduct">6. Acceptable Use</a>
+    <a href="#owners">7. Server Owner Duties</a>
+    <a href="#ip">8. Intellectual Property</a>
+    <a href="#third-party">9. Third-Party Services</a>
+    <a href="#disclaimer">10. Disclaimer</a>
+    <a href="#liability">11. Liability</a>
+    <a href="#termination">12. Termination</a>
+    <a href="#changes">13. Changes</a>
+    <a href="#law">14. Governing Law</a>
+    <a href="#contact">15. Contact</a>
+  </div>
+
+  <div class="legal-card">
+    <h2 id="acceptance">1. Acceptance of Terms</h2>
+    <p>These Terms of Service ("Terms") govern your access to and use of the Pricey Discord bot, its associated web dashboard, and any related services (together, the "Service"), operated by the Pricey team ("we," "us," or "our"). By inviting Pricey to a Discord server, logging into the dashboard, or otherwise interacting with the Service, you agree to be bound by these Terms. If you do not agree, you must not use the Service.</p>
+
+    <h2 id="description">2. Description of the Service</h2>
+    <p>Pricey is a third-party Discord bot that helps server owners run ticket-based storefronts. It provides tools such as automated purchase tickets, configurable price calculations, panel and embed builders, ticket transcripts, and a web dashboard for configuring these features per server.</p>
+    <p>Pricey is an independent product and is <strong>not created, endorsed, or supported by Discord Inc.</strong> Your use of Discord itself remains subject to Discord's own <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://discord.com/guidelines" target="_blank" rel="noopener">Community Guidelines</a>.</p>
+
+    <h2 id="eligibility">3. Eligibility</h2>
+    <p>You must meet Discord's minimum age requirement (currently 13 years old, or higher where required by local law) to use the Service. If you are old enough to use Discord in your country but are still considered a minor there, you should only use the Service with the involvement of a parent or legal guardian, particularly for anything involving payments.</p>
+
+    <h2 id="accounts">4. Accounts, Servers & Data You Provide</h2>
+    <p>To access the web dashboard you authenticate through Discord's official OAuth2 login. We never see or store your Discord password. Server administrators are responsible for configuring Pricey correctly for their community and for the conduct of their staff and members within tickets created by the bot.</p>
+
+    <h2 id="payments">5. Payments and Transactions</h2>
+    <p>Pricey is a <strong>facilitation and automation tool only</strong>. It does not process, hold, or transmit funds, and it is not a party to any transaction between a buyer and a seller. Any payment methods configured by a server owner (for example Nequi, PayPal, cryptocurrency wallets, Bancolombia, or similar) are operated entirely by that server owner and are subject to the terms of those third-party payment providers.</p>
+    <p>We do not guarantee the delivery of goods or services purchased through a ticket, the legitimacy of any seller, or the accuracy of any price calculated by the bot. Disputes about a purchase must be resolved directly between the buyer and the server operating the ticket. We strongly encourage server owners to be transparent about refund and dispute policies before enabling paid features.</p>
+    <p>You are solely responsible for ensuring that any goods, services, or transactions facilitated through Pricey comply with applicable law and with Discord's Terms of Service and Community Guidelines, including rules around the sale of prohibited or regulated items.</p>
+
+    <h2 id="conduct">6. Acceptable Use</h2>
+    <p>When using the Service, you agree not to:</p>
+    <ul>
+      <li>Use Pricey to facilitate the sale of illegal goods or services, or anything prohibited by Discord's policies;</li>
+      <li>Attempt to exploit, reverse-engineer, abuse, or interfere with the bot, dashboard, or underlying infrastructure;</li>
+      <li>Use the Service to harass, defraud, or scam any other user;</li>
+      <li>Circumvent rate limits, security measures, or access controls;</li>
+      <li>Use automated means (other than Pricey itself) to interact with the Service in a way not intended by us.</li>
+    </ul>
+    <p>We reserve the right to suspend or remove access to the Service for any account, user, or server that violates these Terms.</p>
+
+    <h2 id="owners">7. Responsibilities of Server Owners & Staff</h2>
+    <p>If you install Pricey on a Discord server, you are responsible for configuring roles, permissions, ticket categories, and payment information correctly. You are also responsible for moderating conduct inside tickets created by the bot and for keeping any staff who can view ticket contents accountable to your own community rules and to applicable law.</p>
+
+    <h2 id="ip">8. Intellectual Property</h2>
+    <p>The Pricey name, logo, dashboard design, and underlying software are the property of the Pricey team and its licensors. You may not copy, redistribute, resell, or create derivative products based on Pricey's branding or codebase without prior written permission, except as permitted by any open-source license under which parts of the project may be released.</p>
+
+    <h2 id="third-party">9. Third-Party Services</h2>
+    <p>The Service relies on and integrates with third-party platforms, including Discord (for authentication, bot functionality, and messaging) and, where configured by a server owner, external payment providers. We are not responsible for the availability, security, or policies of these third-party services.</p>
+
+    <h2 id="disclaimer">10. Disclaimer of Warranties</h2>
+    <p>The Service is provided "as is" and "as available," without warranties of any kind, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not warrant that the Service will be uninterrupted, error-free, or completely secure.</p>
+
+    <h2 id="liability">11. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, the Pricey team shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or goodwill, arising out of or related to your use of the Service, including any transaction facilitated through a ticket. Our total liability for any claim arising from these Terms or the Service shall not exceed the amount, if any, you paid us directly for the Service in the twelve (12) months preceding the claim.</p>
+
+    <h2 id="termination">12. Termination</h2>
+    <p>We may suspend or terminate your access to the Service, including removing the bot from a server or disabling dashboard access, at any time and for any reason, including violation of these Terms or of Discord's own policies. Server owners may remove Pricey from their server at any time through Discord's standard bot management tools.</p>
+
+    <h2 id="changes">13. Changes to These Terms</h2>
+    <p>We may update these Terms from time to time. Material changes will be reflected by updating the "Last updated" date at the top of this page. Continued use of the Service after changes take effect constitutes acceptance of the revised Terms.</p>
+
+    <h2 id="law">14. Governing Law</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which the Pricey team operates, without regard to its conflict of law provisions, unless otherwise required by applicable local consumer protection law.</p>
+
+    <h2 id="contact">15. Contact Us</h2>
+    <p>If you have questions about these Terms, please reach out through our support Discord server or by email at <a href="mailto:support@priceybot.com">support@priceybot.com</a>.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="brand"><img src="/assets/logo-icon.png" alt="Pricey"> Pricey &copy; 2025 — Built for Discord sellers</div>
+  <a href="/terms">Terms of Service</a>
+  <a href="/privacy">Privacy Policy</a>
+</footer>
+</body>
+</html>
