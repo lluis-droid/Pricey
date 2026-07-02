@@ -220,10 +220,20 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
 
 /* ===== AUTH ===== */
 app.get('/auth/discord', passport.authenticate('discord'));
-app.get('/auth/callback',
-  passport.authenticate('discord', { failureRedirect: '/?auth_error=1' }),
-  (req, res) => res.redirect('/dashboard')
-);
+app.get('/auth/callback', (req, res, next) => {
+  passport.authenticate('discord', (err, user, info) => {
+    console.error("ERROR:", err);
+    console.error("INFO:", info);
+
+    if (err) return next(err);
+    if (!user) return res.status(401).json(info);
+
+    req.logIn(user, err => {
+      if (err) return next(err);
+      return res.redirect("/dashboard");
+    });
+  })(req, res, next);
+});
 app.get('/auth/logout', (req, res, next) => {
   req.logout(err => {
     if (err) return next(err);
