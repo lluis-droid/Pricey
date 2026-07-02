@@ -398,16 +398,6 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       Language
     </button>
-    <div class="sidebar-section">Extras</div>
-    <button class="nav-item" onclick="show('donations',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Donations
-    </button>
-    <button class="nav-item" onclick="show('blacklist',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-      Blacklist
-      <span class="nav-badge" id="blacklist-badge" style="display:none">0</span>
-    </button>
   </aside>
 
   <main class="main">
@@ -420,11 +410,6 @@
         <div class="stat"><div class="stat-num" id="stat-panels">0</div><div class="stat-lbl">Panels</div></div>
         <div class="stat"><div class="stat-num" id="stat-tickets">0</div><div class="stat-lbl">Open Tickets</div></div>
         <div class="stat"><div class="stat-num" id="stat-pending">0</div><div class="stat-lbl">Pending</div></div>
-      </div>
-      <div class="stats-row">
-        <div class="stat"><div class="stat-num" id="stat-approved">0</div><div class="stat-lbl">Approved</div></div>
-        <div class="stat"><div class="stat-num" id="stat-rejected">0</div><div class="stat-lbl">Rejected</div></div>
-        <div class="stat"><div class="stat-num" id="stat-reported">0</div><div class="stat-lbl">Reported Users</div></div>
       </div>
       <div class="card">
         <div class="card-title">
@@ -592,115 +577,6 @@
       </button>
     </div>
 
-    <!-- DONATIONS -->
-    <div class="page" id="page-donations">
-      <div class="page-title">Donations</div>
-      <div class="page-sub">Let members support the server directly. When enabled, the bot can post a donation panel with a button that opens a ticket, same flow as purchases.</div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Setup
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            Enable donations
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="don-enabled">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="form-grid" style="margin-top:14px;">
-          <div class="form-row">
-            <label>Goal Amount (USD, optional)</label>
-            <input type="number" id="don-goal" placeholder="e.g. 500">
-          </div>
-          <div class="form-row">
-            <label>Minimum Donation (USD)</label>
-            <input type="number" id="don-min" placeholder="e.g. 1" value="1">
-          </div>
-        </div>
-        <div class="form-row">
-          <label>Publish to Channel</label>
-          <select id="don-channel"><option value="">— Select —</option></select>
-        </div>
-        <div class="form-row">
-          <label>Panel Message</label>
-          <textarea id="don-message" placeholder="Enjoying the server? Consider supporting us — every bit helps keep things running!"></textarea>
-        </div>
-      </div>
-
-      <div class="card" id="don-goal-card" style="display:none">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></svg>
-          Progress
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted);font-weight:600;">
-          <span id="don-progress-label">$0 raised</span>
-          <span id="don-progress-goal">of $0 goal</span>
-        </div>
-        <div style="background:var(--surface3);border:1px solid var(--border);border-radius:100px;height:10px;overflow:hidden;">
-          <div id="don-progress-bar" style="height:100%;width:0%;background:var(--grad);border-radius:100px;transition:width .3s;"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Accepted Methods
-        </div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Reuses the account details you set on the Payment Methods page.</p>
-        <div class="methods-wrap" id="don-methods-wrap"></div>
-      </div>
-
-      <div class="card">
-        <div class="toggle-row" style="border-bottom:none;">
-          <div class="toggle-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Show public donor wall
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="don-wall">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <p class="hint">Displays donor usernames and amounts under the panel embed. Turn off for anonymous donations.</p>
-      </div>
-
-      <button class="btn btn-primary" onclick="saveDonations()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save & Publish
-      </button>
-    </div>
-
-    <!-- BLACKLIST -->
-    <div class="page" id="page-blacklist">
-      <div class="page-title">Blacklist</div>
-      <div class="page-sub">Users on this list can't open new purchase or donation tickets. Add someone from a reported ticket, or manually below.</div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add User
-        </div>
-        <div style="display:flex;gap:8px;">
-          <input type="text" id="bl-userid" placeholder="Discord User ID" style="flex:1;">
-          <input type="text" id="bl-reason" placeholder="Reason (optional)" style="flex:1;">
-          <button class="btn btn-primary btn-sm" onclick="addBlacklist()">Add</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-          Blocked Users
-        </div>
-        <div id="blacklist-list"></div>
-      </div>
-    </div>
-
   </main>
 </div>
 
@@ -807,17 +683,13 @@
 <script>
 const guildId = location.pathname.split('/')[2];
 let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], editIdx=null;
-let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[];
+let savedAccounts={}, tickets=[], selectedLang='en';
 
 const ALL_METHODS = {
-  paypal:'PayPal', zelle:'Zelle', cashapp:'Cash App', venmo:'Venmo',
-  crypto_btc:'Bitcoin (BTC)', crypto_eth:'Ethereum (ETH)', crypto_usdt:'USDT (Trc20/Erc20)',
-  crypto_ltc:'Litecoin (LTC)', binance_pay:'Binance Pay',
-  nequi:'Nequi', bancolombia:'Bancolombia', daviplata:'Daviplata',
-  mercadopago:'Mercado Pago', pix:'PIX', zinli:'Zinli',
-  bank:'Bank Transfer', wise:'Wise', revolut:'Revolut',
-  skrill:'Skrill', applepay:'Apple Pay', googlepay:'Google Pay',
-  amazon_gc:'Amazon Gift Card', steam_gc:'Steam Gift Card',
+  paypal:'PayPal', crypto:'Crypto (USDT/BTC)', nequi:'Nequi',
+  bancolombia:'Bancolombia', daviplata:'Daviplata',
+  mercadopago:'Mercado Pago', pix:'PIX',
+  zinli:'Zinli / Zelle', bank:'Bank Transfer',
 };
 
 const DEFAULT_QUESTIONS = [
@@ -900,8 +772,6 @@ function populateSelects() {
   channels.forEach(c => logSel.innerHTML += `<option value="${c.id}">#${c.name}</option>`);
   const pmChan = document.getElementById('pm-channel');
   channels.forEach(c => pmChan.innerHTML += `<option value="${c.id}">#${c.name}</option>`);
-  const donChan = document.getElementById('don-channel');
-  channels.forEach(c => donChan.innerHTML += `<option value="${c.id}">#${c.name}</option>`);
 }
 
 function loadConfig(cfg) {
@@ -914,110 +784,6 @@ function loadConfig(cfg) {
   selectedLang = cfg.language || 'en';
   selectLang(selectedLang, false);
   buildMethodsUI(cfg.paymentMethods || Object.keys(ALL_METHODS));
-
-  const don = cfg.donation || {};
-  document.getElementById('don-enabled').checked = !!don.enabled;
-  document.getElementById('don-goal').value = don.goal || '';
-  document.getElementById('don-min').value = don.min ?? 1;
-  document.getElementById('don-message').value = don.message || '';
-  document.getElementById('don-wall').checked = !!don.publicWall;
-  if (don.channelId) document.getElementById('don-channel').value = don.channelId;
-  buildDonationMethodsUI(don.methods || []);
-  updateDonationProgress(don.raised || 0, don.goal || 0);
-
-  blacklist = cfg.blacklist || [];
-  renderBlacklist();
-}
-
-function buildDonationMethodsUI(enabled) {
-  document.getElementById('don-methods-wrap').innerHTML = Object.entries(ALL_METHODS).map(([k,v])=>`
-    <label class="method-toggle">
-      <input type="checkbox" value="${k}" ${enabled.includes(k)?'checked':''}>
-      ${v}
-    </label>
-  `).join('');
-}
-
-function updateDonationProgress(raised, goal) {
-  const card = document.getElementById('don-goal-card');
-  if (!goal || goal <= 0) { card.style.display = 'none'; return; }
-  card.style.display = '';
-  const pct = Math.min(100, Math.round((raised / goal) * 100));
-  document.getElementById('don-progress-label').textContent = `$${raised} raised`;
-  document.getElementById('don-progress-goal').textContent = `of $${goal} goal`;
-  document.getElementById('don-progress-bar').style.width = pct + '%';
-}
-
-async function saveDonations() {
-  const methods = [...document.querySelectorAll('#don-methods-wrap input:checked')].map(c=>c.value);
-  const donation = {
-    enabled: document.getElementById('don-enabled').checked,
-    goal: parseFloat(document.getElementById('don-goal').value) || 0,
-    min: parseFloat(document.getElementById('don-min').value) || 1,
-    channelId: document.getElementById('don-channel').value,
-    message: document.getElementById('don-message').value,
-    publicWall: document.getElementById('don-wall').checked,
-    methods,
-  };
-  await fetch(`/api/config/${guildId}`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ donation })
-  });
-  if (donation.enabled && donation.channelId) {
-    await fetch(`/api/donations/${guildId}/post`, {method:'POST'}).catch(()=>{});
-  }
-  toast(donation.enabled ? 'Donation panel saved and published' : 'Donation settings saved');
-}
-
-/* ===== BLACKLIST ===== */
-async function saveBlacklist() {
-  await fetch(`/api/config/${guildId}`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ blacklist })
-  });
-}
-
-async function addBlacklist() {
-  const id = document.getElementById('bl-userid').value.trim();
-  if (!id) { toast('Enter a user ID','err'); return; }
-  const reason = document.getElementById('bl-reason').value.trim();
-  if (blacklist.some(b=>b.userId===id)) { toast('User already blacklisted','err'); return; }
-  blacklist.push({ userId:id, reason: reason || 'No reason provided', addedAt: Date.now() });
-  document.getElementById('bl-userid').value='';
-  document.getElementById('bl-reason').value='';
-  await saveBlacklist();
-  renderBlacklist();
-  toast('User blacklisted');
-}
-
-async function removeBlacklist(id) {
-  blacklist = blacklist.filter(b=>b.userId!==id);
-  await saveBlacklist();
-  renderBlacklist();
-  toast('User removed from blacklist');
-}
-
-function renderBlacklist() {
-  const el = document.getElementById('blacklist-list');
-  if (!el) return;
-  const badge = document.getElementById('blacklist-badge');
-  if (badge) {
-    if (blacklist.length > 0) { badge.textContent = blacklist.length; badge.style.display=''; }
-    else badge.style.display='none';
-  }
-  if (!blacklist.length) {
-    el.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-      <p>No blacklisted users.</p>
-    </div>`;
-    return;
-  }
-  el.innerHTML = blacklist.map(b => `
-    <div class="past-ticket-item" style="padding:12px;margin-bottom:8px;">
-      <span><strong style="color:var(--text)">${b.userId}</strong> &nbsp;·&nbsp; ${b.reason}</span>
-      <button class="q-del" onclick="removeBlacklist('${b.userId}')">Remove</button>
-    </div>
-  `).join('');
 }
 
 /* ===== NAVIGATION ===== */
@@ -1098,14 +864,10 @@ async function loadTickets() {
     const open = tickets.filter(t=>t.status==='open'||t.status==='pending').length;
     document.getElementById('stat-tickets').textContent = tickets.filter(t=>t.status==='open').length;
     document.getElementById('stat-pending').textContent = pending;
-    document.getElementById('stat-approved').textContent = tickets.filter(t=>t.status==='approved').length;
-    document.getElementById('stat-rejected').textContent = tickets.filter(t=>t.status==='rejected').length;
-    document.getElementById('stat-reported').textContent = tickets.filter(t=>t.reported).length;
     const badge = document.getElementById('tickets-badge');
     if (pending > 0) { badge.textContent = pending; badge.style.display=''; }
     else badge.style.display='none';
     renderTickets();
-    renderBlacklist();
   } catch {}
 }
 
@@ -1227,45 +989,6 @@ function openTicketDetail(channelId) {
             <span class="toggle-slider"></span>
           </label>
         </div>
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-            Blacklist this user
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="toggle-blacklist" ${blacklist.some(b=>b.userId===t.userId)?'checked':''} onchange="ticketToggleBlacklist('${t.channelId}','${t.userId||''}',this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="toggle-row" style="border-bottom:none;">
-          <div class="toggle-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
-            Priority
-          </div>
-          <select class="q-select" onchange="ticketAction('${t.channelId}','set-priority',this.value)">
-            <option value="low" ${t.priority==='low'?'selected':''}>Low</option>
-            <option value="normal" ${!t.priority||t.priority==='normal'?'selected':''}>Normal</option>
-            <option value="high" ${t.priority==='high'?'selected':''}>High</option>
-            <option value="urgent" ${t.priority==='urgent'?'selected':''}>Urgent</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-block">
-        <div class="section-block-title">Internal Staff Note</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Only visible to staff on the dashboard — never sent to the buyer.</p>
-        ${t.staffNotes?.length ? `<div class="answers-list" style="margin-bottom:10px;">
-          ${t.staffNotes.map(n=>`<div class="answer-item"><div class="answer-q">${n.author||'Staff'}</div><div class="answer-a">${n.text}</div></div>`).join('')}
-        </div>` : ''}
-        <div class="menu-builder">
-          <textarea id="note-text" placeholder="Add an internal note about this ticket..."></textarea>
-          <div class="menu-builder-footer">
-            <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','add-note',document.getElementById('note-text').value)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              Add Note
-            </button>
-          </div>
-        </div>
       </div>
 
       <div class="section-block">
@@ -1291,12 +1014,6 @@ function openTicketDetail(channelId) {
         <button class="btn btn-danger btn-sm" onclick="ticketAction('${t.channelId}','reject')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Reject
-        </button>
-      ` : ''}
-      ${t.status==='approved' ? `
-        <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','refund')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Mark Refunded
         </button>
       ` : ''}
       <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','clear-chat')">
@@ -1333,24 +1050,9 @@ async function ticketAction(channelId, action, value) {
       approve:'Order approved', reject:'Order rejected', close:'Ticket closed',
       'clear-chat':'Chat cleared', 'send-message':'Message sent',
       'set-typing':'Permission updated', 'set-reported':'Report status updated',
-      'new-ticket':'New ticket created', 'set-priority':'Priority updated',
-      'add-note':'Note added', 'refund':'Marked as refunded',
+      'new-ticket':'New ticket created'
     }[action] || 'Done');
   } catch { toast('Action failed','err'); }
-}
-
-async function ticketToggleBlacklist(channelId, userId, checked) {
-  if (!userId) { toast('No user ID on this ticket','err'); return; }
-  if (checked) {
-    if (!blacklist.some(b=>b.userId===userId)) {
-      blacklist.push({ userId, reason:'Blacklisted from ticket', addedAt: Date.now() });
-    }
-  } else {
-    blacklist = blacklist.filter(b=>b.userId!==userId);
-  }
-  await saveBlacklist();
-  renderBlacklist();
-  toast(checked ? 'User blacklisted' : 'User removed from blacklist');
 }
 
 /* ===== PANELS ===== */
