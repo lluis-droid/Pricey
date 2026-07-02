@@ -211,9 +211,10 @@
       <tr><th>Category</th><th>Examples</th></tr>
       <tr><td>Discord account data</td><td>User ID, username, avatar, and (only when you log into the dashboard) the servers you administer and your role in them, retrieved via Discord's official OAuth2 authorization</td></tr>
       <tr><td>Server (guild) data</td><td>Server ID and name, bot configuration you set (roles, payment methods, categories, price rules, embeds/panels)</td></tr>
-      <tr><td>Ticket data</td><td>Messages sent inside bot-created ticket channels, purchase details entered into the ticket flow, and payment-proof screenshots uploaded by a buyer for verification purposes</td></tr>
+      <tr><td>Ticket data</td><td>Messages sent inside bot-created ticket channels, purchase details entered into the ticket flow, and payment-proof screenshots voluntarily uploaded by a buyer so staff can manually confirm a payment made outside of Pricey</td></tr>
       <tr><td>Technical data</td><td>Basic logs needed to operate the bot and dashboard, such as timestamps and error logs</td></tr>
     </table>
+    <p>Pricey has <strong>no payment processing integration whatsoever</strong>. We do not connect to banks, card networks, PayPal, crypto exchanges, or any payment gateway, and we never handle actual funds. Any payment (via Nequi, PayPal, crypto, Bancolombia, or similar) happens entirely outside of Pricey, directly between the buyer and the seller; Pricey only displays the seller's payment instructions and, if a screenshot is uploaded, stores that image so staff can visually confirm the transaction on their own end.</p>
     <p>We do <strong>not</strong> collect your Discord password. Authentication is handled entirely by Discord's own OAuth2 system, and we never see your login credentials.</p>
     <p>We do not intentionally collect actual payment card numbers, bank credentials, or crypto wallet private keys. Any payment details visible in a ticket (such as a screenshot of a transfer) are provided voluntarily by users as proof of payment and are visible only to the relevant server's staff and, where applicable, to us for the purpose of operating the Service.</p>
 
@@ -229,7 +230,8 @@
     <p>We do not use your data for targeted advertising, and we do not sell personal data to third parties.</p>
 
     <h2 id="storage">4. Data Storage & Retention</h2>
-    <p>Configuration data, panels, and ticket records are stored on the infrastructure that hosts the bot, tied to the specific Discord server (guild) they belong to. We retain this data for as long as Pricey remains active on a server, or as needed to comply with legal obligations, resolve disputes, and enforce our agreements. Server owners can request deletion of their server's data by removing the bot and contacting us, or through any in-dashboard deletion tools we provide.</p>
+<p>Configuration data, panels, and ticket records are stored on the infrastructure that hosts the bot, tied to the specific Discord server (guild) they belong to. This data is kept for as long as it is needed to operate the Service, and <strong>it is not automatically deleted</strong> when Pricey is removed from a server — the associated files simply stop being used, but they remain on our storage until manually cleaned up.</p>
+<p>At this time, we do not offer a self-service or automated tool to permanently erase a server's data. If you contact us to request removal of your data, we will do our best on a case-by-case basis, but we cannot guarantee full, immediate, or automatic deletion, since this currently requires manual action rather than an automated system.</p>
 
     <h2 id="sharing">5. How We Share Information</h2>
     <p>We do not sell or rent personal data. We may share information only in the following limited situations:</p>
@@ -244,16 +246,16 @@
     <p>We use reasonable technical and organizational measures to protect the data we store, including restricted access to hosting infrastructure and secure session handling for the dashboard. However, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security.</p>
 
     <h2 id="rights">7. Your Rights & Choices</h2>
-    <p>Depending on your location, you may have rights to access, correct, or request deletion of your personal data. You can exercise many of these directly by:</p>
-    <ul>
-      <li>Removing Pricey from a server you administer, which stops further data collection for that server;</li>
-      <li>Deleting your own messages inside a ticket, where Discord permits;</li>
-      <li>Contacting us to request a copy or deletion of data associated with your Discord account or server.</li>
-    </ul>
-    <p>We will respond to verified requests within a reasonable timeframe, consistent with applicable law.</p>
+<p>Depending on your location, local law may give you rights to access, correct, or request deletion of your personal data. You can exercise some of these directly by:</p>
+<ul>
+  <li>Removing Pricey from a server you administer, which stops any further data collection for that server (note: existing stored data is not automatically erased when the bot is removed — see Section 4);</li>
+  <li>Deleting your own messages inside a ticket, where Discord permits;</li>
+  <li>Contacting us to ask what data we have or to request that it be removed.</li>
+</ul>
+<p>We will respond to reasonable requests on a best-effort, case-by-case basis. Because we do not currently have an automated deletion system, we cannot guarantee that every request can be fully or immediately fulfilled.</p>
 
     <h2 id="children">8. Children's Privacy</h2>
-    <p>The Service is intended for use in accordance with Discord's own minimum age requirements (currently 13 years old, or higher where required by local law). We do not knowingly collect personal information from children under this age. If we become aware that we have inadvertently collected such information, we will take steps to delete it.</p>
+<p>The Service is intended for use in accordance with Discord's own minimum age requirements (currently 13 years old, or higher where required by local law). We do not knowingly collect personal information from children under this age. If we become aware that we have inadvertently collected such information, we will make reasonable efforts to remove it manually as soon as practical.</p>
 
     <h2 id="cookies">9. Cookies & Session Data</h2>
     <p>The web dashboard uses a session cookie to keep you logged in after authenticating with Discord. This cookie is used solely to maintain your session and is not used for cross-site tracking or advertising purposes.</p>
@@ -266,7 +268,7 @@
     <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for legal reasons. We will update the "Last updated" date above when we do. Continued use of the Service after a change takes effect means you accept the revised policy.</p>
 
     <h2 id="contact">12. Contact Us</h2>
-    <p>If you have questions about this Privacy Policy or want to exercise your data rights, please contact us through our support Discord server or by email at <a href="mailto:support@priceybot.com">support@priceybot.com</a>.</p>
+<p>If you have questions about this Privacy Policy or want to exercise your data rights, please contact us through our official support Discord server: <a href="https://discord.gg/hDdCutjvwX" target="_blank" rel="noopener">discord.gg/hDdCutjvwX</a>.</p>
   </div>
 </div>
 
