@@ -848,4 +848,6 @@ async function setCanType(channel, userId, canType) {
   catch (e) { console.error('[setCanType]', e.message); }
 }
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN).catch(err => {
+  console.error('[LOGIN ERROR]', err);
+});
