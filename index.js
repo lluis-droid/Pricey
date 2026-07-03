@@ -82,7 +82,7 @@ const T = {
     reference: 'Reference',
     note: 'Note',
     screenshot: 'Screenshot',
-    ACroveBtn: 'Approve & Deliver',
+    approveBtn: 'Approve & Deliver',
     rejectBtn: 'Reject',
     approved: () => 'Your payment was confirmed. Items will be delivered shortly. Thank you!',
     rejected: 'Payment could not be verified. Contact an admin if this is a mistake.\n\nThis channel closes in 2 minutes.',
@@ -113,6 +113,16 @@ const T = {
     mentionUserAnswer: 'Mention a user with @username',
     numbersOnly: 'Numbers only...',
     typeAnswer: 'Type your answer...',
+    blacklisted: 'You are not able to open tickets in this server. If you think this is a mistake, contact staff directly.',
+    couponPrompt: 'Do you have a coupon code?',
+    couponEnterBtn: 'Enter coupon',
+    couponSkipBtn: 'Continue without coupon',
+    couponModalTitle: 'Coupon Code',
+    couponLabel: 'Code',
+    couponPlaceholder: 'e.g. SAVE10',
+    couponInvalid: 'That coupon is invalid, expired, or fully used. Try another code or continue without one.',
+    couponApplied: (code, total) => `✅ Coupon **${code}** applied. New total: **${total}**`,
+    couponNoted: (code) => `Coupon **${code}** noted for this order. An admin will verify and apply the discount manually for this product/service.`,
   },
   es: {
     welcome: (mention) => `¡Bienvenido ${mention}! Sigue los pasos a continuación para completar tu compra.`,
@@ -185,6 +195,16 @@ const T = {
     mentionUserAnswer: 'Menciona a un usuario con @usuario',
     numbersOnly: 'Solo números...',
     typeAnswer: 'Escribe tu respuesta...',
+    blacklisted: 'No puedes abrir tickets en este servidor. Si crees que esto es un error, contacta al staff directamente.',
+    couponPrompt: '¿Tienes un código de cupón?',
+    couponEnterBtn: 'Ingresar cupón',
+    couponSkipBtn: 'Continuar sin cupón',
+    couponModalTitle: 'Código de Cupón',
+    couponLabel: 'Código',
+    couponPlaceholder: 'ej. SAVE10',
+    couponInvalid: 'Ese cupón es inválido, expiró, o ya alcanzó su límite de usos. Intenta con otro código o continúa sin cupón.',
+    couponApplied: (code, total) => `✅ Cupón **${code}** aplicado. Nuevo total: **${total}**`,
+    couponNoted: (code) => `Cupón **${code}** anotado para este pedido. Un administrador verificará y aplicará el descuento manualmente para este producto/servicio.`,
   }
 };
 
@@ -213,10 +233,13 @@ async function getPanels(guildId) {
   try { const r = await apiFetch(`${BASE_URL}/internal/panels/${guildId}`); return r ? r.json() : []; }
   catch { return []; }
 }
+async function savePanels(guildId, panels) {
+  try { await apiFetch(`${BASE_URL}/api/panels/${guildId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(panels) }); }
+  catch (e) { console.error('[savePanels]', e.message); }
+}
 
 function reportGuildData(guildId) {
   const guild = client.guilds.cache.get(guildId);
-    console.log('[GUILD] Reportando guild:', guildId); // ← agrega esto
   if (!guild) return;
   const channels   = guild.channels.cache.filter(c => c.type === ChannelType.GuildText).map(c => ({ id: c.id, name: c.name }));
   const categories = guild.channels.cache.filter(c => c.type === ChannelType.GuildCategory).map(c => ({ id: c.id, name: c.name }));
@@ -229,7 +252,6 @@ function reportGuildData(guildId) {
 
 function sendBotStatus() {
   const guildIds = client.guilds.cache.map(g => g.id);
-    console.log('[STATUS] Enviando status, guilds:', guildIds); 
   apiFetch(`${BASE_URL}/api/bot-status`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ online: true, tag: client.user.tag, guilds: guildIds })
@@ -252,6 +274,8 @@ function syncTicket(session) {
         selectedProduct: session.selectedProduct || null,
         currencyAmount: session.currencyAmount || null,
         totalDisplay: session.totalDisplay || null,
+        totalUSD: session.totalUSD ?? null,
+        appliedCoupon: session.appliedCoupon || null,
         paymentMethod: session.paymentMethod || null,
         paymentReference: session.paymentReference || null,
         paymentNote: session.paymentNote || null,
@@ -259,6 +283,9 @@ function syncTicket(session) {
         answers: session.answers || [],
         canType: session.canType || false,
         reported: session.reported || false,
+        priority: session.priority || 'normal',
+        staffNotes: session.staffNotes || [],
+        transcript: session.transcript || null,
         pastTickets: session.pastTickets || [],
         openedAt: session.openedAt || Date.now(),
       }
@@ -301,22 +328,36 @@ async function handleDashboardTicketAction(data) {
   if (!channel) return;
 
   if (action === 'close') {
+    await generateAndSendTranscript(channel, session, 'Closed by admin');
+    if (session) syncTicket(session);
     await channel.send({ embeds: [new EmbedBuilder().setDescription('Ticket closed by an admin.').setColor(0xef4444)] });
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 5000);
   }
   if (action === 'approve' && session) {
     const approvedMsg = config.approvedMsg || t.approved();
+    await generateAndSendTranscript(channel, session, 'Approved');
     await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(0x84CC16).setTimestamp()] });
     session.status = 'approved'; syncTicket(session);
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
   if (action === 'reject' && session) {
+    await generateAndSendTranscript(channel, session, 'Rejected');
     await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(t.rejected).setColor(0xef4444).setTimestamp()] });
     session.status = 'rejected'; syncTicket(session);
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
+  if (action === 'refund' && session) {
+    session.status = 'refunded'; syncTicket(session);
+    await channel.send({ embeds: [new EmbedBuilder().setDescription('This order was marked as **refunded** by an admin.').setColor(0xf59e0b)] }).catch(() => {});
+  }
   if (action === 'clear-chat') { try { await channel.bulkDelete(100, true); } catch {} }
   if (action === 'send-message' && value?.trim()) { await channel.send({ content: value }); }
+  if (action === 'add-note' && session && value?.trim()) {
+    session.staffNotes = session.staffNotes || [];
+    session.staffNotes.push({ text: value.trim(), author: 'Dashboard', at: Date.now() });
+    syncTicket(session);
+  }
+  if (action === 'set-priority' && session) { session.priority = value; syncTicket(session); }
   if (action === 'set-typing') {
     const canType = !!value;
     const userId = session?.userId;
@@ -327,6 +368,7 @@ async function handleDashboardTicketAction(data) {
       } catch (e) { console.error('[set-typing] Failed:', e.message); }
     }
   }
+  if (action === 'set-reported' && session) { session.reported = !!value; syncTicket(session); }
 }
 
 async function postPanel(guildId, panel) {
@@ -350,6 +392,143 @@ async function postPanel(guildId, panel) {
   await channel.send({ embeds: [embed], components: [row] });
 }
 
+// ─── COUPON HELPERS ─────────────────────────────────────────────────────────
+function findValidCoupon(panel, code) {
+  if (!panel.coupons?.length || !code) return null;
+  const c = panel.coupons.find(c => c.code?.toLowerCase() === code.toLowerCase() && c.active !== false);
+  if (!c) return null;
+  if (c.expiresAt && Date.now() > c.expiresAt) return null;
+  if (c.maxUses && (c.uses || 0) >= c.maxUses) return null;
+  return c;
+}
+function applyCouponToUSD(usdTotal, coupon) {
+  if (!coupon) return usdTotal;
+  if (coupon.type === 'percent') return Math.max(0, usdTotal * (1 - coupon.value / 100));
+  return Math.max(0, usdTotal - coupon.value);
+}
+async function incrementCouponUsage(guildId, panelTitle, code) {
+  try {
+    const panels = await getPanels(guildId);
+    const p = panels.find(p => p.title === panelTitle);
+    if (!p?.coupons) return;
+    const c = p.coupons.find(c => c.code?.toLowerCase() === code.toLowerCase());
+    if (c) { c.uses = (c.uses || 0) + 1; await savePanels(guildId, panels); }
+  } catch (e) { console.error('[incrementCouponUsage]', e.message); }
+}
+
+async function proceedToCouponOrPayment(channel, session) {
+  if (session.panel.coupons?.length) { session.phase = 'coupon'; return askCouponPrompt(channel, session); }
+  session.phase = 'payment-select';
+  return askPaymentSelect(channel, session);
+}
+
+async function askCouponPrompt(channel, session) {
+  const t = getLang(session.config);
+  const modal = new ModalBuilder().setCustomId(`modal_coupon_${channel.id}`).setTitle(t.couponModalTitle);
+  const input = new TextInputBuilder().setCustomId('code').setLabel(t.couponLabel)
+    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.couponPlaceholder);
+  modal.addComponents(new ActionRowBuilder().addComponents(input));
+  session.pendingModal = modal;
+  await channel.send({
+    embeds: [new EmbedBuilder().setDescription(`🏷️ **${t.couponPrompt}**`).setColor(0x8B5CF6)],
+    components: [new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`open_couponmodal_${channel.id}`).setLabel(t.couponEnterBtn).setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`skip_coupon_${channel.id}`).setLabel(t.couponSkipBtn).setStyle(ButtonStyle.Primary)
+    )]
+  });
+}
+
+async function handleCouponModalTrigger(interaction) {
+  const channelId = interaction.customId.replace('open_couponmodal_', '');
+  const session = sessions.get(channelId);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session.pendingModal) return interaction.reply({ content: 'No coupon modal pending.', flags: 64 });
+  await interaction.showModal(session.pendingModal);
+}
+
+async function handleSkipCoupon(interaction) {
+  const channelId = interaction.customId.replace('skip_coupon_', '');
+  const session = sessions.get(channelId);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  await interaction.update({ components: [] }).catch(() => {});
+  session.pendingModal = null;
+  session.phase = 'payment-select';
+  await askPaymentSelect(interaction.channel, session);
+}
+
+async function handleModalCoupon(interaction) {
+  const channelId = interaction.customId.replace('modal_coupon_', '');
+  const session = sessions.get(channelId);
+  const t = getLang(session?.config);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  const code = interaction.fields.getTextInputValue('code').trim();
+  session.pendingModal = null;
+  const coupon = findValidCoupon(session.panel, code);
+  await interaction.deferUpdate().catch(() => {});
+
+  if (!coupon) {
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponInvalid).setColor(0xef4444)] });
+    return askCouponPrompt(interaction.channel, session);
+  }
+
+  if (session.panel.type === 'currency' && session.total != null) {
+    const currencyInfo = CURRENCIES.find(c => c.value === session.currency) || CURRENCIES[0];
+    const usdBefore = session.totalUSD ?? (session.total * currencyInfo.rate);
+    const usdAfter = applyCouponToUSD(usdBefore, coupon);
+    session.total = parseFloat((usdAfter / currencyInfo.rate).toFixed(2));
+    session.totalUSD = parseFloat(usdAfter.toFixed(2));
+    session.totalDisplay = `${currencyInfo.symbol}${session.total.toLocaleString()} ${session.currency}`;
+    session.appliedCoupon = coupon.code;
+    incrementCouponUsage(session.guildId, session.panel.title, coupon.code);
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponApplied(coupon.code, session.totalDisplay)).setColor(0x84CC16)] });
+  } else {
+    // Product / service panels: free-text pricing, so we note the coupon for the admin instead of auto-discounting.
+    session.appliedCoupon = coupon.code;
+    incrementCouponUsage(session.guildId, session.panel.title, coupon.code);
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponNoted(coupon.code)).setColor(0x84CC16)] });
+  }
+
+  syncTicket(session);
+  session.phase = 'payment-select';
+  await askPaymentSelect(interaction.channel, session);
+}
+
+// ─── TRANSCRIPTS ────────────────────────────────────────────────────────────
+async function generateAndSendTranscript(channel, session, reason) {
+  if (!channel) return;
+  try {
+    const fetched = await channel.messages.fetch({ limit: 100 }).catch(() => null);
+    if (!fetched) return;
+    const sorted = [...fetched.values()].sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+    const lines = sorted.map(m => {
+      const attach = m.attachments.size ? ` [attachment: ${[...m.attachments.values()].map(a => a.url).join(', ')}]` : '';
+      return `[${new Date(m.createdTimestamp).toLocaleString()}] ${m.author.tag}: ${m.content || ''}${attach}`;
+    });
+    const text = lines.join('\n') || 'No messages recorded.';
+    const buffer = Buffer.from(text, 'utf-8');
+    const fileName = `transcript-${channel.name}.txt`;
+
+    if (session) {
+      session.transcript = sorted.slice(-150).map(m => ({
+        author: m.author.tag,
+        content: (m.content || (m.attachments.size ? '[attachment]' : '')).slice(0, 500),
+        timestamp: m.createdTimestamp,
+      }));
+    }
+
+    const logChannelId = session?.config?.logChannel;
+    if (logChannelId) {
+      const logChannel = client.channels.cache.get(logChannelId) || await client.channels.fetch(logChannelId).catch(() => null);
+      if (logChannel) {
+        await logChannel.send({
+          content: `📄 Transcript — **${session?.username || 'unknown user'}** — ${session?.panel?.title || ''} — _${reason}_`,
+          files: [{ attachment: buffer, name: fileName }]
+        }).catch(() => {});
+      }
+    }
+  } catch (e) { console.error('[transcript]', e.message); }
+}
+
 // ─── GLOBAL INTERACTION ROUTER ────────────────────────────────────────────────
 client.on(Events.InteractionCreate, async interaction => {
   try {
@@ -363,6 +542,8 @@ client.on(Events.InteractionCreate, async interaction => {
       if (id.startsWith('open_qmodal_'))       return handleQuestionModalTrigger(interaction);
       if (id.startsWith('open_amount_modal_')) return handleAmountModalTrigger(interaction);
       if (id.startsWith('open_proof_modal_'))  return handleProofModalTrigger(interaction);
+      if (id.startsWith('open_couponmodal_'))  return handleCouponModalTrigger(interaction);
+      if (id.startsWith('skip_coupon_'))       return handleSkipCoupon(interaction);
     }
     if (interaction.isStringSelectMenu()) {
       const id = interaction.customId;
@@ -375,6 +556,7 @@ client.on(Events.InteractionCreate, async interaction => {
       if (id.startsWith('modal_question_')) return handleModalQuestion(interaction);
       if (id === 'modal_currency_amount')   return handleCurrencyAmountModal(interaction);
       if (id === 'modal_payment_proof')     return handlePaymentProofModal(interaction);
+      if (id.startsWith('modal_coupon_'))   return handleModalCoupon(interaction);
     }
   } catch(e) { console.error(e); }
 });
@@ -429,6 +611,13 @@ async function handleOpenTicket(interaction) {
   const t = getLang(config);
   const guild  = interaction.guild;
   const member = interaction.member;
+
+  // Blacklist check — this was previously never enforced by the bot.
+  const blacklist = config.blacklist || [];
+  if (blacklist.some(b => b.userId === member.id)) {
+    return interaction.editReply({ content: t.blacklisted });
+  }
+
   const existing = [...sessions.values()].find(s => s.userId === member.id && s.guildId === guildId);
   if (existing) return interaction.editReply({ content: t.alreadyOpen(existing.channelId) });
 
@@ -451,10 +640,11 @@ async function handleOpenTicket(interaction) {
     channelId: ticketChannel.id, guildId, panel, config,
     userId: member.id, username: member.user.tag,
     phase: 'questions', questionIndex: 0, answers: [],
-    currency: null, currencyAmount: null, total: null,
-    paymentMethod: null, selectedProduct: null,
+    currency: null, currencyAmount: null, total: null, totalUSD: null,
+    paymentMethod: null, selectedProduct: null, appliedCoupon: null,
     pendingModal: null,
-    status: 'open', canType: false, reported: false,
+    status: 'open', canType: false, reported: false, priority: 'normal',
+    staffNotes: [], transcript: null,
     openedAt: Date.now(), pastTickets: [],
   };
   sessions.set(ticketChannel.id, session);
@@ -481,8 +671,7 @@ async function startNextStep(channel, session) {
   if (session.questionIndex < session.panel.questions.length) return askQuestion(channel, session);
   if (session.panel.type === 'currency') { session.phase = 'currency-select'; return askCurrencySelect(channel, session); }
   if (session.panel.type === 'product')  { session.phase = 'product-select';  return askProductSelect(channel, session); }
-  session.phase = 'payment-select';
-  return askPaymentSelect(channel, session);
+  return proceedToCouponOrPayment(channel, session);
 }
 
 async function askQuestion(channel, session) {
@@ -654,6 +843,7 @@ async function handleCurrencyAmountModal(interaction) {
   const localTotal = usdTotal / currencyInfo.rate;
   session.currencyAmount = amount;
   session.total = parseFloat(localTotal.toFixed(2));
+  session.totalUSD = parseFloat(usdTotal.toFixed(2));
   session.totalDisplay = `${currencyInfo.symbol}${session.total.toLocaleString()} ${session.currency}`;
   session.selectedProduct = `${amount.toLocaleString()} ${panel.title}`;
   session.pendingModal = null;
@@ -665,15 +855,14 @@ async function handleCurrencyAmountModal(interaction) {
       { name: t.totalToPay, value: `**${session.totalDisplay}**`, inline: false }
     ).setFooter({ text: t.priceFee })] });
   syncTicket(session);
-  session.phase = 'payment-select';
-  await askPaymentSelect(interaction.channel, session);
+  await proceedToCouponOrPayment(interaction.channel, session);
 }
 
 // ─── PRODUCT ───────────────────────────────────────────────────────────────────
 async function askProductSelect(channel, session) {
   const t = getLang(session.config);
   const { products } = session.panel;
-  if (!products?.length) { session.phase = 'payment-select'; return askPaymentSelect(channel, session); }
+  if (!products?.length) return proceedToCouponOrPayment(channel, session);
   const select = new StringSelectMenuBuilder().setCustomId('select_product').setPlaceholder(t.selectProductPlaceholder)
     .addOptions(products.map(p => ({ label: p.name, description: String(p.price), value: p.name })));
   await channel.send({
@@ -689,13 +878,14 @@ async function handleProductSelect(interaction) {
   const product = session.panel.products.find(p => p.name === interaction.values[0]);
   session.selectedProduct = product.name;
   session.totalDisplay = product.price;
+  const parsed = parseFloat(String(product.price).replace(/[^0-9.]/g, ''));
+  session.totalUSD = isNaN(parsed) ? null : parsed;
   await interaction.update({
     embeds: [new EmbedBuilder().setDescription(t.selectedProduct(product.name, product.price)).setColor(0x84CC16)],
     components: []
   });
   syncTicket(session);
-  session.phase = 'payment-select';
-  await askPaymentSelect(interaction.channel, session);
+  await proceedToCouponOrPayment(interaction.channel, session);
 }
 
 // ─── PAYMENT ───────────────────────────────────────────────────────────────────
@@ -785,6 +975,7 @@ async function notifyAdmin(session) {
       { name: t.ticket,  value: `<#${session.channelId}>`, inline: true },
       { name: t.payment, value: PAYMENT_LABELS[session.paymentMethod]?.label || session.paymentMethod || 'N/A', inline: true },
       ...(session.totalDisplay ? [{ name: t.total, value: session.totalDisplay, inline: true }] : []),
+      ...(session.appliedCoupon ? [{ name: 'Coupon', value: session.appliedCoupon, inline: true }] : []),
       ...(session.paymentReference ? [{ name: t.reference, value: session.paymentReference, inline: true }] : []),
       ...session.answers.map(a => ({ name: a.question.slice(0, 256), value: String(a.answer).slice(0, 1024), inline: true })),
       ...(session.paymentNote ? [{ name: t.note, value: session.paymentNote }] : []),
@@ -810,6 +1001,7 @@ async function handleAdminApprove(interaction) {
   });
   if (ticketChannel) {
     const approvedMsg = session?.config?.approvedMsg || t.approved();
+    await generateAndSendTranscript(ticketChannel, session, 'Approved');
     await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(0x84CC16).setTimestamp()] });
     if (session) { session.status = 'approved'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
@@ -826,6 +1018,7 @@ async function handleAdminReject(interaction) {
     components: []
   });
   if (ticketChannel) {
+    await generateAndSendTranscript(ticketChannel, session, 'Rejected');
     await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(t.rejected).setColor(0xef4444).setTimestamp()] });
     if (session) { session.status = 'rejected'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
@@ -839,6 +1032,7 @@ async function handleCloseTicket(interaction) {
   if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels))
     return interaction.reply({ content: t.staffOnly, flags: 64 });
   await interaction.reply({ content: t.closingIn5 });
+  await generateAndSendTranscript(interaction.channel, session, 'Closed');
   if (session) { session.status = 'closed'; syncTicket(session); }
   setTimeout(() => { interaction.channel.delete().catch(() => {}); sessions.delete(channelId); }, 5000);
 }

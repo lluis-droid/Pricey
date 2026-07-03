@@ -11,7 +11,7 @@
     --bg:#080810;--surface:#0f0f1a;--surface2:#161625;--surface3:#1c1c2e;
     --border:#1e1e35;--text:#f1f5f9;--muted:#64748b;
     --grad:linear-gradient(135deg,#8B5CF6,#3B82F6);
-    --red:#ef4444;--yellow:#f59e0b;
+    --red:#ef4444;--yellow:#f59e0b;--gold:#f59e0b;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
@@ -23,8 +23,7 @@
   }
   #loader.hidden{display:none;}
   .loader-tag-wrap{
-    position:relative;
-    width:80px;height:90px;
+    position:relative;width:80px;height:90px;
     display:flex;align-items:flex-start;justify-content:center;
     transform-origin:50% 0%;
     animation:loaderSwing 1.8s ease-in-out infinite;
@@ -36,33 +35,16 @@
     85% {transform:rotate(8deg);}
     100%{transform:rotate(-20deg);}
   }
-  .loader-tag-wrap img{
-    width:72px;
-    filter:drop-shadow(0 8px 32px #8B5CF680);
-  }
-  /* Hanging thread */
+  .loader-tag-wrap img{width:72px;filter:drop-shadow(0 8px 32px #8B5CF680);}
   .loader-tag-wrap::before{
-    content:'';
-    position:absolute;
-    top:-18px;left:50%;
-    transform:translateX(-50%);
-    width:2px;height:20px;
-    background:linear-gradient(to bottom,var(--border),#8B5CF680);
-    border-radius:2px;
+    content:'';position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+    width:2px;height:20px;background:linear-gradient(to bottom,var(--border),#8B5CF680);border-radius:2px;
   }
-  /* Nail/pin */
   .loader-tag-wrap::after{
-    content:'';
-    position:absolute;
-    top:-22px;left:50%;
-    transform:translateX(-50%);
-    width:8px;height:8px;
-    background:var(--purple);
-    border-radius:50%;
-    box-shadow:0 0 12px #8B5CF6;
+    content:'';position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+    width:8px;height:8px;background:var(--purple);border-radius:50%;box-shadow:0 0 12px #8B5CF6;
   }
-  #loader p{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.3px;font-family:'DM Sans',sans-serif;}
-  #loader-msg{transition:opacity .3s;}
+  #loader p{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.3px;}
 
   nav{background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
     padding:0 24px;height:56px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
@@ -85,30 +67,32 @@
 
   .layout{display:flex;flex:1;}
 
-  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);
+  .sidebar{width:206px;background:var(--surface);border-right:1px solid var(--border);
     padding:16px 0;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;}
-  .sidebar-section{font-size:10px;font-weight:700;color:var(--muted);
-    text-transform:uppercase;letter-spacing:1.5px;padding:8px 20px 6px;margin-top:8px;
-    font-family:'Syne',sans-serif;}
-  .sidebar-section:first-child{margin-top:0;}
-  .nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;
+  .nav-item{display:flex;align-items:center;gap:10px;padding:11px 18px;
     font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;
-    border-left:2px solid transparent;transition:all .15s;
-    background:none;border-right:none;border-top:none;border-bottom:none;
-    width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
-  .nav-item svg{width:15px;height:15px;flex-shrink:0;}
+    position:relative;transition:all .15s;
+    background:none;border:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;}
   .nav-item:hover{color:var(--text);background:var(--surface2);}
-  .nav-item.active{color:#a78bfa;background:rgba(139,92,246,0.1);border-left-color:var(--purple);}
+  .nav-item.active{color:#a78bfa;background:rgba(139,92,246,0.1);}
+  .nav-item.active::before{
+    content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;
+    background:var(--grad);border-radius:0 3px 3px 0;
+  }
   .nav-badge{margin-left:auto;background:var(--purple);color:white;font-size:10px;font-weight:700;
     padding:2px 7px;border-radius:100px;min-width:18px;text-align:center;}
+  .sidebar-footer{padding:14px 18px;margin-top:8px;border-top:1px solid var(--border);}
+  .sidebar-footer p{font-size:10.5px;color:var(--muted);line-height:1.6;}
 
-  .main{flex:1;padding:28px 32px;overflow-y:auto;max-width:1000px;}
+  .main{flex:1;padding:28px 32px;overflow-y:auto;max-width:1040px;}
   .page{display:none;animation:fadeUp .2s ease;}
   .page.active{display:block;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-  .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
-  .page-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+  .page-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;flex-wrap:wrap;}
+  .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;}
+  .page-sub{font-size:13px;color:var(--muted);margin-bottom:22px;max-width:640px;}
 
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;}
   .card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
@@ -142,10 +126,23 @@
 
   .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
   .stat{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;}
-  .stat-num{font-family:'Syne',sans-serif;font-size:30px;font-weight:900;letter-spacing:-1px;
+  .stat-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-1px;
     background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;
     font-family:'Syne',sans-serif;}
+
+  /* Segmented control for merged pages */
+  .segmented{display:inline-flex;background:var(--surface2);border:1px solid var(--border);
+    border-radius:10px;padding:3px;gap:2px;margin-bottom:20px;}
+  .segmented button{padding:7px 16px;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;
+    color:var(--muted);background:none;border:none;border-radius:7px;cursor:pointer;transition:all .15s;
+    display:flex;align-items:center;gap:6px;}
+  .segmented button svg{width:13px;height:13px;}
+  .segmented button.active{background:var(--grad);color:white;}
+  .segmented button:hover:not(.active){color:var(--text);}
+
+  .subview{display:none;}
+  .subview.active{display:block;}
 
   .panels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
   .panel-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;}
@@ -161,7 +158,7 @@
   .tag-blue{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.2);color:#60a5fa;}
   .tag-yellow{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);color:#fbbf24;}
   .tag-red{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);color:#f87171;}
-  .panel-actions{display:flex;gap:6px;}
+  .panel-actions{display:flex;gap:6px;flex-wrap:wrap;}
 
   .add-panel-card{background:transparent;border:2px dashed var(--border);border-radius:12px;
     padding:18px;min-height:160px;display:flex;flex-direction:column;
@@ -177,26 +174,21 @@
   .method-toggle:has(input:checked){border-color:var(--purple);background:rgba(139,92,246,0.08);}
   .method-toggle input{accent-color:var(--purple);}
 
-  /* === LANGUAGE PAGE === */
+  /* === LANGUAGE (now inline in Settings) === */
   .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   .lang-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;
-    padding:24px;cursor:pointer;transition:all .2s;text-align:center;}
+    padding:20px;cursor:pointer;transition:all .2s;text-align:center;}
   .lang-card:hover{border-color:var(--purple);}
   .lang-card.selected{border-color:var(--purple);background:rgba(139,92,246,0.08);}
-  .lang-card svg{width:32px;height:32px;color:#a78bfa;margin-bottom:10px;}
-  .lang-card h4{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+  .lang-card h4{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
   .lang-card p{font-size:12px;color:var(--muted);}
-  .lang-preview{background:var(--surface3);border:1px solid var(--border);border-radius:10px;
-    padding:16px;font-size:12px;color:var(--muted);margin-top:12px;line-height:1.8;}
-  .lang-preview strong{color:var(--text);}
 
-  /* === TICKETS PAGE === */
+  /* === TICKETS === */
   .tickets-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
   .tickets-toolbar select{background:var(--surface3);border:1px solid var(--border);
-    border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+    border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;}
   .tickets-toolbar input{background:var(--surface3);border:1px solid var(--border);
-    border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;
-    outline:none;flex:1;min-width:180px;}
+    border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;flex:1;min-width:180px;}
   .tickets-toolbar input:focus,.tickets-toolbar select:focus{border-color:var(--purple);}
 
   .ticket-list{display:flex;flex-direction:column;gap:10px;}
@@ -211,29 +203,32 @@
   .ticket-username{font-weight:700;font-size:14px;font-family:'Syne',sans-serif;}
   .ticket-meta{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ticket-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  .ticket-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;
-    font-family:'Syne',sans-serif;}
+  .ticket-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
   .status-pending{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;}
   .status-open{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;}
   .status-approved{background:rgba(132,204,22,0.15);border:1px solid rgba(132,204,22,0.3);color:var(--green);}
   .status-rejected{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;}
   .status-closed{background:rgba(100,116,139,0.15);border:1px solid rgba(100,116,139,0.3);color:var(--muted);}
+  .status-refunded{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:#fbbf24;}
 
-  /* === TICKET DETAIL MODAL === */
+  .priority-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .priority-low{background:var(--muted);}
+  .priority-normal{background:#60a5fa;}
+  .priority-high{background:#fbbf24;}
+  .priority-urgent{background:#f87171;}
+
+  /* === MODALS === */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;
     display:flex;align-items:stretch;justify-content:flex-end;
     opacity:0;pointer-events:none;transition:opacity .2s;}
   .modal-bg.open{opacity:1;pointer-events:all;}
-
-  /* Panel modal (centered) */
   .modal-bg.centered{align-items:center;justify-content:center;}
   .modal-bg.centered .modal-panel{width:100%;max-width:600px;max-height:88vh;border-radius:18px;animation:fadeUp .2s ease;}
 
   .modal-panel{
     background:var(--surface);border-left:1px solid var(--border);
     width:560px;max-width:95vw;height:100vh;overflow-y:auto;
-    display:flex;flex-direction:column;
-    animation:slideIn .25s ease;
+    display:flex;flex-direction:column;animation:slideIn .25s ease;
   }
   @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
   .modal-header{padding:24px 24px 16px;border-bottom:1px solid var(--border);
@@ -249,7 +244,6 @@
   .modal-footer-bar{padding:16px 24px;border-top:1px solid var(--border);
     display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;}
 
-  /* Create panel modal specific */
   .modal-create h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;}
   .modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
   .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;
@@ -264,7 +258,7 @@
     padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
   .info-row:last-child{border-bottom:none;}
   .info-row span:first-child{color:var(--muted);}
-  .info-row span:last-child{font-weight:600;}
+  .info-row span:last-child{font-weight:600;text-align:right;}
 
   .answers-list{display:flex;flex-direction:column;gap:8px;}
   .answer-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
@@ -284,15 +278,16 @@
   .reported-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
     color:#f87171;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);
     padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
+  .coupon-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+    color:var(--gold);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);
+    padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
 
-  /* Action controls */
-  .action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
   .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;
     border-bottom:1px solid var(--border);font-size:13px;}
   .toggle-row:last-child{border-bottom:none;}
   .toggle-label{display:flex;align-items:center;gap:8px;}
   .toggle-label svg{width:14px;height:14px;color:var(--muted);}
-  .toggle{position:relative;width:38px;height:20px;display:inline-block;}
+  .toggle{position:relative;width:38px;height:20px;display:inline-block;flex-shrink:0;}
   .toggle input{opacity:0;width:0;height:0;}
   .toggle-slider{position:absolute;inset:0;background:var(--surface3);border-radius:100px;
     cursor:pointer;transition:.2s;border:1px solid var(--border);}
@@ -303,33 +298,32 @@
 
   .menu-builder{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px;}
   .menu-builder textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
-    border-radius:7px;padding:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
-    outline:none;resize:vertical;min-height:60px;}
+    border-radius:7px;padding:10px;color:var(--text);font-size:13px;outline:none;resize:vertical;min-height:60px;}
   .menu-builder textarea:focus{border-color:var(--purple);}
   .menu-builder-footer{display:flex;gap:8px;margin-top:8px;}
 
-  /* Q items for panel modal */
   .q-item{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
-  .q-row{display:flex;gap:8px;margin-bottom:8px;}
-  .q-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-    padding:8px 10px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+  .q-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .q-input{flex:1;min-width:120px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+    padding:8px 10px;color:var(--text);font-size:13px;outline:none;}
   .q-input:focus{border-color:var(--purple);}
   .q-del{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);
-    color:#f87171;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;}
+    color:#f87171;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:700;flex-shrink:0;}
   .q-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
   .q-select{background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-    padding:6px 9px;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;}
+    padding:6px 9px;color:var(--text);font-size:12px;outline:none;}
   .q-check{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);cursor:pointer;}
   .q-check input{accent-color:var(--purple);}
   .q-num{width:62px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;
     padding:5px 8px;color:var(--text);font-size:12px;outline:none;}
 
+  .coupon-item{background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;margin-bottom:8px;}
+  .coupon-usage{font-size:11px;color:var(--muted);margin-top:6px;}
+
   .toast{position:fixed;bottom:24px;right:24px;z-index:999;
     background:var(--surface);border:1px solid var(--border);border-radius:10px;
-    padding:12px 18px;font-size:13px;font-weight:700;
-    display:flex;align-items:center;gap:8px;
-    transform:translateY(60px);opacity:0;transition:all .3s;
-    font-family:'Syne',sans-serif;}
+    padding:12px 18px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;
+    transform:translateY(60px);opacity:0;transition:all .3s;font-family:'Syne',sans-serif;}
   .toast.show{transform:translateY(0);opacity:1;}
   .toast.ok{border-color:var(--green);color:var(--green);}
   .toast.err{border-color:var(--red);color:#f87171;}
@@ -337,14 +331,24 @@
   .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
   .empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.4;}
   .empty-state p{font-size:14px;}
+
+  /* Revenue chart */
+  .chart-card-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .chart-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;
+    background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .chart-sub{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif;}
+  #revenue-chart svg text{fill:var(--muted);font-family:'DM Sans',sans-serif;}
+  .activity-list{display:flex;flex-direction:column;gap:8px;}
+  .activity-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
+  .activity-item:last-child{border-bottom:none;}
+  .activity-item .act-user{font-weight:700;flex-shrink:0;}
+  .activity-item .act-detail{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 </style>
 </head>
 <body>
 
 <div id="loader">
-  <div class="loader-tag-wrap">
-    <img src="/assets/logo-icon.png" alt="Pricey">
-  </div>
+  <div class="loader-tag-wrap"><img src="/assets/logo-icon.png" alt="Pricey"></div>
   <p id="loader-msg">Connecting to bot...</p>
 </div>
 
@@ -370,52 +374,38 @@
 
 <div class="layout">
   <aside class="sidebar">
-    <div class="sidebar-section">Overview</div>
     <button class="nav-item active" onclick="show('overview',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Overview
     </button>
-    <div class="sidebar-section">Panels & Tickets</div>
     <button class="nav-item" onclick="show('panels',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
-      Purchase Panels
+      Panels
     </button>
     <button class="nav-item" onclick="show('tickets',this)" id="nav-tickets">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
       Tickets
       <span class="nav-badge" id="tickets-badge" style="display:none">0</span>
     </button>
-    <div class="sidebar-section">Configuration</div>
-    <button class="nav-item" onclick="show('settings',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Bot Settings
-    </button>
     <button class="nav-item" onclick="show('payments',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-      Payment Methods
+      Payments
     </button>
-    <button class="nav-item" onclick="show('language',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      Language
+    <button class="nav-item" onclick="show('settings',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
     </button>
-    <div class="sidebar-section">Extras</div>
-    <button class="nav-item" onclick="show('donations',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-      Donations
-    </button>
-    <button class="nav-item" onclick="show('blacklist',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-      Blacklist
-      <span class="nav-badge" id="blacklist-badge" style="display:none">0</span>
-    </button>
+    <div class="sidebar-footer">
+      <p>5 secciones · el idioma del bot y las donaciones ahora viven dentro de Settings y Payments.</p>
+    </div>
   </aside>
 
   <main class="main">
 
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
-      <div class="page-title">Overview</div>
-      <div class="page-sub">Quick stats and bot status for this server.</div>
+      <div class="page-title-row"><div class="page-title">Overview</div></div>
+      <div class="page-sub">Estadísticas rápidas, ingresos recientes y estado del bot para este servidor.</div>
       <div class="stats-row">
         <div class="stat"><div class="stat-num" id="stat-panels">0</div><div class="stat-lbl">Panels</div></div>
         <div class="stat"><div class="stat-num" id="stat-tickets">0</div><div class="stat-lbl">Open Tickets</div></div>
@@ -426,25 +416,52 @@
         <div class="stat"><div class="stat-num" id="stat-rejected">0</div><div class="stat-lbl">Rejected</div></div>
         <div class="stat"><div class="stat-num" id="stat-reported">0</div><div class="stat-lbl">Reported Users</div></div>
       </div>
+
+      <div class="card">
+        <div class="chart-card-top">
+          <div>
+            <div class="chart-sub">Ingresos aprobados · últimos 14 días</div>
+            <div class="chart-value" id="revenue-total">$0.00</div>
+          </div>
+        </div>
+        <div id="revenue-chart"></div>
+        <p class="hint" id="revenue-hint">Se calcula a partir de los tickets aprobados. Los paneles de tipo "Producto fijo" solo cuentan si el precio empieza con $.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Actividad reciente
+        </div>
+        <div class="activity-list" id="activity-list">
+          <div class="empty-state" style="padding:20px"><p>Todavía no hay tickets.</p></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Quick Start
         </div>
         <ol style="font-size:13px;color:var(--muted);padding-left:18px;line-height:2.6;">
-          <li>Go to <strong style="color:#a78bfa">Bot Settings</strong> — set ticket category, log channel and staff role.</li>
-          <li>Go to <strong style="color:#a78bfa">Payment Methods</strong> — add your accounts for each method.</li>
-          <li>Go to <strong style="color:#a78bfa">Language</strong> — choose English or Spanish for the bot.</li>
-          <li>Go to <strong style="color:#a78bfa">Purchase Panels</strong> — create your first panel and publish it.</li>
-          <li>Users click the button in Discord to open a purchase ticket automatically.</li>
+          <li>Ve a <strong style="color:#a78bfa">Settings</strong> — categoría de tickets, canal de logs, staff e idioma del bot.</li>
+          <li>Ve a <strong style="color:#a78bfa">Payments</strong> — cuentas para ventas y, si quieres, activa donaciones.</li>
+          <li>Ve a <strong style="color:#a78bfa">Panels</strong> — crea tu primer panel, agrega cupones si quieres, y publícalo.</li>
+          <li>Los usuarios abren un ticket automáticamente al hacer clic en el botón de Discord.</li>
+          <li>Revisa <strong style="color:#a78bfa">Tickets</strong> para aprobar/rechazar y ver la lista negra.</li>
         </ol>
       </div>
     </div>
 
     <!-- PANELS -->
     <div class="page" id="page-panels">
-      <div class="page-title">Purchase Panels</div>
-      <div class="page-sub">Create embeds with a button. When clicked, the bot opens a private ticket and guides the user through the purchase.</div>
+      <div class="page-title-row">
+        <div class="page-title">Purchase Panels</div>
+      </div>
+      <div class="page-sub">Crea embeds con un botón. Al hacer clic, el bot abre un ticket privado y guía al usuario en su compra. Puedes agregar cupones de descuento a cada panel.</div>
+      <div class="form-row" style="max-width:320px;">
+        <input type="text" id="panel-search" placeholder="Buscar panel..." oninput="renderPanels()">
+      </div>
       <div class="panels-grid" id="panels-grid">
         <div class="add-panel-card" onclick="openModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -453,39 +470,196 @@
       </div>
     </div>
 
-    <!-- TICKETS -->
+    <!-- TICKETS (+ blacklist merged in) -->
     <div class="page" id="page-tickets">
-      <div class="page-title">Tickets</div>
-      <div class="page-sub">View and manage all purchase tickets for this server. Click a ticket to see details and take actions.</div>
+      <div class="page-title-row"><div class="page-title">Tickets</div></div>
+      <div class="page-sub">Gestiona los tickets de compra y la lista negra de usuarios bloqueados, todo en un solo lugar.</div>
 
-      <div class="tickets-toolbar">
-        <select id="ticket-filter-status" onchange="renderTickets()">
-          <option value="">All statuses</option>
-          <option value="open">Open</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="closed">Closed</option>
-        </select>
-        <input type="text" id="ticket-search" placeholder="Search user or panel..." oninput="renderTickets()">
-        <button class="btn btn-ghost btn-sm" onclick="loadTickets()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          Refresh
+      <div class="segmented" id="tickets-seg">
+        <button class="active" onclick="showTicketsView('list',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
+          Tickets
+        </button>
+        <button onclick="showTicketsView('blacklist',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+          Lista negra
+          <span class="nav-badge" id="blacklist-badge" style="display:none">0</span>
         </button>
       </div>
 
-      <div class="ticket-list" id="ticket-list">
-        <div class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
-          <p>No tickets yet. They will appear here once users open purchase tickets.</p>
+      <div class="subview active" id="tickets-view-list">
+        <div class="tickets-toolbar">
+          <select id="ticket-filter-status" onchange="renderTickets()">
+            <option value="">Todos los estados</option>
+            <option value="open">Open</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="refunded">Refunded</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select id="ticket-sort" onchange="renderTickets()">
+            <option value="recent">Más recientes</option>
+            <option value="priority">Prioridad</option>
+          </select>
+          <input type="text" id="ticket-search" placeholder="Buscar usuario o panel..." oninput="renderTickets()">
+          <button class="btn btn-ghost btn-sm" onclick="loadTickets()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="exportTicketsCSV()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+        <div class="ticket-list" id="ticket-list">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
+            <p>No hay tickets todavía. Aparecerán aquí cuando los usuarios abran tickets de compra.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="subview" id="tickets-view-blacklist">
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Agregar usuario
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="bl-userid" placeholder="Discord User ID" style="flex:1;min-width:160px;">
+            <input type="text" id="bl-reason" placeholder="Razón (opcional)" style="flex:1;min-width:160px;">
+            <button class="btn btn-primary btn-sm" onclick="addBlacklist()">Agregar</button>
+          </div>
+          <p class="hint">Los usuarios en esta lista ya no pueden abrir tickets nuevos — el bot lo verifica automáticamente.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+            Usuarios bloqueados
+          </div>
+          <div id="blacklist-list"></div>
         </div>
       </div>
     </div>
 
-    <!-- SETTINGS -->
+    <!-- PAYMENTS (+ donations merged in) -->
+    <div class="page" id="page-payments">
+      <div class="page-title-row"><div class="page-title">Payments</div></div>
+      <div class="page-sub">Configura las cuentas para recibir ventas, y opcionalmente activa un panel de donaciones que reutiliza las mismas cuentas.</div>
+
+      <div class="segmented" id="payments-seg">
+        <button class="active" onclick="showPaymentsView('sales',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          Ventas
+        </button>
+        <button onclick="showPaymentsView('donations',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Donaciones
+        </button>
+      </div>
+
+      <div class="subview active" id="payments-view-sales">
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Métodos habilitados
+          </div>
+          <div class="methods-wrap" id="methods-wrap"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Datos de cuenta
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Completa tu info de cuenta para cada método habilitado. Esto se envía al comprador en el ticket.</p>
+          <div id="accounts-list"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar
+        </button>
+      </div>
+
+      <div class="subview" id="payments-view-donations">
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Configuración
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Activar donaciones
+            </div>
+            <label class="toggle"><input type="checkbox" id="don-enabled"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="form-grid" style="margin-top:14px;">
+            <div class="form-row">
+              <label>Meta (USD, opcional)</label>
+              <input type="number" id="don-goal" placeholder="ej. 500">
+            </div>
+            <div class="form-row">
+              <label>Donación mínima (USD)</label>
+              <input type="number" id="don-min" placeholder="ej. 1" value="1">
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Publicar en canal</label>
+            <select id="don-channel"><option value="">— Seleccionar —</option></select>
+          </div>
+          <div class="form-row">
+            <label>Mensaje del panel</label>
+            <textarea id="don-message" placeholder="¿Disfrutas el servidor? ¡Considera apoyarnos!"></textarea>
+          </div>
+        </div>
+
+        <div class="card" id="don-goal-card" style="display:none">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></svg>
+            Progreso
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted);font-weight:600;">
+            <span id="don-progress-label">$0 recaudados</span>
+            <span id="don-progress-goal">de $0 meta</span>
+          </div>
+          <div style="background:var(--surface3);border:1px solid var(--border);border-radius:100px;height:10px;overflow:hidden;">
+            <div id="don-progress-bar" style="height:100%;width:0%;background:var(--grad);border-radius:100px;transition:width .3s;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Métodos aceptados
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Reutiliza las cuentas configuradas en la pestaña Ventas.</p>
+          <div class="methods-wrap" id="don-methods-wrap"></div>
+        </div>
+
+        <div class="card">
+          <div class="toggle-row" style="border-bottom:none;">
+            <div class="toggle-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Mostrar muro público de donantes
+            </div>
+            <label class="toggle"><input type="checkbox" id="don-wall"><span class="toggle-slider"></span></label>
+          </div>
+          <p class="hint">Muestra usuarios y montos bajo el embed del panel. Desactívalo para donaciones anónimas.</p>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveDonations()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar y publicar
+        </button>
+      </div>
+    </div>
+
+    <!-- SETTINGS (+ language merged in) -->
     <div class="page" id="page-settings">
-      <div class="page-title">Bot Settings</div>
-      <div class="page-sub">Configure channels, roles and messages for this server.</div>
+      <div class="page-title-row"><div class="page-title">Settings</div></div>
+      <div class="page-sub">Canales, roles, mensajes e idioma del bot para este servidor.</div>
+
       <div class="card">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -495,20 +669,21 @@
           <div class="form-row">
             <label>Ticket Category</label>
             <select id="cfg-category"><option value="">— Select —</option></select>
-            <p class="hint">Ticket channels will be created here.</p>
+            <p class="hint">Los canales de ticket se crean aquí.</p>
           </div>
           <div class="form-row">
             <label>Staff / Admin Role</label>
             <select id="cfg-role"><option value="">— Select —</option></select>
-            <p class="hint">This role can see all ticket channels.</p>
+            <p class="hint">Este rol puede ver todos los canales de tickets.</p>
           </div>
         </div>
         <div class="form-row">
           <label>Log Channel</label>
           <select id="cfg-log"><option value="">— Select —</option></select>
-          <p class="hint">Payment notifications go here for manual verification.</p>
+          <p class="hint">Las notificaciones de pago y los transcripts llegan aquí.</p>
         </div>
       </div>
+
       <div class="card">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -523,182 +698,28 @@
           <input type="text" id="cfg-approved" placeholder="Your payment was confirmed. We will deliver your items shortly.">
         </div>
       </div>
-      <button class="btn btn-primary" onclick="saveSettings()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save Settings
-      </button>
-    </div>
-
-    <!-- PAYMENTS -->
-    <div class="page" id="page-payments">
-      <div class="page-title">Payment Methods</div>
-      <div class="page-sub">Enable methods and add your account info. This is shown to buyers when they choose a payment method.</div>
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Enabled Methods
-        </div>
-        <div class="methods-wrap" id="methods-wrap"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Account Details
-        </div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Fill in your account info for each enabled method. This is sent to the buyer in the ticket.</p>
-        <div id="accounts-list"></div>
-      </div>
-      <button class="btn btn-primary" onclick="saveSettings()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save
-      </button>
-    </div>
-
-    <!-- LANGUAGE -->
-    <div class="page" id="page-language">
-      <div class="page-title">Bot Language</div>
-      <div class="page-sub">Choose the language the bot uses when talking to users inside tickets on this server.</div>
 
       <div class="card">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          Select Language
+          Bot Language
         </div>
         <div class="lang-grid">
           <div class="lang-card selected" id="lang-en" onclick="selectLang('en')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
             <h4>English</h4>
             <p>All bot messages in English</p>
           </div>
           <div class="lang-card" id="lang-es" onclick="selectLang('es')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M2 12h20"/></svg>
             <h4>Español</h4>
             <p>Todos los mensajes del bot en español</p>
           </div>
         </div>
-
-        <div class="lang-preview" id="lang-preview">
-          <strong>Preview — Open Ticket:</strong><br>
-          "Welcome! Follow the steps below to complete your purchase."<br>
-          <strong>Select currency:</strong> "Select your currency / country..."<br>
-          <strong>Payment:</strong> "Choose your payment method:"<br>
-          <strong>Submitted:</strong> "Your order has been submitted and is pending verification."
-        </div>
       </div>
 
-      <button class="btn btn-primary" onclick="saveLang()">
+      <button class="btn btn-primary" onclick="saveSettings()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save Language
+        Save Settings
       </button>
-    </div>
-
-    <!-- DONATIONS -->
-    <div class="page" id="page-donations">
-      <div class="page-title">Donations</div>
-      <div class="page-sub">Let members support the server directly. When enabled, the bot can post a donation panel with a button that opens a ticket, same flow as purchases.</div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Setup
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            Enable donations
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="don-enabled">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="form-grid" style="margin-top:14px;">
-          <div class="form-row">
-            <label>Goal Amount (USD, optional)</label>
-            <input type="number" id="don-goal" placeholder="e.g. 500">
-          </div>
-          <div class="form-row">
-            <label>Minimum Donation (USD)</label>
-            <input type="number" id="don-min" placeholder="e.g. 1" value="1">
-          </div>
-        </div>
-        <div class="form-row">
-          <label>Publish to Channel</label>
-          <select id="don-channel"><option value="">— Select —</option></select>
-        </div>
-        <div class="form-row">
-          <label>Panel Message</label>
-          <textarea id="don-message" placeholder="Enjoying the server? Consider supporting us — every bit helps keep things running!"></textarea>
-        </div>
-      </div>
-
-      <div class="card" id="don-goal-card" style="display:none">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></svg>
-          Progress
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted);font-weight:600;">
-          <span id="don-progress-label">$0 raised</span>
-          <span id="don-progress-goal">of $0 goal</span>
-        </div>
-        <div style="background:var(--surface3);border:1px solid var(--border);border-radius:100px;height:10px;overflow:hidden;">
-          <div id="don-progress-bar" style="height:100%;width:0%;background:var(--grad);border-radius:100px;transition:width .3s;"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Accepted Methods
-        </div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Reuses the account details you set on the Payment Methods page.</p>
-        <div class="methods-wrap" id="don-methods-wrap"></div>
-      </div>
-
-      <div class="card">
-        <div class="toggle-row" style="border-bottom:none;">
-          <div class="toggle-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Show public donor wall
-          </div>
-          <label class="toggle">
-            <input type="checkbox" id="don-wall">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <p class="hint">Displays donor usernames and amounts under the panel embed. Turn off for anonymous donations.</p>
-      </div>
-
-      <button class="btn btn-primary" onclick="saveDonations()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save & Publish
-      </button>
-    </div>
-
-    <!-- BLACKLIST -->
-    <div class="page" id="page-blacklist">
-      <div class="page-title">Blacklist</div>
-      <div class="page-sub">Users on this list can't open new purchase or donation tickets. Add someone from a reported ticket, or manually below.</div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add User
-        </div>
-        <div style="display:flex;gap:8px;">
-          <input type="text" id="bl-userid" placeholder="Discord User ID" style="flex:1;">
-          <input type="text" id="bl-reason" placeholder="Reason (optional)" style="flex:1;">
-          <button class="btn btn-primary btn-sm" onclick="addBlacklist()">Add</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-          Blocked Users
-        </div>
-        <div id="blacklist-list"></div>
-      </div>
     </div>
 
   </main>
@@ -713,7 +734,7 @@
 <div class="modal-bg centered" id="panel-modal">
   <div class="modal-panel modal-create" style="padding:28px;overflow-y:auto;">
     <h3 id="modal-title">Create Panel</h3>
-    <div class="modal-sub">Configure the embed and the questions the bot will ask in the ticket.</div>
+    <div class="modal-sub">Configura el embed, las preguntas del ticket y los cupones de descuento.</div>
     <input type="hidden" id="edit-idx">
 
     <div class="form-grid">
@@ -787,6 +808,18 @@
 
     <div class="divider"></div>
 
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">🏷️ Cupones de descuento</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">El descuento automático solo aplica en paneles tipo "Game Currency". En Productos/Servicios el cupón queda anotado para que el staff lo verifique manualmente.</p>
+    <div id="coupons-list"></div>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="addCoupon()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Coupon
+    </button>
+
+    <div class="divider"></div>
+
     <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:4px;">Ticket Questions</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">The bot asks these one by one. Users can only type when prompted.</p>
     <div id="questions-list"></div>
@@ -806,7 +839,7 @@
 
 <script>
 const guildId = location.pathname.split('/')[2];
-let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], editIdx=null;
+let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], coupons=[], editIdx=null;
 let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[];
 
 const ALL_METHODS = {
@@ -824,19 +857,6 @@ const DEFAULT_QUESTIONS = [
   {text:'What is your username / in-game ID?', type:'text', required:true, maxLength:64},
   {text:'Which server / region are you in?', type:'text', required:false, maxLength:64},
 ];
-
-const LANG_PREVIEW = {
-  en: `<strong>Preview — Open Ticket:</strong><br>
-    "Welcome! Follow the steps below to complete your purchase."<br>
-    <strong>Select currency:</strong> "Select your currency / country..."<br>
-    <strong>Payment:</strong> "Choose your payment method:"<br>
-    <strong>Submitted:</strong> "Your order has been submitted and is pending verification."`,
-  es: `<strong>Vista previa — Abrir Ticket:</strong><br>
-    "¡Bienvenido! Sigue los pasos a continuación para completar tu compra."<br>
-    <strong>Seleccionar moneda:</strong> "Selecciona tu moneda / país..."<br>
-    <strong>Pago:</strong> "Elige tu método de pago:"<br>
-    <strong>Enviado:</strong> "Tu pedido fue enviado y está pendiente de verificación."`
-};
 
 async function retry(fn, max=8, delay=1500) {
   for (let i=1; i<=max; i++) {
@@ -912,7 +932,7 @@ function loadConfig(cfg) {
   if (cfg.approvedMsg) document.getElementById('cfg-approved').value = cfg.approvedMsg;
   savedAccounts = cfg.paymentAccounts || {};
   selectedLang = cfg.language || 'en';
-  selectLang(selectedLang, false);
+  selectLang(selectedLang);
   buildMethodsUI(cfg.paymentMethods || Object.keys(ALL_METHODS));
 
   const don = cfg.donation || {};
@@ -943,8 +963,8 @@ function updateDonationProgress(raised, goal) {
   if (!goal || goal <= 0) { card.style.display = 'none'; return; }
   card.style.display = '';
   const pct = Math.min(100, Math.round((raised / goal) * 100));
-  document.getElementById('don-progress-label').textContent = `$${raised} raised`;
-  document.getElementById('don-progress-goal').textContent = `of $${goal} goal`;
+  document.getElementById('don-progress-label').textContent = `$${raised} recaudados`;
+  document.getElementById('don-progress-goal').textContent = `de $${goal} meta`;
   document.getElementById('don-progress-bar').style.width = pct + '%';
 }
 
@@ -966,67 +986,31 @@ async function saveDonations() {
   if (donation.enabled && donation.channelId) {
     await fetch(`/api/donations/${guildId}/post`, {method:'POST'}).catch(()=>{});
   }
-  toast(donation.enabled ? 'Donation panel saved and published' : 'Donation settings saved');
-}
-
-/* ===== BLACKLIST ===== */
-async function saveBlacklist() {
-  await fetch(`/api/config/${guildId}`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ blacklist })
-  });
-}
-
-async function addBlacklist() {
-  const id = document.getElementById('bl-userid').value.trim();
-  if (!id) { toast('Enter a user ID','err'); return; }
-  const reason = document.getElementById('bl-reason').value.trim();
-  if (blacklist.some(b=>b.userId===id)) { toast('User already blacklisted','err'); return; }
-  blacklist.push({ userId:id, reason: reason || 'No reason provided', addedAt: Date.now() });
-  document.getElementById('bl-userid').value='';
-  document.getElementById('bl-reason').value='';
-  await saveBlacklist();
-  renderBlacklist();
-  toast('User blacklisted');
-}
-
-async function removeBlacklist(id) {
-  blacklist = blacklist.filter(b=>b.userId!==id);
-  await saveBlacklist();
-  renderBlacklist();
-  toast('User removed from blacklist');
-}
-
-function renderBlacklist() {
-  const el = document.getElementById('blacklist-list');
-  if (!el) return;
-  const badge = document.getElementById('blacklist-badge');
-  if (badge) {
-    if (blacklist.length > 0) { badge.textContent = blacklist.length; badge.style.display=''; }
-    else badge.style.display='none';
-  }
-  if (!blacklist.length) {
-    el.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-      <p>No blacklisted users.</p>
-    </div>`;
-    return;
-  }
-  el.innerHTML = blacklist.map(b => `
-    <div class="past-ticket-item" style="padding:12px;margin-bottom:8px;">
-      <span><strong style="color:var(--text)">${b.userId}</strong> &nbsp;·&nbsp; ${b.reason}</span>
-      <button class="q-del" onclick="removeBlacklist('${b.userId}')">Remove</button>
-    </div>
-  `).join('');
+  toast(donation.enabled ? 'Panel de donaciones guardado y publicado' : 'Configuración de donaciones guardada');
 }
 
 /* ===== NAVIGATION ===== */
 function show(id, btn) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.sidebar > .nav-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
   if (id === 'tickets') loadTickets();
+  if (id === 'overview') { renderRevenueChart(); renderActivity(); }
+}
+
+function showTicketsView(view, btn) {
+  document.querySelectorAll('#tickets-seg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tickets-view-list').classList.toggle('active', view==='list');
+  document.getElementById('tickets-view-blacklist').classList.toggle('active', view==='blacklist');
+}
+
+function showPaymentsView(view, btn) {
+  document.querySelectorAll('#payments-seg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('payments-view-sales').classList.toggle('active', view==='sales');
+  document.getElementById('payments-view-donations').classList.toggle('active', view==='donations');
 }
 
 /* ===== SETTINGS ===== */
@@ -1047,23 +1031,14 @@ async function saveSettings() {
       language: selectedLang,
     })
   });
-  toast('Settings saved');
+  toast('Configuración guardada');
 }
 
 /* ===== LANGUAGE ===== */
-function selectLang(lang, updatePreview=true) {
+function selectLang(lang) {
   selectedLang = lang;
   document.getElementById('lang-en').classList.toggle('selected', lang==='en');
   document.getElementById('lang-es').classList.toggle('selected', lang==='es');
-  if (updatePreview) document.getElementById('lang-preview').innerHTML = LANG_PREVIEW[lang];
-}
-
-async function saveLang() {
-  await fetch(`/api/config/${guildId}`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ language: selectedLang })
-  });
-  toast('Language saved — bot will use ' + (selectedLang==='en' ? 'English' : 'Spanish'));
 }
 
 /* ===== PAYMENTS ===== */
@@ -1089,13 +1064,63 @@ function updateAccounts() {
   `).join('');
 }
 
+/* ===== BLACKLIST ===== */
+async function saveBlacklist() {
+  await fetch(`/api/config/${guildId}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ blacklist })
+  });
+}
+
+async function addBlacklist() {
+  const id = document.getElementById('bl-userid').value.trim();
+  if (!id) { toast('Ingresa un user ID','err'); return; }
+  const reason = document.getElementById('bl-reason').value.trim();
+  if (blacklist.some(b=>b.userId===id)) { toast('Usuario ya está en la lista negra','err'); return; }
+  blacklist.push({ userId:id, reason: reason || 'Sin razón especificada', addedAt: Date.now() });
+  document.getElementById('bl-userid').value='';
+  document.getElementById('bl-reason').value='';
+  await saveBlacklist();
+  renderBlacklist();
+  toast('Usuario bloqueado');
+}
+
+async function removeBlacklist(id) {
+  blacklist = blacklist.filter(b=>b.userId!==id);
+  await saveBlacklist();
+  renderBlacklist();
+  toast('Usuario removido de la lista negra');
+}
+
+function renderBlacklist() {
+  const el = document.getElementById('blacklist-list');
+  if (!el) return;
+  const badge = document.getElementById('blacklist-badge');
+  if (badge) {
+    if (blacklist.length > 0) { badge.textContent = blacklist.length; badge.style.display=''; }
+    else badge.style.display='none';
+  }
+  if (!blacklist.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+      <p>No hay usuarios bloqueados.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = blacklist.map(b => `
+    <div class="past-ticket-item" style="padding:12px;margin-bottom:8px;">
+      <span><strong style="color:var(--text)">${b.userId}</strong> &nbsp;·&nbsp; ${b.reason}</span>
+      <button class="q-del" onclick="removeBlacklist('${b.userId}')">Quitar</button>
+    </div>
+  `).join('');
+}
+
 /* ===== TICKETS ===== */
 async function loadTickets() {
   try {
     const data = await fetch(`/api/tickets/${guildId}`).then(r=>r.json());
     tickets = Array.isArray(data) ? data : [];
     const pending = tickets.filter(t=>t.status==='pending').length;
-    const open = tickets.filter(t=>t.status==='open'||t.status==='pending').length;
     document.getElementById('stat-tickets').textContent = tickets.filter(t=>t.status==='open').length;
     document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-approved').textContent = tickets.filter(t=>t.status==='approved').length;
@@ -1106,12 +1131,15 @@ async function loadTickets() {
     else badge.style.display='none';
     renderTickets();
     renderBlacklist();
+    renderRevenueChart();
+    renderActivity();
   } catch {}
 }
 
 function renderTickets() {
   const filter = document.getElementById('ticket-filter-status')?.value || '';
   const search = document.getElementById('ticket-search')?.value?.toLowerCase() || '';
+  const sortBy = document.getElementById('ticket-sort')?.value || 'recent';
   const list = document.getElementById('ticket-list');
   if (!list) return;
 
@@ -1121,10 +1149,17 @@ function renderTickets() {
     return true;
   });
 
+  if (sortBy === 'priority') {
+    const order = { urgent:0, high:1, normal:2, low:3 };
+    filtered = filtered.slice().sort((a,b)=>(order[a.priority||'normal']??2)-(order[b.priority||'normal']??2));
+  } else {
+    filtered = filtered.slice().sort((a,b)=>(b.openedAt||0)-(a.openedAt||0));
+  }
+
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
-      <p>No tickets match your filters.</p>
+      <p>Ningún ticket coincide con tus filtros.</p>
     </div>`;
     return;
   }
@@ -1132,13 +1167,15 @@ function renderTickets() {
   list.innerHTML = filtered.map(t => {
     const initials = (t.username||'?').slice(0,2).toUpperCase();
     const statusClass = `status-${t.status||'open'}`;
-    const statusLabel = {open:'Open', pending:'Pending', approved:'Approved', rejected:'Rejected', closed:'Closed'}[t.status]||t.status;
+    const statusLabel = {open:'Open', pending:'Pending', approved:'Approved', rejected:'Rejected', closed:'Closed', refunded:'Refunded'}[t.status]||t.status;
     const reportedHtml = t.reported ? `<span class="reported-badge"><svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>Reported</span>` : '';
+    const couponHtml = t.appliedCoupon ? `<span class="coupon-badge">🏷️ ${t.appliedCoupon}</span>` : '';
     return `<div class="ticket-row" onclick="openTicketDetail('${t.channelId}')">
       <div class="ticket-row-top">
+        <span class="priority-dot priority-${t.priority||'normal'}" title="Priority: ${t.priority||'normal'}"></span>
         <div class="ticket-avatar">${initials}</div>
         <div class="ticket-info">
-          <div class="ticket-username">${t.username||'Unknown'} ${reportedHtml}</div>
+          <div class="ticket-username">${t.username||'Unknown'} ${reportedHtml} ${couponHtml}</div>
           <div class="ticket-meta">${t.panel?.title||'—'} &nbsp;·&nbsp; ${t.paymentMethod||'—'} &nbsp;·&nbsp; ${t.totalDisplay||''}</div>
         </div>
         <div class="ticket-right">
@@ -1155,16 +1192,17 @@ function openTicketDetail(channelId) {
   if (!t) return;
   const modal = document.getElementById('ticket-modal');
   const panel = document.getElementById('ticket-panel-content');
-  const statusLabel = {open:'Open', pending:'Pending', approved:'Approved', rejected:'Rejected', closed:'Closed'}[t.status]||t.status;
+  const statusLabel = {open:'Open', pending:'Pending', approved:'Approved', rejected:'Rejected', closed:'Closed', refunded:'Refunded'}[t.status]||t.status;
   const statusClass = `status-${t.status||'open'}`;
 
   panel.innerHTML = `
     <div class="modal-header">
       <div class="modal-header-info">
         <h3>${t.username||'Unknown'}</h3>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;">
           <span class="ticket-status ${statusClass}">${statusLabel}</span>
           ${t.reported ? `<span class="reported-badge"><svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>Reported</span>` : ''}
+          ${t.appliedCoupon ? `<span class="coupon-badge">🏷️ ${t.appliedCoupon}</span>` : ''}
         </div>
       </div>
       <button class="modal-close" onclick="closeTicketModal()">
@@ -1178,7 +1216,8 @@ function openTicketDetail(channelId) {
         <div class="info-row"><span>Panel</span><span>${t.panel?.title||'—'}</span></div>
         <div class="info-row"><span>Product</span><span>${t.selectedProduct||'—'}</span></div>
         <div class="info-row"><span>Payment</span><span>${t.paymentMethod||'—'}</span></div>
-        <div class="info-row"><span>Total</span><span>${t.totalDisplay||'—'}</span></div>
+        <div class="info-row"><span>Total</span><span>${t.totalDisplay||'—'}${t.totalUSD!=null?` (≈$${Number(t.totalUSD).toFixed(2)} USD)`:''}</span></div>
+        ${t.appliedCoupon ? `<div class="info-row"><span>Coupon</span><span>${t.appliedCoupon}</span></div>` : ''}
         <div class="info-row"><span>Reference</span><span>${t.paymentReference||'—'}</span></div>
         <div class="info-row"><span>Channel</span><span>#ticket-${(t.username||'').toLowerCase()}</span></div>
         ${t.paymentProof?.imageUrl ? `<div class="info-row"><span>Screenshot</span><span><a href="${t.paymentProof.imageUrl}" target="_blank" style="color:#a78bfa;text-decoration:none;">View image</a></span></div>` : ''}
@@ -1253,12 +1292,12 @@ function openTicketDetail(channelId) {
 
       <div class="section-block">
         <div class="section-block-title">Internal Staff Note</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Only visible to staff on the dashboard — never sent to the buyer.</p>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Solo visible para staff en el dashboard — nunca se le envía al comprador.</p>
         ${t.staffNotes?.length ? `<div class="answers-list" style="margin-bottom:10px;">
           ${t.staffNotes.map(n=>`<div class="answer-item"><div class="answer-q">${n.author||'Staff'}</div><div class="answer-a">${n.text}</div></div>`).join('')}
         </div>` : ''}
         <div class="menu-builder">
-          <textarea id="note-text" placeholder="Add an internal note about this ticket..."></textarea>
+          <textarea id="note-text" placeholder="Agrega una nota interna sobre este ticket..."></textarea>
           <div class="menu-builder-footer">
             <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','add-note',document.getElementById('note-text').value)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -1271,7 +1310,7 @@ function openTicketDetail(channelId) {
       <div class="section-block">
         <div class="section-block-title">Send Menu / Message to User</div>
         <div class="menu-builder">
-          <textarea id="menu-text" placeholder="Type a message or menu to send in the ticket channel..."></textarea>
+          <textarea id="menu-text" placeholder="Escribe un mensaje o menú para enviar en el canal del ticket..."></textarea>
           <div class="menu-builder-footer">
             <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','send-message',document.getElementById('menu-text').value)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -1299,13 +1338,13 @@ function openTicketDetail(channelId) {
           Mark Refunded
         </button>
       ` : ''}
+      <button class="btn btn-ghost btn-sm" onclick="downloadTranscript('${t.channelId}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Transcript
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','clear-chat')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         Clear Chat
-      </button>
-      <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','new-ticket')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New Ticket
       </button>
       <button class="btn btn-danger btn-sm" onclick="ticketAction('${t.channelId}','close')" style="margin-left:auto;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -1333,8 +1372,7 @@ async function ticketAction(channelId, action, value) {
       approve:'Order approved', reject:'Order rejected', close:'Ticket closed',
       'clear-chat':'Chat cleared', 'send-message':'Message sent',
       'set-typing':'Permission updated', 'set-reported':'Report status updated',
-      'new-ticket':'New ticket created', 'set-priority':'Priority updated',
-      'add-note':'Note added', 'refund':'Marked as refunded',
+      'set-priority':'Priority updated', 'add-note':'Note added', 'refund':'Marked as refunded',
     }[action] || 'Done');
   } catch { toast('Action failed','err'); }
 }
@@ -1353,11 +1391,113 @@ async function ticketToggleBlacklist(channelId, userId, checked) {
   toast(checked ? 'User blacklisted' : 'User removed from blacklist');
 }
 
+function downloadTranscript(channelId) {
+  const t = tickets.find(x=>x.channelId===channelId);
+  if (!t?.transcript?.length) { toast('Sin transcript disponible para este ticket todavía','err'); return; }
+  const text = t.transcript.map(m=>`[${new Date(m.timestamp).toLocaleString()}] ${m.author}: ${m.content}`).join('\n');
+  const blob = new Blob([text],{type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `transcript-${(t.username||channelId).replace(/[^a-z0-9]/gi,'_')}.txt`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportTicketsCSV() {
+  if (!tickets.length) { toast('No hay tickets para exportar','err'); return; }
+  const rows = [['Usuario','Panel','Producto','Pago','Total','TotalUSD','Cupon','Estado','Reportado','Prioridad','Abierto']];
+  tickets.forEach(t=>rows.push([
+    t.username||'', t.panel?.title||'', t.selectedProduct||'', t.paymentMethod||'',
+    t.totalDisplay||'', t.totalUSD??'', t.appliedCoupon||'', t.status||'',
+    t.reported?'sí':'no', t.priority||'normal', t.openedAt?new Date(t.openedAt).toISOString():''
+  ]));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `tickets-${guildId}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('CSV exportado');
+}
+
+/* ===== OVERVIEW: revenue chart + activity ===== */
+function computeRevenueSeries(days) {
+  const buckets = [];
+  const keys = {};
+  const now = new Date();
+  for (let i=days-1;i>=0;i--) {
+    const d = new Date(now); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    keys[key] = buckets.length;
+    buckets.push({ date:key, total:0 });
+  }
+  tickets.forEach(t => {
+    if (t.status !== 'approved' || t.totalUSD == null) return;
+    const key = new Date(t.openedAt || Date.now()).toISOString().slice(0,10);
+    if (key in keys) buckets[keys[key]].total += Number(t.totalUSD) || 0;
+  });
+  return buckets;
+}
+
+function renderRevenueChart() {
+  const series = computeRevenueSeries(14);
+  const max = Math.max(1, ...series.map(s=>s.total));
+  const w = 640, h = 150, gap = 6;
+  const barW = (w / series.length) - gap;
+  const bars = series.map((s,i)=>{
+    const barH = Math.max(2, (s.total/max) * (h-28));
+    const x = i*(w/series.length) + gap/2;
+    const y = h - barH - 18;
+    const label = new Date(s.date+'T00:00:00').toLocaleDateString(undefined,{day:'2-digit',month:'2-digit'});
+    const showLabel = series.length<=14 ? true : i%2===0;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="3" fill="url(#revGrad)"><title>$${s.total.toFixed(2)} — ${label}</title></rect>
+      ${showLabel ? `<text x="${(x+barW/2).toFixed(1)}" y="${h-4}" text-anchor="middle" font-size="9">${label}</text>` : ''}`;
+  }).join('');
+  const totalRevenue = series.reduce((a,s)=>a+s.total,0);
+  const totalEl = document.getElementById('revenue-total');
+  if (totalEl) totalEl.textContent = `$${totalRevenue.toFixed(2)}`;
+  const chartEl = document.getElementById('revenue-chart');
+  if (!chartEl) return;
+  if (totalRevenue === 0) {
+    chartEl.innerHTML = `<div class="empty-state" style="padding:24px"><p>Todavía no hay ventas aprobadas con monto registrado.</p></div>`;
+    return;
+  }
+  chartEl.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:150px;">
+      <defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#3B82F6"/>
+      </linearGradient></defs>
+      ${bars}
+    </svg>`;
+}
+
+function renderActivity() {
+  const el = document.getElementById('activity-list');
+  if (!el) return;
+  const recent = tickets.slice().sort((a,b)=>(b.openedAt||0)-(a.openedAt||0)).slice(0,8);
+  if (!recent.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:20px"><p>Todavía no hay tickets.</p></div>`;
+    return;
+  }
+  const statusIcon = { approved:'✅', rejected:'❌', pending:'🕓', open:'💬', closed:'🔒', refunded:'↩️' };
+  el.innerHTML = recent.map(t => `
+    <div class="activity-item">
+      <span>${statusIcon[t.status]||'•'}</span>
+      <span class="act-user">${t.username||'Unknown'}</span>
+      <span class="act-detail">${t.panel?.title||''} ${t.totalDisplay?('· '+t.totalDisplay):''} ${t.appliedCoupon?('· 🏷️ '+t.appliedCoupon):''}</span>
+      <span style="color:var(--muted);flex-shrink:0;">${t.openedAt?new Date(t.openedAt).toLocaleDateString():''}</span>
+    </div>
+  `).join('');
+}
+
 /* ===== PANELS ===== */
 function renderPanels() {
   const grid = document.getElementById('panels-grid');
+  const search = document.getElementById('panel-search')?.value?.toLowerCase() || '';
   const typeTag = {currency:'tag-green', product:'tag-blue', service:'tag-purple'};
-  let html = panels.map((p,i)=>`
+  const visible = panels.map((p,i)=>({p,i})).filter(({p})=>!search || p.title?.toLowerCase().includes(search));
+  let html = visible.map(({p,i})=>`
     <div class="panel-card">
       <div class="panel-card-top">
         <h4>${p.title}</h4>
@@ -1367,10 +1507,12 @@ function renderPanels() {
       <div class="panel-meta">
         ${p.questions?.length ? `<span class="tag tag-purple">${p.questions.length} questions</span>` : ''}
         ${p.type==='currency' ? `<span class="tag tag-green">+${p.margin||15}% margin</span>` : ''}
+        ${p.coupons?.length ? `<span class="tag tag-yellow">🏷️ ${p.coupons.length} coupon${p.coupons.length>1?'s':''}</span>` : ''}
       </div>
       <div class="panel-actions">
         <button class="btn btn-ghost btn-sm" onclick="editPanel(${i})">Edit</button>
         <button class="btn btn-ghost btn-sm" onclick="repost(${i})">Repost</button>
+        <button class="btn btn-ghost btn-sm" onclick="duplicatePanel(${i})">Duplicate</button>
         <button class="btn btn-danger btn-sm" onclick="deletePanel(${i})">Delete</button>
       </div>
     </div>
@@ -1386,6 +1528,7 @@ function openModal() {
   editIdx = null;
   questions = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
   products = [{name:'',price:''}];
+  coupons = [];
   ['pm-title','pm-desc','pm-banner','pm-thumb'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pm-color').value='#8B5CF6';
   document.getElementById('pm-type').value='currency';
@@ -1394,7 +1537,7 @@ function openModal() {
   document.getElementById('pm-margin').value='15';
   document.getElementById('modal-title').textContent='Create Panel';
   document.getElementById('modal-save').textContent='Create & Publish';
-  renderQuestions(); renderProducts(); onTypeChange();
+  renderQuestions(); renderProducts(); renderCoupons(); onTypeChange();
   document.getElementById('panel-modal').classList.add('open');
 }
 
@@ -1403,6 +1546,7 @@ function editPanel(idx) {
   const p = panels[idx];
   questions = JSON.parse(JSON.stringify(p.questions || DEFAULT_QUESTIONS));
   products = JSON.parse(JSON.stringify(p.products || [{name:'',price:''}]));
+  coupons = JSON.parse(JSON.stringify(p.coupons || []));
   document.getElementById('pm-title').value = p.title||'';
   document.getElementById('pm-desc').value = p.description||'';
   document.getElementById('pm-color').value = p.color||'#8B5CF6';
@@ -1415,13 +1559,12 @@ function editPanel(idx) {
   if (p.channelId) document.getElementById('pm-channel').value = p.channelId;
   document.getElementById('modal-title').textContent='Edit Panel';
   document.getElementById('modal-save').textContent='Save Changes';
-  renderQuestions(); renderProducts(); onTypeChange();
+  renderQuestions(); renderProducts(); renderCoupons(); onTypeChange();
   document.getElementById('panel-modal').classList.add('open');
 }
 
 function closePanelModal() { document.getElementById('panel-modal').classList.remove('open'); }
 
-// close modals on backdrop click
 document.getElementById('ticket-modal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeTicketModal();
 });
@@ -1470,10 +1613,39 @@ function renderProducts() {
   document.getElementById('product-list').innerHTML = products.map((p,i)=>`
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input type="text" placeholder="Product name" value="${p.name}" oninput="products[${i}].name=this.value"
-        style="flex:2;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;">
+        style="flex:2;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;">
       <input type="text" placeholder="Price (e.g. $5 USD)" value="${p.price}" oninput="products[${i}].price=this.value"
-        style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;">
+        style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;">
       <button onclick="products.splice(${i},1);renderProducts()" class="q-del">x</button>
+    </div>
+  `).join('');
+}
+
+function addCoupon() {
+  coupons.push({code:'',type:'percent',value:10,maxUses:'',uses:0,active:true});
+  renderCoupons();
+}
+
+function renderCoupons() {
+  const el = document.getElementById('coupons-list');
+  if (!coupons.length) {
+    el.innerHTML = `<p style="font-size:12px;color:var(--muted);">Sin cupones todavía. Agrega uno si quieres ofrecer un descuento por código.</p>`;
+    return;
+  }
+  el.innerHTML = coupons.map((c,i)=>`
+    <div class="coupon-item">
+      <div class="q-row">
+        <input class="q-input" style="max-width:130px;text-transform:uppercase" placeholder="CODIGO" value="${c.code}" oninput="coupons[${i}].code=this.value.toUpperCase()">
+        <select class="q-select" onchange="coupons[${i}].type=this.value">
+          <option value="percent" ${c.type==='percent'?'selected':''}>% descuento</option>
+          <option value="fixed" ${c.type==='fixed'?'selected':''}>$ fijo (USD)</option>
+        </select>
+        <input class="q-num" type="number" value="${c.value}" oninput="coupons[${i}].value=+this.value" title="Valor" style="width:70px">
+        <input class="q-num" type="number" placeholder="Usos máx" value="${c.maxUses||''}" oninput="coupons[${i}].maxUses=this.value?+this.value:null" style="width:80px">
+        <label class="q-check"><input type="checkbox" ${c.active!==false?'checked':''} onchange="coupons[${i}].active=this.checked"> Activo</label>
+        <button class="q-del" onclick="coupons.splice(${i},1);renderCoupons()">x</button>
+      </div>
+      <div class="coupon-usage">${c.uses||0} usos${c.maxUses?` de ${c.maxUses}`:' (sin límite)'}</div>
     </div>
   `).join('');
 }
@@ -1490,6 +1662,7 @@ async function savePanel() {
     bannerUrl: document.getElementById('pm-banner').value.trim()||null,
     thumbnailUrl: document.getElementById('pm-thumb').value.trim()||null,
     questions: questions.filter(q=>q.text.trim()),
+    coupons: coupons.filter(c=>c.code.trim()),
   };
   if (type==='currency') {
     panel.baseAmount = parseFloat(document.getElementById('pm-base-amount').value)||100;
@@ -1515,6 +1688,17 @@ async function savePanel() {
 async function repost(idx) {
   await fetch(`/api/panels/${guildId}/post`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({panelIndex:idx})});
   toast('Panel reposted');
+}
+
+async function duplicatePanel(idx) {
+  const clone = JSON.parse(JSON.stringify(panels[idx]));
+  clone.title = clone.title + ' (copia)';
+  if (clone.coupons) clone.coupons.forEach(c=>c.uses=0);
+  panels.push(clone);
+  await fetch(`/api/panels/${guildId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(panels)});
+  renderPanels();
+  document.getElementById('stat-panels').textContent = panels.length;
+  toast('Panel duplicado — recuerda revisar el canal y publicarlo');
 }
 
 async function deletePanel(idx) {
