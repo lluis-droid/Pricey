@@ -396,7 +396,7 @@
       Settings
     </button>
     <div class="sidebar-footer">
-      <p>5 secciones · el idioma del bot y las donaciones ahora viven dentro de Settings y Payments.</p>
+      <p>5 sections · bot language and donations now live inside Settings and Payments.</p>
     </div>
   </aside>
 
@@ -405,7 +405,7 @@
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
       <div class="page-title-row"><div class="page-title">Overview</div></div>
-      <div class="page-sub">Estadísticas rápidas, ingresos recientes y estado del bot para este servidor.</div>
+      <div class="page-sub">Quick stats, recent revenue, and bot status for this server.</div>
       <div class="stats-row">
         <div class="stat"><div class="stat-num" id="stat-panels">0</div><div class="stat-lbl">Panels</div></div>
         <div class="stat"><div class="stat-num" id="stat-tickets">0</div><div class="stat-lbl">Open Tickets</div></div>
@@ -420,21 +420,21 @@
       <div class="card">
         <div class="chart-card-top">
           <div>
-            <div class="chart-sub">Ingresos aprobados · últimos 14 días</div>
+            <div class="chart-sub">Approved revenue · last 14 days</div>
             <div class="chart-value" id="revenue-total">$0.00</div>
           </div>
         </div>
         <div id="revenue-chart"></div>
-        <p class="hint" id="revenue-hint">Se calcula a partir de los tickets aprobados. Los paneles de tipo "Producto fijo" solo cuentan si el precio empieza con $.</p>
+        <p class="hint" id="revenue-hint">Calculated from approved tickets. "Fixed Product" panels only count if the price starts with $.</p>
       </div>
 
       <div class="card">
         <div class="card-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-          Actividad reciente
+          Recent Activity
         </div>
         <div class="activity-list" id="activity-list">
-          <div class="empty-state" style="padding:20px"><p>Todavía no hay tickets.</p></div>
+          <div class="empty-state" style="padding:20px"><p>No tickets yet.</p></div>
         </div>
       </div>
 
@@ -444,11 +444,11 @@
           Quick Start
         </div>
         <ol style="font-size:13px;color:var(--muted);padding-left:18px;line-height:2.6;">
-          <li>Ve a <strong style="color:#a78bfa">Settings</strong> — categoría de tickets, canal de logs, staff e idioma del bot.</li>
-          <li>Ve a <strong style="color:#a78bfa">Payments</strong> — cuentas para ventas y, si quieres, activa donaciones.</li>
-          <li>Ve a <strong style="color:#a78bfa">Panels</strong> — crea tu primer panel, agrega cupones si quieres, y publícalo.</li>
-          <li>Los usuarios abren un ticket automáticamente al hacer clic en el botón de Discord.</li>
-          <li>Revisa <strong style="color:#a78bfa">Tickets</strong> para aprobar/rechazar y ver la lista negra.</li>
+          <li>Go to <strong style="color:#a78bfa">Settings</strong> — ticket category, log channel, staff role, and bot language.</li>
+          <li>Go to <strong style="color:#a78bfa">Payments</strong> — accounts for sales and, if you want, enable donations.</li>
+          <li>Go to <strong style="color:#a78bfa">Panels</strong> — create your first panel, add coupons if you like, and post it.</li>
+          <li>Users automatically open a ticket by clicking the Discord button.</li>
+          <li>Check <strong style="color:#a78bfa">Tickets</strong> to approve/reject and view the blacklist.</li>
         </ol>
       </div>
     </div>
@@ -458,9 +458,9 @@
       <div class="page-title-row">
         <div class="page-title">Purchase Panels</div>
       </div>
-      <div class="page-sub">Crea embeds con un botón. Al hacer clic, el bot abre un ticket privado y guía al usuario en su compra. Puedes agregar cupones de descuento a cada panel.</div>
+      <div class="page-sub">Create embeds with a button. When clicked, the bot opens a private ticket and guides the user through their purchase. You can add discount coupons to each panel.</div>
       <div class="form-row" style="max-width:320px;">
-        <input type="text" id="panel-search" placeholder="Buscar panel..." oninput="renderPanels()">
+        <input type="text" id="panel-search" placeholder="Search panel..." oninput="renderPanels()">
       </div>
       <div class="panels-grid" id="panels-grid">
         <div class="add-panel-card" onclick="openModal()">
@@ -499,23 +499,23 @@
             <option value="closed">Closed</option>
           </select>
           <select id="ticket-sort" onchange="renderTickets()">
-            <option value="recent">Más recientes</option>
-            <option value="priority">Prioridad</option>
+            <option value="recent">Most recent</option>
+            <option value="priority">Priority</option>
           </select>
-          <input type="text" id="ticket-search" placeholder="Buscar usuario o panel..." oninput="renderTickets()">
+          <input type="text" id="ticket-search" placeholder="Search user or panel..." oninput="renderTickets()">
           <button class="btn btn-ghost btn-sm" onclick="loadTickets()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Refresh
           </button>
           <button class="btn btn-ghost btn-sm" onclick="exportTicketsCSV()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Exportar CSV
+            Export CSV
           </button>
         </div>
         <div class="ticket-list" id="ticket-list">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
-            <p>No hay tickets todavía. Aparecerán aquí cuando los usuarios abran tickets de compra.</p>
+            <p>No tickets yet. They will appear here when users open purchase tickets.</p>
           </div>
         </div>
       </div>
@@ -524,19 +524,19 @@
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Agregar usuario
+            Add user
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" id="bl-userid" placeholder="Discord User ID" style="flex:1;min-width:160px;">
-            <input type="text" id="bl-reason" placeholder="Razón (opcional)" style="flex:1;min-width:160px;">
-            <button class="btn btn-primary btn-sm" onclick="addBlacklist()">Agregar</button>
+            <input type="text" id="bl-reason" placeholder="Reason (optional)" style="flex:1;min-width:160px;">
+            <button class="btn btn-primary btn-sm" onclick="addBlacklist()">Add</button>
           </div>
-          <p class="hint">Los usuarios en esta lista ya no pueden abrir tickets nuevos — el bot lo verifica automáticamente.</p>
+          <p class="hint">Users on this list can no longer open new tickets — the bot checks this automatically.</p>
         </div>
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-            Usuarios bloqueados
+            Blocked users
           </div>
           <div id="blacklist-list"></div>
         </div>
@@ -563,21 +563,21 @@
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            Métodos habilitados
+            Enabled Methods
           </div>
           <div class="methods-wrap" id="methods-wrap"></div>
         </div>
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            Datos de cuenta
+            Account Details
           </div>
-          <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Completa tu info de cuenta para cada método habilitado. Esto se envía al comprador en el ticket.</p>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Fill in your account info for each enabled method. This is sent to the buyer in the ticket.</p>
           <div id="accounts-list"></div>
         </div>
         <button class="btn btn-primary" onclick="saveSettings()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Guardar
+          Save
         </button>
       </div>
 
@@ -585,43 +585,43 @@
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Configuración
+            Configuration
           </div>
           <div class="toggle-row">
             <div class="toggle-label">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              Activar donaciones
+              Enable donations
             </div>
             <label class="toggle"><input type="checkbox" id="don-enabled"><span class="toggle-slider"></span></label>
           </div>
           <div class="form-grid" style="margin-top:14px;">
             <div class="form-row">
-              <label>Meta (USD, opcional)</label>
-              <input type="number" id="don-goal" placeholder="ej. 500">
+              <label>Goal (USD, optional)</label>
+              <input type="number" id="don-goal" placeholder="e.g. 500">
             </div>
             <div class="form-row">
-              <label>Donación mínima (USD)</label>
-              <input type="number" id="don-min" placeholder="ej. 1" value="1">
+              <label>Minimum donation (USD)</label>
+              <input type="number" id="don-min" placeholder="e.g. 1" value="1">
             </div>
           </div>
           <div class="form-row">
-            <label>Publicar en canal</label>
-            <select id="don-channel"><option value="">— Seleccionar —</option></select>
+            <label>Post to channel</label>
+            <select id="don-channel"><option value="">— Select —</option></select>
           </div>
           <div class="form-row">
-            <label>Mensaje del panel</label>
-            <textarea id="don-message" placeholder="¿Disfrutas el servidor? ¡Considera apoyarnos!"></textarea>
+            <label>Panel message</label>
+            <textarea id="don-message" placeholder="Enjoying the server? Consider supporting us!"></textarea>
           </div>
         </div>
 
         <div class="card" id="don-goal-card" style="display:none">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></svg>
-            Progreso
+            Progress
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted);font-weight:600;">
-            <span id="don-progress-label">$0 recaudados</span>
-            <span id="don-progress-goal">de $0 meta</span>
+            <span id="don-progress-label">$0 raised</span>
+            <span id="don-progress-goal">of $0 goal</span>
           </div>
           <div style="background:var(--surface3);border:1px solid var(--border);border-radius:100px;height:10px;overflow:hidden;">
             <div id="don-progress-bar" style="height:100%;width:0%;background:var(--grad);border-radius:100px;transition:width .3s;"></div>
@@ -631,9 +631,9 @@
         <div class="card">
           <div class="card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            Métodos aceptados
+            Accepted Methods
           </div>
-          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Reutiliza las cuentas configuradas en la pestaña Ventas.</p>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Reuses the accounts configured in the Sales tab.</p>
           <div class="methods-wrap" id="don-methods-wrap"></div>
         </div>
 
@@ -641,16 +641,16 @@
           <div class="toggle-row" style="border-bottom:none;">
             <div class="toggle-label">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Mostrar muro público de donantes
+              Show public donor wall
             </div>
             <label class="toggle"><input type="checkbox" id="don-wall"><span class="toggle-slider"></span></label>
           </div>
-          <p class="hint">Muestra usuarios y montos bajo el embed del panel. Desactívalo para donaciones anónimas.</p>
+          <p class="hint">Shows users and amounts under the panel embed. Disable for anonymous donations.</p>
         </div>
 
         <button class="btn btn-primary" onclick="saveDonations()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Guardar y publicar
+          Save and publish
         </button>
       </div>
     </div>
@@ -658,7 +658,7 @@
     <!-- SETTINGS (+ language merged in) -->
     <div class="page" id="page-settings">
       <div class="page-title-row"><div class="page-title">Settings</div></div>
-      <div class="page-sub">Canales, roles, mensajes e idioma del bot para este servidor.</div>
+      <div class="page-sub">Channels, roles, messages, and the bot's language for this server.</div>
 
       <div class="card">
         <div class="card-title">
@@ -669,18 +669,18 @@
           <div class="form-row">
             <label>Ticket Category</label>
             <select id="cfg-category"><option value="">— Select —</option></select>
-            <p class="hint">Los canales de ticket se crean aquí.</p>
+            <p class="hint">Ticket channels are created here.</p>
           </div>
           <div class="form-row">
             <label>Staff / Admin Role</label>
             <select id="cfg-role"><option value="">— Select —</option></select>
-            <p class="hint">Este rol puede ver todos los canales de tickets.</p>
+            <p class="hint">This role can see all ticket channels.</p>
           </div>
         </div>
         <div class="form-row">
           <label>Log Channel</label>
           <select id="cfg-log"><option value="">— Select —</option></select>
-          <p class="hint">Las notificaciones de pago y los transcripts llegan aquí.</p>
+          <p class="hint">Payment notifications and transcripts land here.</p>
         </div>
       </div>
 
@@ -716,6 +716,25 @@
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="18"/><path d="M15 9.5a3 3 0 0 0-3-1.5c-1.66 0-3 1-3 2.5S10.34 13 12 13s3 1 3 2.5-1.34 2.5-3 2.5a3 3 0 0 1-3-1.5"/></svg>
+          Currencies
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Choose which currencies buyers can pick from on "Game Currency" panels, and add your own. Rate = how many USD one unit of that currency is worth (e.g. if 1 EUR = 1.08 USD, the rate is 1.08).</p>
+        <div id="currencies-list"></div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="addCurrency()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Currency
+          </button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="resetCurrenciesToDefault()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            Reset to Defaults
+          </button>
+        </div>
+      </div>
+
       <button class="btn btn-primary" onclick="saveSettings()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Save Settings
@@ -734,7 +753,7 @@
 <div class="modal-bg centered" id="panel-modal">
   <div class="modal-panel modal-create" style="padding:28px;overflow-y:auto;">
     <h3 id="modal-title">Create Panel</h3>
-    <div class="modal-sub">Configura el embed, las preguntas del ticket y los cupones de descuento.</div>
+    <div class="modal-sub">Configure the embed, ticket questions, and discount coupons.</div>
     <input type="hidden" id="edit-idx">
 
     <div class="form-grid">
@@ -809,9 +828,9 @@
     <div class="divider"></div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">🏷️ Cupones de descuento</div>
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">🏷️ Discount Coupons</div>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">El descuento automático solo aplica en paneles tipo "Game Currency". En Productos/Servicios el cupón queda anotado para que el staff lo verifique manualmente.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">The automatic discount only applies to "Game Currency" panels. On Products/Services the coupon is noted so staff can verify it manually.</p>
     <div id="coupons-list"></div>
     <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="addCoupon()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -840,7 +859,7 @@
 <script>
 const guildId = location.pathname.split('/')[2];
 let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], coupons=[], editIdx=null;
-let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[];
+let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[], currencies=[];
 
 const ALL_METHODS = {
   paypal:'PayPal', zelle:'Zelle', cashapp:'Cash App', venmo:'Venmo',
@@ -856,6 +875,21 @@ const ALL_METHODS = {
 const DEFAULT_QUESTIONS = [
   {text:'What is your username / in-game ID?', type:'text', required:true, maxLength:64},
   {text:'Which server / region are you in?', type:'text', required:false, maxLength:64},
+];
+
+// Kept in sync with the bot's default CURRENCIES list in index.js.
+// "rate" = how many USD one unit of that currency is worth.
+const DEFAULT_CURRENCIES = [
+  { value:'USD', label:'USD — US Dollar',        symbol:'$',  rate:1 },
+  { value:'EUR', label:'EUR — Euro',              symbol:'€',  rate:1.08 },
+  { value:'COP', label:'COP — Colombian Peso',    symbol:'$',  rate:0.00024 },
+  { value:'MXN', label:'MXN — Mexican Peso',      symbol:'$',  rate:0.058 },
+  { value:'BRL', label:'BRL — Brazilian Real',    symbol:'R$', rate:0.20 },
+  { value:'ARS', label:'ARS — Argentine Peso',    symbol:'$',  rate:0.0011 },
+  { value:'CLP', label:'CLP — Chilean Peso',      symbol:'$',  rate:0.0011 },
+  { value:'PEN', label:'PEN — Peruvian Sol',      symbol:'S/', rate:0.27 },
+  { value:'GBP', label:'GBP — British Pound',     symbol:'£',  rate:1.27 },
+  { value:'CAD', label:'CAD — Canadian Dollar',   symbol:'$',  rate:0.74 },
 ];
 
 async function retry(fn, max=8, delay=1500) {
@@ -935,6 +969,9 @@ function loadConfig(cfg) {
   selectLang(selectedLang);
   buildMethodsUI(cfg.paymentMethods || Object.keys(ALL_METHODS));
 
+  currencies = (cfg.currencies && cfg.currencies.length) ? cfg.currencies : DEFAULT_CURRENCIES.map(c=>({...c}));
+  renderCurrencies();
+
   const don = cfg.donation || {};
   document.getElementById('don-enabled').checked = !!don.enabled;
   document.getElementById('don-goal').value = don.goal || '';
@@ -963,8 +1000,8 @@ function updateDonationProgress(raised, goal) {
   if (!goal || goal <= 0) { card.style.display = 'none'; return; }
   card.style.display = '';
   const pct = Math.min(100, Math.round((raised / goal) * 100));
-  document.getElementById('don-progress-label').textContent = `$${raised} recaudados`;
-  document.getElementById('don-progress-goal').textContent = `de $${goal} meta`;
+  document.getElementById('don-progress-label').textContent = `$${raised} raised`;
+  document.getElementById('don-progress-goal').textContent = `of $${goal} goal`;
   document.getElementById('don-progress-bar').style.width = pct + '%';
 }
 
@@ -986,7 +1023,7 @@ async function saveDonations() {
   if (donation.enabled && donation.channelId) {
     await fetch(`/api/donations/${guildId}/post`, {method:'POST'}).catch(()=>{});
   }
-  toast(donation.enabled ? 'Panel de donaciones guardado y publicado' : 'Configuración de donaciones guardada');
+  toast(donation.enabled ? 'Donation panel saved and published' : 'Donation settings saved');
 }
 
 /* ===== NAVIGATION ===== */
@@ -1018,6 +1055,20 @@ async function saveSettings() {
   const methods = [...document.querySelectorAll('#methods-wrap input:checked')].map(c=>c.value);
   const accounts = {};
   document.querySelectorAll('.acc-input').forEach(i => { if(i.value.trim()) accounts[i.dataset.method]=i.value.trim(); });
+
+  const cleanCurrencies = currencies
+    .filter(c => c.value?.trim())
+    .map(c => ({
+      value: c.value.trim().toUpperCase(),
+      label: c.label?.trim() || c.value.trim().toUpperCase(),
+      symbol: c.symbol?.trim() || '$',
+      rate: (typeof c.rate === 'number' && c.rate > 0) ? c.rate : 1,
+    }));
+  if (currencies.length && !cleanCurrencies.length) {
+    toast('Add at least one valid currency code, or reset to defaults', 'err');
+    return;
+  }
+
   await fetch(`/api/config/${guildId}`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
@@ -1029,9 +1080,59 @@ async function saveSettings() {
       paymentMethods: methods,
       paymentAccounts: accounts,
       language: selectedLang,
+      currencies: cleanCurrencies,
     })
   });
-  toast('Configuración guardada');
+  currencies = cleanCurrencies;
+  renderCurrencies();
+  toast('Settings saved');
+}
+
+/* ===== CURRENCIES ===== */
+function renderCurrencies() {
+  document.getElementById('currencies-list').innerHTML = currencies.map((c, i) => `
+    <div class="form-grid" style="grid-template-columns:1fr 2fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;">
+      <div class="form-row" style="margin:0">
+        <label style="font-size:10px;">Code</label>
+        <input type="text" value="${c.value||''}" maxlength="6" style="text-transform:uppercase"
+          oninput="currencies[${i}].value=this.value.toUpperCase()">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label style="font-size:10px;">Label</label>
+        <input type="text" value="${(c.label||'').replace(/"/g,'&quot;')}" placeholder="e.g. USD — US Dollar"
+          oninput="currencies[${i}].label=this.value">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label style="font-size:10px;">Symbol</label>
+        <input type="text" value="${(c.symbol||'').replace(/"/g,'&quot;')}" placeholder="$"
+          oninput="currencies[${i}].symbol=this.value">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label style="font-size:10px;">Rate (in USD)</label>
+        <input type="number" step="any" value="${c.rate ?? 1}" placeholder="1"
+          oninput="currencies[${i}].rate=parseFloat(this.value)||0">
+      </div>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="removeCurrency(${i})" title="Remove currency">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </div>
+  `).join('') || '<p class="hint">No currencies configured — buyers won\'t be able to select one. Add at least one, or reset to defaults.</p>';
+}
+
+function addCurrency() {
+  currencies.push({ value:'', label:'', symbol:'$', rate:1 });
+  renderCurrencies();
+}
+
+function removeCurrency(i) {
+  currencies.splice(i, 1);
+  renderCurrencies();
+}
+
+function resetCurrenciesToDefault() {
+  currencies = DEFAULT_CURRENCIES.map(c=>({...c}));
+  renderCurrencies();
+  toast('Currencies reset to defaults — remember to Save Settings');
 }
 
 /* ===== LANGUAGE ===== */
@@ -1074,22 +1175,22 @@ async function saveBlacklist() {
 
 async function addBlacklist() {
   const id = document.getElementById('bl-userid').value.trim();
-  if (!id) { toast('Ingresa un user ID','err'); return; }
+  if (!id) { toast('Enter a user ID','err'); return; }
   const reason = document.getElementById('bl-reason').value.trim();
-  if (blacklist.some(b=>b.userId===id)) { toast('Usuario ya está en la lista negra','err'); return; }
-  blacklist.push({ userId:id, reason: reason || 'Sin razón especificada', addedAt: Date.now() });
+  if (blacklist.some(b=>b.userId===id)) { toast('User is already blacklisted','err'); return; }
+  blacklist.push({ userId:id, reason: reason || 'No reason specified', addedAt: Date.now() });
   document.getElementById('bl-userid').value='';
   document.getElementById('bl-reason').value='';
   await saveBlacklist();
   renderBlacklist();
-  toast('Usuario bloqueado');
+  toast('User blocked');
 }
 
 async function removeBlacklist(id) {
   blacklist = blacklist.filter(b=>b.userId!==id);
   await saveBlacklist();
   renderBlacklist();
-  toast('Usuario removido de la lista negra');
+  toast('User removed from blacklist');
 }
 
 function renderBlacklist() {
@@ -1159,7 +1260,7 @@ function renderTickets() {
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2 2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5z"/></svg>
-      <p>Ningún ticket coincide con tus filtros.</p>
+      <p>No tickets match your filters.</p>
     </div>`;
     return;
   }
@@ -1292,12 +1393,12 @@ function openTicketDetail(channelId) {
 
       <div class="section-block">
         <div class="section-block-title">Internal Staff Note</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Solo visible para staff en el dashboard — nunca se le envía al comprador.</p>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Only visible to staff on the dashboard — never sent to the buyer.</p>
         ${t.staffNotes?.length ? `<div class="answers-list" style="margin-bottom:10px;">
           ${t.staffNotes.map(n=>`<div class="answer-item"><div class="answer-q">${n.author||'Staff'}</div><div class="answer-a">${n.text}</div></div>`).join('')}
         </div>` : ''}
         <div class="menu-builder">
-          <textarea id="note-text" placeholder="Agrega una nota interna sobre este ticket..."></textarea>
+          <textarea id="note-text" placeholder="Add an internal note about this ticket..."></textarea>
           <div class="menu-builder-footer">
             <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','add-note',document.getElementById('note-text').value)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -1310,7 +1411,7 @@ function openTicketDetail(channelId) {
       <div class="section-block">
         <div class="section-block-title">Send Menu / Message to User</div>
         <div class="menu-builder">
-          <textarea id="menu-text" placeholder="Escribe un mensaje o menú para enviar en el canal del ticket..."></textarea>
+          <textarea id="menu-text" placeholder="Write a message or menu to send in the ticket channel..."></textarea>
           <div class="menu-builder-footer">
             <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','send-message',document.getElementById('menu-text').value)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -1393,7 +1494,7 @@ async function ticketToggleBlacklist(channelId, userId, checked) {
 
 function downloadTranscript(channelId) {
   const t = tickets.find(x=>x.channelId===channelId);
-  if (!t?.transcript?.length) { toast('Sin transcript disponible para este ticket todavía','err'); return; }
+  if (!t?.transcript?.length) { toast('No transcript available for this ticket yet','err'); return; }
   const text = t.transcript.map(m=>`[${new Date(m.timestamp).toLocaleString()}] ${m.author}: ${m.content}`).join('\n');
   const blob = new Blob([text],{type:'text/plain'});
   const url = URL.createObjectURL(blob);
@@ -1404,12 +1505,12 @@ function downloadTranscript(channelId) {
 }
 
 function exportTicketsCSV() {
-  if (!tickets.length) { toast('No hay tickets para exportar','err'); return; }
-  const rows = [['Usuario','Panel','Producto','Pago','Total','TotalUSD','Cupon','Estado','Reportado','Prioridad','Abierto']];
+  if (!tickets.length) { toast('No tickets to export','err'); return; }
+  const rows = [['User','Panel','Product','Payment','Total','TotalUSD','Coupon','Status','Reported','Priority','Opened']];
   tickets.forEach(t=>rows.push([
     t.username||'', t.panel?.title||'', t.selectedProduct||'', t.paymentMethod||'',
     t.totalDisplay||'', t.totalUSD??'', t.appliedCoupon||'', t.status||'',
-    t.reported?'sí':'no', t.priority||'normal', t.openedAt?new Date(t.openedAt).toISOString():''
+    t.reported?'yes':'no', t.priority||'normal', t.openedAt?new Date(t.openedAt).toISOString():''
   ]));
   const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
@@ -1460,7 +1561,7 @@ function renderRevenueChart() {
   const chartEl = document.getElementById('revenue-chart');
   if (!chartEl) return;
   if (totalRevenue === 0) {
-    chartEl.innerHTML = `<div class="empty-state" style="padding:24px"><p>Todavía no hay ventas aprobadas con monto registrado.</p></div>`;
+    chartEl.innerHTML = `<div class="empty-state" style="padding:24px"><p>No approved sales with a recorded amount yet.</p></div>`;
     return;
   }
   chartEl.innerHTML = `
@@ -1477,7 +1578,7 @@ function renderActivity() {
   if (!el) return;
   const recent = tickets.slice().sort((a,b)=>(b.openedAt||0)-(a.openedAt||0)).slice(0,8);
   if (!recent.length) {
-    el.innerHTML = `<div class="empty-state" style="padding:20px"><p>Todavía no hay tickets.</p></div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:20px"><p>No tickets yet.</p></div>`;
     return;
   }
   const statusIcon = { approved:'✅', rejected:'❌', pending:'🕓', open:'💬', closed:'🔒', refunded:'↩️' };
@@ -1629,23 +1730,23 @@ function addCoupon() {
 function renderCoupons() {
   const el = document.getElementById('coupons-list');
   if (!coupons.length) {
-    el.innerHTML = `<p style="font-size:12px;color:var(--muted);">Sin cupones todavía. Agrega uno si quieres ofrecer un descuento por código.</p>`;
+    el.innerHTML = `<p style="font-size:12px;color:var(--muted);">No coupons yet. Add one if you want to offer a discount code.</p>`;
     return;
   }
   el.innerHTML = coupons.map((c,i)=>`
     <div class="coupon-item">
       <div class="q-row">
-        <input class="q-input" style="max-width:130px;text-transform:uppercase" placeholder="CODIGO" value="${c.code}" oninput="coupons[${i}].code=this.value.toUpperCase()">
+        <input class="q-input" style="max-width:130px;text-transform:uppercase" placeholder="CODE" value="${c.code}" oninput="coupons[${i}].code=this.value.toUpperCase()">
         <select class="q-select" onchange="coupons[${i}].type=this.value">
-          <option value="percent" ${c.type==='percent'?'selected':''}>% descuento</option>
-          <option value="fixed" ${c.type==='fixed'?'selected':''}>$ fijo (USD)</option>
+          <option value="percent" ${c.type==='percent'?'selected':''}>% discount</option>
+          <option value="fixed" ${c.type==='fixed'?'selected':''}>$ fixed (USD)</option>
         </select>
-        <input class="q-num" type="number" value="${c.value}" oninput="coupons[${i}].value=+this.value" title="Valor" style="width:70px">
-        <input class="q-num" type="number" placeholder="Usos máx" value="${c.maxUses||''}" oninput="coupons[${i}].maxUses=this.value?+this.value:null" style="width:80px">
-        <label class="q-check"><input type="checkbox" ${c.active!==false?'checked':''} onchange="coupons[${i}].active=this.checked"> Activo</label>
+        <input class="q-num" type="number" value="${c.value}" oninput="coupons[${i}].value=+this.value" title="Value" style="width:70px">
+        <input class="q-num" type="number" placeholder="Max uses" value="${c.maxUses||''}" oninput="coupons[${i}].maxUses=this.value?+this.value:null" style="width:80px">
+        <label class="q-check"><input type="checkbox" ${c.active!==false?'checked':''} onchange="coupons[${i}].active=this.checked"> Active</label>
         <button class="q-del" onclick="coupons.splice(${i},1);renderCoupons()">x</button>
       </div>
-      <div class="coupon-usage">${c.uses||0} usos${c.maxUses?` de ${c.maxUses}`:' (sin límite)'}</div>
+      <div class="coupon-usage">${c.uses||0} uses${c.maxUses?` of ${c.maxUses}`:' (unlimited)'}</div>
     </div>
   `).join('');
 }

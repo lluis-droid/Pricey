@@ -2,7 +2,7 @@ require('dotenv').config();
 const {
   Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder,
   ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, ModalBuilder,
-  TextInputBuilder, TextInputStyle, ChannelType, PermissionFlagsBits, Events
+  TextInputBuilder, TextInputStyle, ChannelType, PermissionFlagsBits, Events, MessageFlags
 } = require('discord.js');
 
 const client = new Client({
@@ -16,7 +16,7 @@ const client = new Client({
 
 const sessions = new Map();
 
-const CURRENCIES = [
+const DEFAULT_CURRENCIES = [
   { label: 'USD — US Dollar',        value: 'USD', symbol: '$',  rate: 1 },
   { label: 'EUR — Euro',             value: 'EUR', symbol: '€',  rate: 1.08 },
   { label: 'COP — Colombian Peso',   value: 'COP', symbol: '$',  rate: 0.00024 },
@@ -29,16 +29,40 @@ const CURRENCIES = [
   { label: 'CAD — Canadian Dollar',  value: 'CAD', symbol: '$',  rate: 0.74 },
 ];
 
+// Servers can customize their own currency list from the dashboard (Settings → Currencies).
+// Falls back to the defaults above if the guild hasn't configured any.
+function getCurrencies(config) {
+  const custom = config?.currencies;
+  return (Array.isArray(custom) && custom.length) ? custom : DEFAULT_CURRENCIES;
+}
+
+// Kept in sync with ALL_METHODS in public/server.html — every method an admin
+// can enable from the dashboard needs a matching label here, or buyers would
+// just see the raw internal key (e.g. "crypto_btc") instead of "Bitcoin (BTC)".
 const PAYMENT_LABELS = {
   paypal:       { label: 'PayPal' },
-  crypto:       { label: 'Crypto (USDT/BTC)' },
+  zelle:        { label: 'Zelle' },
+  cashapp:      { label: 'Cash App' },
+  venmo:        { label: 'Venmo' },
+  crypto_btc:   { label: 'Bitcoin (BTC)' },
+  crypto_eth:   { label: 'Ethereum (ETH)' },
+  crypto_usdt:  { label: 'USDT (TRC20/ERC20)' },
+  crypto_ltc:   { label: 'Litecoin (LTC)' },
+  binance_pay:  { label: 'Binance Pay' },
   nequi:        { label: 'Nequi' },
   bancolombia:  { label: 'Bancolombia' },
   daviplata:    { label: 'Daviplata' },
   mercadopago:  { label: 'Mercado Pago' },
   pix:          { label: 'PIX' },
-  zinli:        { label: 'Zinli / Zelle' },
+  zinli:        { label: 'Zinli' },
   bank:         { label: 'Bank Transfer' },
+  wise:         { label: 'Wise' },
+  revolut:      { label: 'Revolut' },
+  skrill:       { label: 'Skrill' },
+  applepay:     { label: 'Apple Pay' },
+  googlepay:    { label: 'Google Pay' },
+  amazon_gc:    { label: 'Amazon Gift Card' },
+  steam_gc:     { label: 'Steam Gift Card' },
 };
 
 const T = {
@@ -430,7 +454,7 @@ async function postPanel(guildId, panel) {
   const panels = await getPanels(guildId);
   const idx = panels.findIndex(p => p.title === panel.title);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${idx}`).setLabel(t.openTicket).setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${idx}`).setLabel(t.openTicket).setEmoji('🛒').setStyle(ButtonStyle.Primary)
   );
   await channel.send({ embeds: [embed], components: [row] });
 }
@@ -475,8 +499,8 @@ async function askCouponPrompt(channel, session) {
   await channel.send({
     embeds: [new EmbedBuilder().setDescription(`🏷️ **${t.couponPrompt}**`).setColor(0x8B5CF6)],
     components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_couponmodal_${channel.id}`).setLabel(t.couponEnterBtn).setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(`skip_coupon_${channel.id}`).setLabel(t.couponSkipBtn).setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId(`open_couponmodal_${channel.id}`).setLabel(t.couponEnterBtn).setEmoji('🏷️').setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId(`skip_coupon_${channel.id}`).setLabel(t.couponSkipBtn).setEmoji('➡️').setStyle(ButtonStyle.Primary)
     )]
   });
 }
@@ -484,15 +508,15 @@ async function askCouponPrompt(channel, session) {
 async function handleCouponModalTrigger(interaction) {
   const channelId = interaction.customId.replace('open_couponmodal_', '');
   const session = sessions.get(channelId);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
-  if (!session.pendingModal) return interaction.reply({ content: 'No coupon modal pending.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (!session.pendingModal) return interaction.reply({ content: 'No coupon modal pending.', flags: MessageFlags.Ephemeral });
   await interaction.showModal(session.pendingModal);
 }
 
 async function handleSkipCoupon(interaction) {
   const channelId = interaction.customId.replace('skip_coupon_', '');
   const session = sessions.get(channelId);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   await interaction.update({ components: [] }).catch(() => {});
   session.pendingModal = null;
   session.phase = 'payment-select';
@@ -503,7 +527,7 @@ async function handleModalCoupon(interaction) {
   const channelId = interaction.customId.replace('modal_coupon_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const code = interaction.fields.getTextInputValue('code').trim();
   session.pendingModal = null;
   const coupon = findValidCoupon(session.panel, code);
@@ -515,7 +539,8 @@ async function handleModalCoupon(interaction) {
   }
 
   if (session.panel.type === 'currency' && session.total != null) {
-    const currencyInfo = CURRENCIES.find(c => c.value === session.currency) || CURRENCIES[0];
+    const currencies = getCurrencies(session.config);
+    const currencyInfo = currencies.find(c => c.value === session.currency) || currencies[0];
     const usdBefore = session.totalUSD ?? (session.total * currencyInfo.rate);
     const usdAfter = applyCouponToUSD(usdBefore, coupon);
     session.total = parseFloat((usdAfter / currencyInfo.rate).toFixed(2));
@@ -610,8 +635,8 @@ client.on(Events.InteractionCreate, async interaction => {
 async function handleQuestionModalTrigger(interaction) {
   const channelId = interaction.customId.replace('open_qmodal_', '');
   const session = sessions.get(channelId);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
-  if (!session.pendingModal) return interaction.reply({ content: 'No question pending.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (!session.pendingModal) return interaction.reply({ content: 'No question pending.', flags: MessageFlags.Ephemeral });
   // showModal FIRST — no awaits before this line
   await interaction.showModal(session.pendingModal);
   // Disable the trigger button after (non-blocking)
@@ -621,8 +646,8 @@ async function handleQuestionModalTrigger(interaction) {
 async function handleAmountModalTrigger(interaction) {
   const channelId = interaction.customId.replace('open_amount_modal_', '');
   const session = sessions.get(channelId);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
-  if (!session.pendingModal) return interaction.reply({ content: 'No amount modal pending.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (!session.pendingModal) return interaction.reply({ content: 'No amount modal pending.', flags: MessageFlags.Ephemeral });
   await interaction.showModal(session.pendingModal);
   interaction.message.edit({ components: [] }).catch(() => {});
 }
@@ -630,8 +655,8 @@ async function handleAmountModalTrigger(interaction) {
 async function handleProofModalTrigger(interaction) {
   const channelId = interaction.customId.replace('open_proof_modal_', '');
   const session = sessions.get(channelId);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
-  if (!session.pendingModal) return interaction.reply({ content: 'No proof modal pending.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (!session.pendingModal) return interaction.reply({ content: 'No proof modal pending.', flags: MessageFlags.Ephemeral });
   // showModal FIRST
   await interaction.showModal(session.pendingModal);
   // Side effects after — non-blocking
@@ -646,7 +671,7 @@ async function handleProofModalTrigger(interaction) {
 // ─── TICKET OPEN ───────────────────────────────────────────────────────────────
 async function handleOpenTicket(interaction) {
   const [,, guildId, idxStr] = interaction.customId.split('_');
-  await interaction.deferReply({ flags: 64 });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const panels = await getPanels(guildId);
   const panel  = panels[parseInt(idxStr)];
   if (!panel) return interaction.editReply({ content: 'This panel no longer exists.' });
@@ -701,7 +726,7 @@ async function handleOpenTicket(interaction) {
     .addFields({ name: t.openedBy, value: `<@${member.id}>`, inline: true })
     .setTimestamp();
   const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setEmoji('🔒').setStyle(ButtonStyle.Danger)
   );
   await ticketChannel.send({ embeds: [welcomeEmbed], components: [closeRow] });
   await startNextStep(ticketChannel, session);
@@ -753,7 +778,7 @@ async function askQuestion(channel, session) {
         .setColor(0x8B5CF6)
         .setFooter({ text: q.required ? t.questionRequired : t.questionOptional })],
       components: [new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`open_qmodal_${channel.id}`).setLabel(t.answerQuestion).setStyle(ButtonStyle.Primary)
+        new ButtonBuilder().setCustomId(`open_qmodal_${channel.id}`).setLabel(t.answerQuestion).setEmoji('✍️').setStyle(ButtonStyle.Primary)
       )]
     });
     return;
@@ -773,10 +798,10 @@ async function handleModalQuestion(interaction) {
   const channelId = interaction.customId.replace('modal_question_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const q = session.panel.questions[session.questionIndex];
   let answer = interaction.fields.getTextInputValue('answer').trim();
-  if (q.type === 'number' && isNaN(answer.replace(/,/g, ''))) return interaction.reply({ content: t.pleaseValidNum, flags: 64 });
+  if (q.type === 'number' && isNaN(answer.replace(/,/g, ''))) return interaction.reply({ content: t.pleaseValidNum, flags: MessageFlags.Ephemeral });
   await interaction.deferUpdate().catch(() => {});
   session.answers.push({ question: q.text, answer: answer || '*(skipped)*', type: q.type });
   session.questionIndex++;
@@ -838,8 +863,9 @@ client.on(Events.MessageCreate, async message => {
 // ─── CURRENCY ──────────────────────────────────────────────────────────────────
 async function askCurrencySelect(channel, session) {
   const t = getLang(session.config);
+  const currencies = getCurrencies(session.config);
   const select = new StringSelectMenuBuilder().setCustomId('select_currency').setPlaceholder(t.selectCurrencyPlaceholder)
-    .addOptions(CURRENCIES.map(c => ({ label: c.label, value: c.value })));
+    .addOptions(currencies.slice(0, 25).map(c => ({ label: c.label, value: c.value })));
   await channel.send({
     embeds: [new EmbedBuilder().setDescription(`**${t.selectCurrency}**\n${t.selectCurrencyDesc}`).setColor(0x8B5CF6)],
     components: [new ActionRowBuilder().addComponents(select)]
@@ -849,7 +875,7 @@ async function askCurrencySelect(channel, session) {
 async function handleCurrencySelect(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   session.currency = interaction.values[0];
   session.phase = 'currency-amount';
   await interaction.update({
@@ -868,7 +894,7 @@ async function handleCurrencySelect(interaction) {
   await interaction.channel.send({
     embeds: [new EmbedBuilder().setDescription(`**${t.enterAmount(session.panel.title)}**`).setColor(0x8B5CF6)],
     components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_amount_modal_${interaction.channel.id}`).setLabel(t.enterAmountBtn).setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId(`open_amount_modal_${interaction.channel.id}`).setLabel(t.enterAmountBtn).setEmoji('🔢').setStyle(ButtonStyle.Primary)
     )]
   });
 }
@@ -876,12 +902,13 @@ async function handleCurrencySelect(interaction) {
 async function handleCurrencyAmountModal(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const raw = interaction.fields.getTextInputValue('amount').replace(/,/g, '').trim();
   const amount = parseFloat(raw);
-  if (isNaN(amount) || amount <= 0) return interaction.reply({ content: t.pleaseValidNumber, flags: 64 });
+  if (isNaN(amount) || amount <= 0) return interaction.reply({ content: t.pleaseValidNumber, flags: MessageFlags.Ephemeral });
   const { panel } = session;
-  const currencyInfo = CURRENCIES.find(c => c.value === session.currency) || CURRENCIES[0];
+  const currencies = getCurrencies(session.config);
+  const currencyInfo = currencies.find(c => c.value === session.currency) || currencies[0];
   const usdTotal = (amount / panel.baseAmount) * panel.basePrice * (1 + (panel.margin ?? 15) / 100);
   const localTotal = usdTotal / currencyInfo.rate;
   session.currencyAmount = amount;
@@ -917,7 +944,7 @@ async function askProductSelect(channel, session) {
 async function handleProductSelect(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const product = session.panel.products.find(p => p.name === interaction.values[0]);
   session.selectedProduct = product.name;
   session.totalDisplay = product.price;
@@ -934,7 +961,7 @@ async function handleProductSelect(interaction) {
 // ─── PAYMENT ───────────────────────────────────────────────────────────────────
 async function askPaymentSelect(channel, session) {
   const t = getLang(session.config);
-  const methods = session.config.paymentMethods || ['paypal', 'crypto'];
+  const methods = session.config.paymentMethods || ['paypal', 'crypto_usdt'];
   if (!methods.length) {
     await channel.send({ embeds: [new EmbedBuilder().setDescription(t.noPaymentMethods).setColor(0xef4444)] });
     return;
@@ -950,7 +977,7 @@ async function askPaymentSelect(channel, session) {
 async function handlePaymentSelect(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const method = interaction.values[0];
   session.paymentMethod = method;
   const info = PAYMENT_LABELS[method] || { label: method };
@@ -980,14 +1007,14 @@ async function handlePaymentSelect(interaction) {
   await interaction.channel.send({
     embeds: [embed],
     components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_proof_modal_${interaction.channel.id}`).setLabel(t.submitProof).setStyle(ButtonStyle.Success)
+      new ButtonBuilder().setCustomId(`open_proof_modal_${interaction.channel.id}`).setLabel(t.submitProof).setEmoji('📤').setStyle(ButtonStyle.Success)
     )]
   });
 }
 
 async function handlePaymentProofModal(interaction) {
   const session = sessions.get(interaction.channel.id);
-  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: 64 });
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   session.paymentReference = interaction.fields.getTextInputValue('reference').trim();
   session.paymentNote = interaction.fields.getTextInputValue('note').trim();
   session.pendingModal = null;
@@ -1026,8 +1053,8 @@ async function notifyAdmin(session) {
     ).setTimestamp();
   if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`admin_approve_${session.channelId}`).setLabel(t.approveBtn).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId(`admin_reject_${session.channelId}`).setLabel(t.rejectBtn).setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`admin_approve_${session.channelId}`).setLabel(t.approveBtn).setEmoji('✅').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId(`admin_reject_${session.channelId}`).setLabel(t.rejectBtn).setEmoji('❌').setStyle(ButtonStyle.Danger)
   );
   await logChannel.send({ embeds: [embed], components: [row] });
 }
@@ -1073,7 +1100,7 @@ async function handleCloseTicket(interaction) {
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
   if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels))
-    return interaction.reply({ content: t.staffOnly, flags: 64 });
+    return interaction.reply({ content: t.staffOnly, flags: MessageFlags.Ephemeral });
   await interaction.reply({ content: t.closingIn5 });
   await generateAndSendTranscript(interaction.channel, session, 'Closed');
   if (session) { session.status = 'closed'; syncTicket(session); }

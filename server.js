@@ -69,7 +69,7 @@ function notifyBot(type, data) { pendingBotActions.push({ type, data }); }
 /* ===== BOT COMMUNICATION ===== */
 app.post('/api/bot-status', (req, res) => {
   botStatus = req.body;
-  console.log('[SERVER] Bot status recibido, guilds:', botStatus.guilds);
+  console.log('[SERVER] Bot status received, guilds:', botStatus.guilds);
   res.json({ ok: true });
 });
 
@@ -79,7 +79,7 @@ app.post('/api/bot-guild-data', (req, res) => {
   if (!botStatus.guildData) botStatus.guildData = {};
   botStatus.guildData[req.body.guildId] = req.body.data;
   writeJSON(guildDataPath(req.body.guildId), req.body.data);
-  console.log('[SERVER] Guild data recibido para:', req.body.guildId);
+  console.log('[SERVER] Guild data received for:', req.body.guildId);
   res.json({ ok: true });
 });
 
@@ -132,7 +132,7 @@ app.get('/api/guild/:id', requireAuth, async (req, res) => {
   if (!data || !data.channels?.length) {
     data = readJSON(guildDataPath(req.params.id), {});
   }
-  console.log('[GUILD] Sirviendo data para:', req.params.id, '| channels:', data.channels?.length);
+  console.log('[GUILD] Serving data for:', req.params.id, '| channels:', data.channels?.length);
   res.json({ name: g.name, icon: g.icon, channels: data.channels || [], roles: data.roles || [], categories: data.categories || [] });
 });
 
