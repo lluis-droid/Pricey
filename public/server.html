@@ -473,7 +473,7 @@
     <!-- TICKETS (+ blacklist merged in) -->
     <div class="page" id="page-tickets">
       <div class="page-title-row"><div class="page-title">Tickets</div></div>
-      <div class="page-sub">Gestiona los tickets de compra y la lista negra de usuarios bloqueados, todo en un solo lugar.</div>
+      <div class="page-sub">Manage purchase tickets and the blocked-users blacklist, all in one place.</div>
 
       <div class="segmented" id="tickets-seg">
         <button class="active" onclick="showTicketsView('list',this)">
@@ -490,7 +490,7 @@
       <div class="subview active" id="tickets-view-list">
         <div class="tickets-toolbar">
           <select id="ticket-filter-status" onchange="renderTickets()">
-            <option value="">Todos los estados</option>
+            <option value="">All statuses</option>
             <option value="open">Open</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
@@ -546,7 +546,7 @@
     <!-- PAYMENTS (+ donations merged in) -->
     <div class="page" id="page-payments">
       <div class="page-title-row"><div class="page-title">Payments</div></div>
-      <div class="page-sub">Configura las cuentas para recibir ventas, y opcionalmente activa un panel de donaciones que reutiliza las mismas cuentas.</div>
+      <div class="page-sub">Configure the accounts to receive sales, and optionally enable a donations panel that reuses the same accounts.</div>
 
       <div class="segmented" id="payments-seg">
         <button class="active" onclick="showPaymentsView('sales',this)">
@@ -1204,14 +1204,14 @@ function renderBlacklist() {
   if (!blacklist.length) {
     el.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-      <p>No hay usuarios bloqueados.</p>
+      <p>No blocked users.</p>
     </div>`;
     return;
   }
   el.innerHTML = blacklist.map(b => `
     <div class="past-ticket-item" style="padding:12px;margin-bottom:8px;">
       <span><strong style="color:var(--text)">${b.userId}</strong> &nbsp;·&nbsp; ${b.reason}</span>
-      <button class="q-del" onclick="removeBlacklist('${b.userId}')">Quitar</button>
+      <button class="q-del" onclick="removeBlacklist('${b.userId}')">Remove</button>
     </div>
   `).join('');
 }
@@ -1799,7 +1799,7 @@ async function duplicatePanel(idx) {
   await fetch(`/api/panels/${guildId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(panels)});
   renderPanels();
   document.getElementById('stat-panels').textContent = panels.length;
-  toast('Panel duplicado — recuerda revisar el canal y publicarlo');
+  toast('Panel duplicated — remember to review the channel and publish it');
 }
 
 async function deletePanel(idx) {
