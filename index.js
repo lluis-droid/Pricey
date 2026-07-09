@@ -250,6 +250,45 @@ function reportGuildData(guildId) {
   }).catch(() => {});
 }
 
+// ─── Notify Pricey Help (bot 2) whenever this bot joins a new server ───────
+// Pricey Help exposes a private endpoint protected by a shared secret; it
+// posts a "new server" notice with real, live data (guild info + current
+// total guild count) to whatever channel was set with /setup-guild-log.
+async function notifyPriceyHelp(guild) {
+  const url = process.env.PRICEY_HELP_URL;
+  const secret = process.env.PRICEY_INTERNAL_SECRET;
+  if (!url || !secret) return; // not configured, fails silently
+
+  let ownerTag = null;
+  try {
+    const owner = await guild.fetchOwner();
+    ownerTag = owner.user.tag;
+  } catch {
+    // if the owner can't be fetched, just continue without it
+  }
+
+  try {
+    await apiFetch(`${url}/internal/guild-joined`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': secret,
+      },
+      body: JSON.stringify({
+        guildId: guild.id,
+        guildName: guild.name,
+        guildIcon: guild.iconURL({ size: 256 }) || null,
+        memberCount: guild.memberCount ?? null,
+        ownerTag,
+        totalGuilds: client.guilds.cache.size, // real count, not made up
+        joinedAt: Date.now(),
+      }),
+    }, 2);
+  } catch (e) {
+    console.error('[notifyPriceyHelp]', e.message);
+  }
+}
+
 function sendBotStatus() {
   const guildIds = client.guilds.cache.map(g => g.id);
   apiFetch(`${BASE_URL}/api/bot-status`, {
@@ -303,7 +342,11 @@ client.once(Events.ClientReady, () => {
   setInterval(pollActions, 2000);
 });
 
-client.on(Events.GuildCreate, guild => { sendBotStatus(); reportGuildData(guild.id); });
+client.on(Events.GuildCreate, guild => {
+  sendBotStatus();
+  reportGuildData(guild.id);
+  notifyPriceyHelp(guild);
+});
 client.on(Events.GuildDelete, () => sendBotStatus());
 
 async function pollActions() {
