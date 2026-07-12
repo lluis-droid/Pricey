@@ -20,59 +20,6 @@ function configPath(id) { return path.join(DATA_DIR, `config_${id}.json`); }
 function panelsPath(id) { return path.join(DATA_DIR, `panels_${id}.json`); }
 function ticketsPath(id) { return path.join(DATA_DIR, `tickets_${id}.json`); }
 function guildDataPath(id) { return path.join(DATA_DIR, `guilddata_${id}.json`); }
-function bansPath() { return path.join(DATA_DIR, 'bans.json'); }
-function adminLogPath() { return path.join(DATA_DIR, 'admin_log.json'); }
-
-/* ===== OWNER / ADMIN ACCESS =====
-   Set OWNER_IDS in .env to a comma-separated list of Discord user IDs, e.g.
-     OWNER_IDS=123456789012345678,987654321098765432
-   Only these accounts can reach /admin or any /api/admin/* endpoint. This is
-   checked server-side on every request below — the dashboard link hiding
-   itself client-side is a convenience only, never the real permission check. */
-const OWNER_IDS = (process.env.OWNER_IDS || '').split(',').map(s => s.trim()).filter(Boolean);
-
-function isOwner(user) {
-  return !!user && OWNER_IDS.includes(user.id);
-}
-
-function requireOwner(req, res, next) {
-  if (!req.isAuthenticated() || !isOwner(req.user)) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  next();
-}
-
-function logAdminAction(admin, action, targetUserId, reason, details = {}) {
-  const log = readJSON(adminLogPath(), []);
-  log.unshift({
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    timestamp: Date.now(),
-    adminId: admin.id,
-    adminTag: admin.username,
-    action,
-    targetUserId,
-    reason: (reason || '').trim() || null,
-    details,
-  });
-  writeJSON(adminLogPath(), log.slice(0, 2000));
-}
-
-function allGuildIdsFromData() {
-  const ids = new Set();
-  try {
-    fs.readdirSync(DATA_DIR).forEach(f => {
-      const m = f.match(/^(?:config|panels|tickets|guilddata)_(\d+)\.json$/);
-      if (m) ids.add(m[1]);
-    });
-  } catch {}
-  return [...ids];
-}
-
-function getActiveBan(userId) {
-  const bans = readJSON(bansPath(), []);
-  const now = Date.now();
-  return bans.find(b => b.userId === userId && b.active && (!b.expiresAt || b.expiresAt > now)) || null;
-}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -149,10 +96,6 @@ app.post('/api/bot-ticket-update', (req, res) => {
 
 app.get('/internal/config/:guildId', (req, res) => res.json(readJSON(configPath(req.params.guildId))));
 app.get('/internal/panels/:guildId', (req, res) => res.json(readJSON(panelsPath(req.params.guildId), [])));
-app.get('/internal/ban/:userId', (req, res) => {
-  const ban = getActiveBan(req.params.userId);
-  res.json({ banned: !!ban, ban });
-});
 
 /* ===== PUBLIC STATUS ===== */
 app.get('/api/status', (req, res) => res.json(botStatus));
@@ -160,7 +103,7 @@ app.get('/api/status', (req, res) => res.json(botStatus));
 app.get('/api/me', (req, res) => {
   if (!req.isAuthenticated()) return res.json({ loggedIn: false });
   const u = req.user;
-  res.json({ loggedIn: true, user: { id: u.id, username: u.username, avatar: u.avatar, isOwner: isOwner(u) } });
+  res.json({ loggedIn: true, user: { id: u.id, username: u.username, avatar: u.avatar } });
 });
 
 app.get('/api/guilds', requireAuth, async (req, res) => {
@@ -275,125 +218,6 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
   res.status(400).json({ error: 'Unknown action' });
 });
 
-/* ===== OWNER ADMIN API =====
-   Everything below is gated by requireOwner. */
-app.get('/api/admin/logs', requireOwner, (req, res) => {
-  const log = readJSON(adminLogPath(), []);
-  res.json(log.slice(0, 300));
-});
-
-app.get('/api/admin/bans', requireOwner, (req, res) => {
-  const bans = readJSON(bansPath(), []);
-  const now = Date.now();
-  const withStatus = bans
-    .map(b => ({ ...b, expired: !!(b.expiresAt && b.expiresAt <= now) }))
-    .sort((a, b) => (b.bannedAt || 0) - (a.bannedAt || 0));
-  res.json(withStatus);
-});
-
-app.get('/api/admin/user/:userId', requireOwner, (req, res) => {
-  const userId = req.params.userId;
-  const guildIds = allGuildIdsFromData();
-  const tickets = [];
-  const blacklistedIn = [];
-  const guildsSeenIn = new Set();
-  let lastKnownUsername = null;
-  let lastSeenAt = 0;
-
-  guildIds.forEach(gid => {
-    const guildTickets = readJSON(ticketsPath(gid), []).filter(t => t.userId === userId);
-    guildTickets.forEach(t => {
-      tickets.push({ ...t, guildId: gid });
-      guildsSeenIn.add(gid);
-      if ((t.openedAt || 0) > lastSeenAt) { lastSeenAt = t.openedAt || 0; lastKnownUsername = t.username || lastKnownUsername; }
-    });
-
-    const config = readJSON(configPath(gid), {});
-    const bl = (config.blacklist || []).find(b => b.userId === userId);
-    if (bl) { blacklistedIn.push({ guildId: gid, ...bl }); guildsSeenIn.add(gid); }
-  });
-
-  tickets.sort((a, b) => (b.openedAt || 0) - (a.openedAt || 0));
-
-  const log = readJSON(adminLogPath(), []);
-  const actionHistory = log.filter(l => l.targetUserId === userId).slice(0, 100);
-
-  res.json({
-    userId,
-    lastKnownUsername,
-    guildsSeenIn: [...guildsSeenIn],
-    tickets,
-    blacklistedIn,
-    ban: getActiveBan(userId),
-    actionHistory,
-  });
-});
-
-app.delete('/api/admin/user/:userId', requireOwner, (req, res) => {
-  const userId = req.params.userId;
-  const reason = req.body?.reason;
-  const guildIds = allGuildIdsFromData();
-  let removedTickets = 0;
-  let removedFromBlacklists = 0;
-
-  guildIds.forEach(gid => {
-    const tickets = readJSON(ticketsPath(gid), []);
-    const keptTickets = tickets.filter(t => t.userId !== userId);
-    if (keptTickets.length !== tickets.length) {
-      removedTickets += tickets.length - keptTickets.length;
-      writeJSON(ticketsPath(gid), keptTickets);
-    }
-
-    const config = readJSON(configPath(gid), {});
-    if (config.blacklist?.some(b => b.userId === userId)) {
-      const keptBlacklist = config.blacklist.filter(b => b.userId !== userId);
-      removedFromBlacklists += config.blacklist.length - keptBlacklist.length;
-      config.blacklist = keptBlacklist;
-      writeJSON(configPath(gid), config);
-      notifyBot('config-update', { guildId: gid, config });
-    }
-  });
-
-  logAdminAction(req.user, 'delete-user-data', userId, reason, { removedTickets, removedFromBlacklists });
-  res.json({ ok: true, removedTickets, removedFromBlacklists });
-});
-
-app.post('/api/admin/user/:userId/ban', requireOwner, (req, res) => {
-  const userId = req.params.userId;
-  const { reason, durationDays } = req.body || {};
-  if (!reason || !reason.trim()) return res.status(400).json({ error: 'A reason is required' });
-
-  const bans = readJSON(bansPath(), []);
-  bans.forEach(b => { if (b.userId === userId) b.active = false; });
-
-  const days = Number(durationDays) || 0;
-  const expiresAt = days > 0 ? Date.now() + days * 24 * 60 * 60 * 1000 : null;
-
-  bans.push({
-    userId,
-    reason: reason.trim(),
-    bannedAt: Date.now(),
-    bannedBy: req.user.id,
-    bannedByTag: req.user.username,
-    expiresAt,
-    active: true,
-  });
-  writeJSON(bansPath(), bans);
-  logAdminAction(req.user, expiresAt ? 'temp-ban' : 'perm-ban', userId, reason, { expiresAt });
-  res.json({ ok: true });
-});
-
-app.post('/api/admin/user/:userId/unban', requireOwner, (req, res) => {
-  const userId = req.params.userId;
-  const reason = req.body?.reason;
-  const bans = readJSON(bansPath(), []);
-  let changed = false;
-  bans.forEach(b => { if (b.userId === userId && b.active) { b.active = false; changed = true; } });
-  writeJSON(bansPath(), bans);
-  if (changed) logAdminAction(req.user, 'unban', userId, reason, {});
-  res.json({ ok: true, changed });
-});
-
 /* ===== AUTH ===== */
 app.get('/auth/discord', passport.authenticate('discord'));
 app.get('/auth/callback', (req, res, next) => {
@@ -432,11 +256,6 @@ app.get('/dashboard', (req, res) => {
 app.get('/server/:id', (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'public', 'server.html'));
-});
-app.get('/admin', (req, res) => {
-  if (!req.isAuthenticated()) return res.redirect('/');
-  if (!isOwner(req.user)) return res.redirect('/dashboard');
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
