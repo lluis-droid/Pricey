@@ -371,6 +371,8 @@ app.post('/api/donations/:guildId/post', requireAuth, requireGuildMember, (req, 
 app.get('/api/donations/:guildId', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const data = readJSON(donationsPath(req.params.guildId), { donors: [], raised: 0 });
+  const computed = (data.donors || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+  data.raised = Math.round((computed || data.raised || 0) * 100) / 100;
   res.json(data);
 });
 app.post('/api/donations/:guildId/record', requireInternalSecret, (req, res) => {
@@ -401,6 +403,8 @@ app.delete('/api/donations/:guildId/donor/:index', requireAuth, requireGuildMemb
 app.get('/api/donations/:guildId/stats', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const data = readJSON(donationsPath(req.params.guildId), { donors: [], raised: 0 });
+  const computed = (data.donors || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+  data.raised = Math.round((computed || data.raised || 0) * 100) / 100;
   const count = data.donors.length;
   const avg = count > 0 ? Math.round((data.raised / count) * 100) / 100 : 0;
   const top = data.donors.length ? data.donors.reduce((a, b) => a.amount > b.amount ? a : b) : null;

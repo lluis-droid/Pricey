@@ -1177,6 +1177,8 @@ client.on(Events.InteractionCreate, async interaction => {
       if (id.startsWith('donation_reject_'))   return handleDonationReject(interaction);
       if (id.startsWith('open_donate_amount_modal_')) return handleDonateAmountModalTrigger(interaction);
       if (id.startsWith('open_donate_proof_modal_'))  return handleDonateProofModalTrigger(interaction);
+      if (id.startsWith('yesno_yes_'))  return handleYesNoAnswer(interaction, 'yes');
+      if (id.startsWith('yesno_no_'))   return handleYesNoAnswer(interaction, 'no');
     }
     if (interaction.isStringSelectMenu()) {
       const id = interaction.customId;
@@ -1413,6 +1415,22 @@ async function askQuestion(channel, session) {
     session.phase = 'awaiting-user-mention';
     return;
   }
+
+  if (q.type === 'yesno') {
+    embed.setFooter({ text: 'Click a button to answer.' });
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`yesno_yes_${channel.id}`).setLabel('Yes').setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId(`yesno_no_${channel.id}`).setLabel('No').setStyle(ButtonStyle.Danger),
+    );
+    if (session.ticketMessageId) {
+      await editTicketMessage(channel, session, [embed], [row]);
+    } else {
+      const msg = await channel.send({ embeds: [embed], components: [row] });
+      session.ticketMessageId = msg.id;
+    }
+    session.phase = 'awaiting-yesno';
+    return;
+  }
 }
 
 async function handleModalQuestion(interaction) {
@@ -1436,6 +1454,52 @@ async function handleModalQuestion(interaction) {
   await interaction.channel.send({ embeds: [embed] });
 
   session.phase = 'questions';
+  await startNextStep(interaction.channel, session);
+}
+
+async function handleYesNoAnswer(interaction, answer) {
+  const channelId = interaction.customId.replace('yesno_yes_', '').replace('yesno_no_', '');
+  const session = sessions.get(channelId);
+  const t = getLang(session?.config);
+  const colors = getColors(session?.config);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (session.phase !== 'awaiting-yesno') return interaction.reply({ content: 'No yes/no question pending.', flags: MessageFlags.Ephemeral });
+  const q = session.panel.questions[session.questionIndex];
+  await interaction.deferUpdate().catch(() => {});
+  session.answers.push({ question: q.text, answer, type: 'yesno' });
+  session.questionIndex++;
+  session.phase = 'questions';
+  syncTicket(session);
+
+  const action = answer === 'yes' ? (q.yesAction || 'continue') : (q.noAction || 'cancel');
+  const msgText = answer === 'yes' ? (q.yesMessage || '') : (q.noMessage || '');
+
+  const ackEmbed = new EmbedBuilder()
+    .setDescription(`> **${q.text}**\n> **${answer === 'yes' ? 'Yes' : 'No'}**`)
+    .setColor(colors.success);
+  await interaction.channel.send({ embeds: [ackEmbed] });
+
+  if (action === 'cancel') {
+    const cancelEmbed = new EmbedBuilder()
+      .setTitle('Ticket Cancelled')
+      .setDescription(msgText || 'This ticket has been cancelled based on your response.')
+      .setColor(colors.error)
+      .setTimestamp();
+    if (session.ticketMessageId) {
+      await editTicketMessage(interaction.channel, session, [cancelEmbed], []);
+    } else {
+      await interaction.channel.send({ embeds: [cancelEmbed] });
+    }
+    syncTicket({ ...session, status: 'cancelled' });
+    setTimeout(() => { interaction.channel.delete().catch(() => {}); sessions.delete(channelId); }, 10_000);
+    return;
+  }
+
+  if (action === 'message' && msgText) {
+    const infoEmbed = new EmbedBuilder().setDescription(msgText).setColor(colors.primary);
+    await interaction.channel.send({ embeds: [infoEmbed] });
+  }
+
   await startNextStep(interaction.channel, session);
 }
 

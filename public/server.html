@@ -190,6 +190,31 @@
   .coupon-item{background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;margin-bottom:8px;}
   .coupon-usage{font-size:11px;color:var(--muted);margin-top:6px;}
 
+  .format-toolbar{display:flex;gap:2px;margin-bottom:4px;flex-wrap:wrap;}
+  .format-toolbar button{background:var(--surface3);border:1px solid var(--border);border-radius:5px;
+    padding:3px 8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:monospace;transition:all .15s;}
+  .format-toolbar button:hover{color:var(--text);background:var(--surface2);border-color:var(--purple);}
+  .format-toolbar button:active{transform:scale(0.95);}
+
+  .emoji-picker-wrap{position:relative;display:inline-block;}
+  .emoji-picker-btn{background:var(--surface3);border:1px solid var(--border);border-radius:5px;
+    padding:3px 8px;color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s;}
+  .emoji-picker-btn:hover{color:var(--text);border-color:var(--purple);}
+  .emoji-panel{display:none;position:absolute;bottom:calc(100% + 6px);left:0;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:10px;width:320px;max-height:300px;z-index:100;
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow-y:auto;}
+  .emoji-panel.open{display:block;}
+  .emoji-panel input{width:100%;margin-bottom:8px;background:var(--surface3);border:1px solid var(--border);
+    border-radius:7px;padding:7px 10px;color:var(--text);font-size:12px;outline:none;}
+  .emoji-panel input:focus{border-color:var(--purple);}
+  .emoji-cat-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.5px;margin:8px 0 4px;}
+  .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;}
+  .emoji-grid button{background:none;border:none;font-size:18px;padding:4px;cursor:pointer;
+    border-radius:6px;transition:background .1s;}
+  .emoji-grid button:hover{background:var(--surface3);}
+
   .chart-card-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
   .chart-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;
     background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
@@ -556,7 +581,8 @@
           </div>
           <div class="form-row">
             <label>Panel message</label>
-            <textarea id="don-message" placeholder="Enjoying the server? Consider supporting us!" oninput="updateDonationPreview()"></textarea>
+            <div id="toolbar-don-message"></div>
+            <textarea id="don-message" rows="3" placeholder="Enjoying the server? Consider supporting us!" oninput="updateDonationPreview()"></textarea>
           </div>
         </div>
 
@@ -702,17 +728,20 @@
         </div>
         <div class="form-row">
           <label>Welcome Message</label>
-          <input type="text" id="cfg-welcome" placeholder="Welcome! Follow the bot's instructions to complete your purchase.">
-          <p class="hint">Shown when a ticket opens. Leave empty for the default.</p>
+          <div id="toolbar-welcome"></div>
+          <textarea id="cfg-welcome" rows="2" placeholder="Welcome! Follow the bot's instructions to complete your purchase."></textarea>
+          <p class="hint">Shown when a ticket opens. Leave empty for the default. Supports **bold**, *italic*, `code`, ||spoiler||.</p>
         </div>
         <div class="form-row" style="margin-bottom:0;">
           <label>Approval Message</label>
-          <input type="text" id="cfg-approved" placeholder="Your payment was confirmed. We will deliver your items shortly.">
+          <div id="toolbar-approved"></div>
+          <textarea id="cfg-approved" rows="2" placeholder="Your payment was confirmed. We will deliver your items shortly."></textarea>
           <p class="hint">Sent to the buyer when staff approves the order.</p>
         </div>
         <div class="form-row">
           <label>Rejection Message</label>
-          <input type="text" id="cfg-rejected" placeholder="Your order was rejected.">
+          <div id="toolbar-rejected"></div>
+          <textarea id="cfg-rejected" rows="2" placeholder="Your order was rejected."></textarea>
           <p class="hint">Sent to the buyer when staff rejects the order.</p>
         </div>
         <div class="form-row" style="margin-bottom:0;">
@@ -762,7 +791,17 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="6" x2="12" y2="18"/><path d="M15 9.5a3 3 0 0 0-3-1.5c-1.66 0-3 1-3 2.5S10.34 13 12 13s3 1 3 2.5-1.34 2.5-3 2.5a3 3 0 0 1-3-1.5"/></svg>
           Currencies
         </div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Choose which currencies buyers can pick from on "Game Currency" panels. Rate = how many USD one unit is worth.</p>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:6px;">Choose which currencies buyers can pick from on "Currency" panels. Rate = how many units of that currency equal $1 USD.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color:var(--muted)"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span style="font-size:13px;font-weight:600;">Auto-update rates from live API</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="currency-auto-update" onchange="toggleAutoUpdateRates()"><span class="toggle-slider"></span></label>
+        </div>
+        <div id="currency-rate-hint" style="display:none;margin-bottom:10px;padding:8px 12px;background:rgba(132,204,22,0.1);border:1px solid rgba(132,204,22,0.2);border-radius:8px;font-size:12px;color:var(--green);">
+          Rates will refresh automatically every 30 minutes using exchange rate data.
+        </div>
         <div id="currencies-list"></div>
         <div style="display:flex;gap:8px;margin-top:8px;">
           <button class="btn btn-ghost btn-sm" style="flex:1" onclick="addCurrency()">
@@ -831,7 +870,7 @@
     <div class="form-grid">
       <div class="form-row">
         <label>Title *</label>
-        <input type="text" id="pm-title" placeholder="e.g. Buy Game Currency">
+        <input type="text" id="pm-title" placeholder="e.g. Premium Membership">
       </div>
       <div class="form-row">
         <label>Embed Color</label>
@@ -850,9 +889,9 @@
       <div class="form-row">
         <label>Panel Type</label>
         <select id="pm-type" onchange="onTypeChange()">
-          <option value="currency">Game Currency (auto price)</option>
+          <option value="currency">Currency / Quantity (auto price)</option>
           <option value="product">Fixed Products</option>
-          <option value="service">Custom Service</option>
+          <option value="service">Custom Service / Request</option>
         </select>
       </div>
     </div>
@@ -902,7 +941,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;">🏷️ Discount Coupons</div>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">The automatic discount only applies to "Game Currency" panels. On Products/Services the coupon is noted so staff can verify it manually.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">The automatic discount only applies to "Currency" panels. On Products/Services the coupon is noted so staff can verify it manually.</p>
     <div id="coupons-list"></div>
     <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="addCoupon()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -937,6 +976,101 @@ let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[], currencies=[]
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function escAttr(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+function wrapFormat(inputId, prefix, suffix) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const start = el.selectionStart, end = el.selectionEnd;
+  const val = el.value;
+  const selected = val.substring(start, end);
+  const replacement = prefix + (selected || 'text') + suffix;
+  el.value = val.substring(0, start) + replacement + val.substring(end);
+  el.selectionStart = start + prefix.length;
+  el.selectionEnd = start + prefix.length + (selected || 'text').length;
+  el.focus();
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function insertFormat(inputId, text) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  const start = el.selectionStart;
+  el.value = el.value.substring(0, start) + text + el.value.substring(start);
+  el.selectionStart = el.selectionEnd = start + text.length;
+  el.focus();
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function buildFormatToolbar(inputId) {
+  const buttons = [
+    { label: 'B',  title: 'Bold',        fn: `wrapFormat('${inputId}','**','**')` },
+    { label: 'I',  title: 'Italic',      fn: `wrapFormat('${inputId}','*','*')` },
+    { label: 'U',  title: 'Underline',   fn: `wrapFormat('${inputId}','__','__')` },
+    { label: 'S',  title: 'Strikethrough', fn: `wrapFormat('${inputId}','~~','~~')` },
+    { label: '<>', title: 'Inline Code', fn: `wrapFormat('${inputId}','\`','\`')` },
+    { label: '||', title: 'Spoiler',     fn: `wrapFormat('${inputId}','||','||')` },
+    { label: '>',  title: 'Quote',       fn: `insertFormat('${inputId}','\\n> ')` },
+  ];
+  const epId = 'emoji-panel-' + inputId;
+  return `<div class="format-toolbar">
+    ${buttons.map(b => `<button type="button" title="${b.title}" onclick="${b.fn}">${b.label}</button>`).join('')}
+    <div class="emoji-picker-wrap">
+      <button type="button" title="Emoji" class="emoji-picker-btn" onclick="toggleEmojiPanel('${epId}','${inputId}')">&#128512;</button>
+      <div class="emoji-panel" id="${epId}"><input type="text" placeholder="Search emoji..." oninput="filterEmojis('${epId}',this.value)">
+        <div class="emoji-grid" id="${epId}-grid"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+const EMOJI_DATA = {
+  'Smileys': ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','😮‍💨','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫'],
+  'Gestures': ['👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','✋','🤚','🖐️','🖖','👋','🤝','🙏','💪','🦾','🫶','👏','🙌'],
+  'Hearts': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟'],
+  'Objects': ['💰','💎','🏆','🎯','🎁','🛒','💳','🔔','📢','💬','📝','✅','❌','⭐','🌟','💫','🔥','🎉','🎊','🎮','🕹️','💻','📱','🔧','⚡'],
+  'Arrows': ['➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','🔁','🔂'],
+  'Misc': ['🆕','🆙','🔝','🔜','🆗','🆒','🆓','🔢','🆓','❗','❓','❔','❕','‼️','⁉️','💯','🔜','🏷️','🔖','🔗','📌','📍','🗑️','🔒','🔓'],
+};
+
+let _activeEmojiInput = null;
+function toggleEmojiPanel(panelId, inputId) {
+  const panel = document.getElementById(panelId);
+  const isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.emoji-panel.open').forEach(p => p.classList.remove('open'));
+  if (!isOpen) {
+    _activeEmojiInput = inputId;
+    panel.classList.add('open');
+    renderEmojiGrid(panelId, '');
+    panel.querySelector('input').value = '';
+    panel.querySelector('input').focus();
+  }
+}
+
+function filterEmojis(panelId, query) { renderEmojiGrid(panelId, query); }
+
+function renderEmojiGrid(panelId, query) {
+  const grid = document.getElementById(panelId + '-grid');
+  let html = '';
+  for (const [cat, emojis] of Object.entries(EMOJI_DATA)) {
+    const filtered = query ? emojis.filter(() => true) : emojis;
+    if (!filtered.length) continue;
+    html += `<div class="emoji-cat-label">${cat}</div><div class="emoji-grid">`;
+    filtered.forEach(e => { html += `<button type="button" onclick="pickEmoji('${e}')">${e}</button>`; });
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function pickEmoji(emoji) {
+  if (_activeEmojiInput) insertFormat(_activeEmojiInput, emoji);
+  document.querySelectorAll('.emoji-panel.open').forEach(p => p.classList.remove('open'));
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.emoji-picker-wrap')) {
+    document.querySelectorAll('.emoji-panel.open').forEach(p => p.classList.remove('open'));
+  }
+});
+
 const ALL_METHODS = {
   paypal:'PayPal', zelle:'Zelle', cashapp:'Cash App', venmo:'Venmo',
   crypto_btc:'Bitcoin (BTC)', crypto_eth:'Ethereum (ETH)', crypto_usdt:'USDT (Trc20/Erc20)',
@@ -949,8 +1083,8 @@ const ALL_METHODS = {
 };
 
 const DEFAULT_QUESTIONS = [
-  {text:'What is your username / in-game ID?', type:'text', required:true, maxLength:64},
-  {text:'Which server / region are you in?', type:'text', required:false, maxLength:64},
+  {text:'What is your account name or ID?', type:'text', required:true, maxLength:64},
+  {text:'Any additional details for your order?', type:'text', required:false, maxLength:256},
 ];
 
 // Kept in sync with the bot's default CURRENCIES list in index.js.
@@ -1001,6 +1135,11 @@ async function init() {
   roles = info.roles || [];
   categories = info.categories || [];
   populateSelects();
+  ['toolbar-welcome|cfg-welcome', 'toolbar-approved|cfg-approved', 'toolbar-rejected|cfg-rejected', 'toolbar-don-message|don-message'].forEach(pair => {
+    const [tId, iId] = pair.split('|');
+    const tEl = document.getElementById(tId);
+    if (tEl) tEl.innerHTML = buildFormatToolbar(iId);
+  });
   document.getElementById('loader').classList.add('hidden');
 
   cfg = await fetch(`/api/config/${guildId}`).then(r=>r.json()).catch(()=>({}));
@@ -1103,10 +1242,12 @@ async function loadDonationData() {
     const r = await fetch(`/api/donations/${guildId}`);
     if (!r.ok) return;
     const data = await r.json();
+    const computedRaised = (data.donors || []).reduce((sum, d) => sum + (d.amount || 0), 0);
+    data.raised = Math.round((computedRaised || data.raised || 0) * 100) / 100;
     window._donationData = data;
     const don = cfg?.donation || {};
     const goal = don.goal || 0;
-    const raised = data.raised || 0;
+    const raised = data.raised;
     const count = data.donors?.length || 0;
     const avg = count > 0 ? Math.round((raised / count) * 100) / 100 : 0;
     const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
@@ -1316,34 +1457,76 @@ async function saveSettings() {
 }
 
 /* ===== CURRENCIES ===== */
+let _autoUpdateInterval = null;
+
+function toggleAutoUpdateRates() {
+  const enabled = document.getElementById('currency-auto-update').checked;
+  document.getElementById('currency-rate-hint').style.display = enabled ? '' : 'none';
+  if (enabled) {
+    fetchLiveRates();
+    _autoUpdateInterval = setInterval(fetchLiveRates, 30 * 60 * 1000);
+  } else {
+    if (_autoUpdateInterval) clearInterval(_autoUpdateInterval);
+    _autoUpdateInterval = null;
+  }
+}
+
+async function fetchLiveRates() {
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data?.rates) return;
+    currencies.forEach(c => {
+      const liveRate = data.rates[c.value];
+      if (liveRate && typeof liveRate === 'number') {
+        c.rate = Math.round(liveRate * 10000) / 10000;
+      }
+    });
+    renderCurrencies();
+    toast('Exchange rates updated');
+  } catch { /* silent */ }
+}
+
 function renderCurrencies() {
-  document.getElementById('currencies-list').innerHTML = currencies.map((c, i) => `
-    <div class="form-grid" style="grid-template-columns:1fr 2fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;">
-      <div class="form-row" style="margin:0">
-        <label style="font-size:10px;">Code</label>
-        <input type="text" value="${escAttr(c.value||'')}" maxlength="6" style="text-transform:uppercase"
-          oninput="currencies[${i}].value=this.value.toUpperCase()">
+  document.getElementById('currencies-list').innerHTML = currencies.map((c, i) => {
+    const unitsPerUsd = c.rate > 0 ? Math.round((1 / c.rate) * 100) / 100 : '—';
+    return `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:600;font-family:'Syne',sans-serif;">
+          ${esc(c.value || '?')} <span style="color:var(--muted);font-weight:400;">${esc(c.label || '')}</span>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red);padding:2px 6px;" onclick="removeCurrency(${i})" title="Remove currency">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
       </div>
-      <div class="form-row" style="margin:0">
-        <label style="font-size:10px;">Label</label>
-        <input type="text" value="${escAttr(c.label||'')}" placeholder="e.g. USD — US Dollar"
-          oninput="currencies[${i}].label=this.value">
+      <div style="background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:13px;display:flex;align-items:center;gap:6px;">
+        <span style="color:var(--muted);">$1 USD =</span>
+        <input type="number" step="any" value="${unitsPerUsd}" style="width:80px;background:transparent;border:none;color:var(--accent);font-weight:700;font-size:14px;outline:none;padding:0;" 
+          oninput="currencies[${i}].rate=this.value>0?1/parseFloat(this.value):0;this.closest('div').querySelector('span:last-child').textContent=''"
+          ${document.getElementById('currency-auto-update')?.checked ? 'disabled title="Auto-update is enabled"' : ''}>
+        <span style="font-weight:700;color:var(--accent);">${esc(c.value || '')}</span>
       </div>
-      <div class="form-row" style="margin:0">
-        <label style="font-size:10px;">Symbol</label>
-        <input type="text" value="${escAttr(c.symbol||'')}" placeholder="$"
-          oninput="currencies[${i}].symbol=this.value">
+      <div style="display:grid;grid-template-columns:80px 1fr 50px;gap:6px;">
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:2px;">Code</label>
+          <input type="text" value="${escAttr(c.value||'')}" maxlength="6" style="text-transform:uppercase;font-size:12px;"
+            oninput="currencies[${i}].value=this.value.toUpperCase()">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:2px;">Label</label>
+          <input type="text" value="${escAttr(c.label||'')}" placeholder="e.g. Colombian Peso" style="font-size:12px;"
+            oninput="currencies[${i}].label=this.value">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:2px;">Symbol</label>
+          <input type="text" value="${escAttr(c.symbol||'')}" placeholder="$" style="font-size:12px;"
+            oninput="currencies[${i}].symbol=this.value">
+        </div>
       </div>
-      <div class="form-row" style="margin:0">
-        <label style="font-size:10px;">Rate (in USD)</label>
-        <input type="number" step="any" value="${c.rate ?? 1}" placeholder="1"
-          oninput="currencies[${i}].rate=parseFloat(this.value)||0">
-      </div>
-      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="removeCurrency(${i})" title="Remove currency">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      </button>
-    </div>
-  `).join('') || '<p class="hint">No currencies configured — buyers won\'t be able to select one. Add at least one, or reset to defaults.</p>';
+    </div>`;
+  }).join('') || '<p class="hint">No currencies configured — buyers won\'t be able to select one. Add at least one, or reset to defaults.</p>';
 }
 
 function addCurrency() {
@@ -1976,24 +2159,56 @@ function addQuestion() {
 }
 
 function renderQuestions() {
-  document.getElementById('questions-list').innerHTML = questions.map((q,i)=>`
+  document.getElementById('questions-list').innerHTML = questions.map((q,i)=>{
+    const isYesNo = q.type === 'yesno';
+    const yesAction = q.yesAction || 'continue';
+    const noAction = q.noAction || 'cancel';
+    return `
     <div class="q-item">
       <div class="q-row">
         <input class="q-input" type="text" placeholder="Question text..." value="${escAttr(q.text)}" oninput="questions[${i}].text=this.value">
         <button class="q-del" onclick="questions.splice(${i},1);renderQuestions()">x</button>
       </div>
       <div class="q-controls">
-        <select class="q-select" onchange="questions[${i}].type=this.value">
+        <select class="q-select" onchange="questions[${i}].type=this.value;renderQuestions()">
           <option value="text" ${q.type==='text'?'selected':''}>Free text</option>
           <option value="number" ${q.type==='number'?'selected':''}>Numbers only</option>
           <option value="image" ${q.type==='image'?'selected':''}>Image attachment</option>
           <option value="user" ${q.type==='user'?'selected':''}>Discord user mention</option>
+          <option value="yesno" ${q.type==='yesno'?'selected':''}>Yes / No buttons</option>
         </select>
-        <label class="q-check"><input type="checkbox" ${q.required?'checked':''} onchange="questions[${i}].required=this.checked"> Required</label>
-        <label class="q-check">Max chars: <input type="number" class="q-num" value="${q.maxLength||500}" min="1" max="2000" onchange="questions[${i}].maxLength=+this.value"></label>
+        ${!isYesNo ? `
+          <label class="q-check"><input type="checkbox" ${q.required!==false?'checked':''} onchange="questions[${i}].required=this.checked"> Required</label>
+          <label class="q-check">Max chars: <input type="number" class="q-num" value="${q.maxLength||500}" min="1" max="2000" onchange="questions[${i}].maxLength=+this.value"></label>
+        ` : ''}
       </div>
-    </div>
-  `).join('');
+      ${isYesNo ? `
+      <div style="margin-top:10px;padding:10px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Button Actions</div>
+        <div class="form-grid" style="gap:8px;">
+          <div class="form-row">
+            <label style="font-size:12px;">When user clicks Yes</label>
+            <select class="q-select" onchange="questions[${i}].yesAction=this.value;renderQuestions()">
+              <option value="continue" ${yesAction==='continue'?'selected':''}>Continue to next step</option>
+              <option value="cancel" ${yesAction==='cancel'?'selected':''}>Cancel ticket</option>
+              <option value="message" ${yesAction==='message'?'selected':''}>Send message & continue</option>
+            </select>
+            ${yesAction==='message' ? `<input class="q-input" type="text" placeholder="Message to show..." value="${escAttr(q.yesMessage||'')}" oninput="questions[${i}].yesMessage=this.value" style="margin-top:6px;">` : ''}
+          </div>
+          <div class="form-row">
+            <label style="font-size:12px;">When user clicks No</label>
+            <select class="q-select" onchange="questions[${i}].noAction=this.value;renderQuestions()">
+              <option value="continue" ${noAction==='continue'?'selected':''}>Continue to next step</option>
+              <option value="cancel" ${noAction==='cancel'?'selected':''}>Cancel ticket</option>
+              <option value="message" ${noAction==='message'?'selected':''}>Send message & continue</option>
+            </select>
+            ${noAction==='message' ? `<input class="q-input" type="text" placeholder="Message to show..." value="${escAttr(q.noMessage||'')}" oninput="questions[${i}].noMessage=this.value" style="margin-top:6px;">` : ''}
+          </div>
+        </div>
+      </div>
+      ` : ''}
+    </div>`;
+  }).join('');
 }
 
 function addProduct() {
