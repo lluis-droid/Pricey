@@ -126,7 +126,7 @@
 <div class="wrap">
   <div class="page-badge">Legal</div>
   <h1 class="page-title">Privacy Policy</h1>
-  <p class="updated">Last updated: July 1, 2026</p>
+  <p class="updated">Last updated: July 12, 2026</p>
 
   <div class="toc">
     <a href="#intro">1. Introduction</a>
@@ -134,83 +134,115 @@
     <a href="#use">3. How We Use It</a>
     <a href="#storage">4. Storage & Retention</a>
     <a href="#sharing">5. Sharing</a>
-    <a href="#security">6. Security</a>
-    <a href="#rights">7. Your Rights</a>
-    <a href="#children">8. Children's Privacy</a>
-    <a href="#cookies">9. Cookies & Sessions</a>
-    <a href="#thirdparty">10. Discord & Payment Providers</a>
-    <a href="#changes">11. Changes</a>
-    <a href="#contact">12. Contact</a>
+    <a href="#moderation">6. Moderation Data</a>
+    <a href="#security">7. Security</a>
+    <a href="#rights">8. Your Rights</a>
+    <a href="#children">9. Children</a>
+    <a href="#cookies">10. Cookies</a>
+    <a href="#thirdparty">11. Third Parties</a>
+    <a href="#changes">12. Changes</a>
+    <a href="#contact">13. Contact</a>
   </div>
 
   <div class="legal-card">
     <h2 id="intro">1. Introduction</h2>
-    <p>This Privacy Policy explains how the Pricey team ("we," "us," or "our") collects, uses, stores, and protects information when you interact with the Pricey Discord bot and its web dashboard (together, the "Service"). By using the Service, you agree to the practices described here. If you do not agree, please do not use Pricey.</p>
+    <p>This Privacy Policy explains how the Pricey team ("we," "us," or "our") handles information when you use the Pricey Discord bot and its web dashboard (together, the "Service"). We only collect what we need to make the Service work. By using Pricey, you agree to the practices described here.</p>
 
     <h2 id="collect">2. Information We Collect</h2>
-    <p>We only collect information that is necessary for Pricey to function. Depending on how you use the Service, this may include:</p>
+    <p>What we collect depends on how you interact with the Service:</p>
+
     <table>
-      <tr><th>Category</th><th>Examples</th></tr>
-      <tr><td>Discord account data</td><td>User ID, username, avatar, and (only when you log into the dashboard) the servers you administer and your role in them, retrieved via Discord's official OAuth2 authorization</td></tr>
-      <tr><td>Server (guild) data</td><td>Server ID and name, bot configuration you set (roles, payment methods, categories, price rules, embeds/panels)</td></tr>
-      <tr><td>Ticket data</td><td>Messages sent inside bot-created ticket channels, purchase details entered into the ticket flow, and payment-proof screenshots voluntarily uploaded by a buyer so staff can manually confirm a payment made outside of Pricey</td></tr>
-      <tr><td>Technical data</td><td>Basic logs needed to operate the bot and dashboard, such as timestamps and error logs</td></tr>
+      <tr><th>Who</th><th>What we collect</th></tr>
+      <tr>
+        <td><strong>Anyone who opens a ticket</strong></td>
+        <td>Discord user ID and username. Answers to any questions the server owner has configured (free text, numbers, uploaded images, or mentioned Discord users). The selected currency, product, or custom amount. Chosen payment method, transaction reference, notes, and any screenshot uploaded as proof of payment.</td>
+      </tr>
+      <tr>
+        <td><strong>Dashboard users</strong> (server admins)</td>
+        <td>Discord user ID, username, avatar, and the list of servers where you hold administrative permissions — retrieved through Discord's OAuth2 when you log in. All bot settings you configure: ticket category, staff role, log channels, embed colors, custom messages, emojis, payment methods, payment account details (PayPal emails, crypto wallet addresses, account numbers, usernames), currency lists with exchange rates, purchase panels, product lists, coupon codes, and questions.</td>
+      </tr>
+      <tr>
+        <td><strong>Ticket transcripts</strong></td>
+        <td>When a ticket is closed, approved, rejected, or refunded, the bot stores a transcript of the last 150 messages in that channel — including each message's author, content, and timestamp. Transcripts are tied to the ticket record and the server. Full message content including attachment links is also saved to the server's log channel as a downloadable text file.</td>
+      </tr>
+      <tr>
+        <td><strong>Technical data</strong></td>
+        <td>Server logs needed to keep the bot running: timestamps, error messages, and the list of Discord servers the bot is in.</td>
+      </tr>
     </table>
-    <p>Pricey has <strong>no payment processing integration whatsoever</strong>. We do not connect to banks, card networks, PayPal, crypto exchanges, or any payment gateway, and we never handle actual funds. Any payment (via Nequi, PayPal, crypto, Bancolombia, or similar) happens entirely outside of Pricey, directly between the buyer and the seller; Pricey only displays the seller's payment instructions and, if a screenshot is uploaded, stores that image so staff can visually confirm the transaction on their own end.</p>
-    <p>We do <strong>not</strong> collect your Discord password. Authentication is handled entirely by Discord's own OAuth2 system, and we never see your login credentials.</p>
-    <p>We do not intentionally collect actual payment card numbers, bank credentials, or crypto wallet private keys. Any payment details visible in a ticket (such as a screenshot of a transfer) are provided voluntarily by users as proof of payment and are visible only to the relevant server's staff and, where applicable, to us for the purpose of operating the Service.</p>
+
+    <p><strong>Pricey has no payment processing capability.</strong> We do not connect to banks, card networks, PayPal, crypto exchanges, or any payment gateway. We never handle money. All payments happen directly between the buyer and the seller outside of Pricey. We do not collect credit card numbers, bank login credentials, or cryptocurrency private keys. Payment proof (such as transfer screenshots) is uploaded voluntarily by buyers and is visible to the server's staff and stored as part of the ticket record.</p>
+    <p>We do <strong>not</strong> collect or store your Discord password. Authentication is handled entirely by Discord's OAuth2 system.</p>
 
     <h2 id="use">3. How We Use Information</h2>
     <ul>
-      <li>To operate core bot features, such as creating and managing tickets, calculating prices, and posting configured panels;</li>
-      <li>To authenticate you and display the correct servers and settings on the web dashboard;</li>
-      <li>To let server owners configure and customize the bot for their community;</li>
-      <li>To maintain ticket transcripts so server staff can review past purchases or resolve disputes;</li>
-      <li>To monitor, secure, and improve the Service, including diagnosing technical issues;</li>
-      <li>To enforce these Terms and our Privacy Policy and to prevent abuse or fraud.</li>
+      <li><strong>To run the Service</strong> — creating tickets, calculating prices, displaying payment instructions, recording answers, generating transcripts, and posting panels to Discord channels.</li>
+      <li><strong>To authenticate dashboard users</strong> — verifying your identity through Discord and showing you the servers you manage.</li>
+      <li><strong>To let server owners customize the bot</strong> — storing the settings, panels, products, coupons, and payment accounts you configure.</li>
+      <li><strong>To support dispute resolution</strong> — ticket transcripts and payment proof let staff review what happened in a transaction.</li>
+      <li><strong>To moderate abuse</strong> — recording bans, suspensions, blacklists, and admin actions to prevent misuse of the Service.</li>
+      <li><strong>To maintain and debug the Service</strong> — technical logs help us identify and fix issues.</li>
     </ul>
-    <p>We do not use your data for targeted advertising, and we do not sell personal data to third parties.</p>
+    <p>We do not use your data for advertising. We do not sell personal data to anyone.</p>
 
     <h2 id="storage">4. Data Storage & Retention</h2>
-<p>Configuration data, panels, and ticket records are stored on the infrastructure that hosts the bot, tied to the specific Discord server (guild) they belong to. This data is kept for as long as it is needed to operate the Service, and <strong>it is not automatically deleted</strong> when Pricey is removed from a server — the associated files simply stop being used, but they remain on our storage until manually cleaned up.</p>
-<p>At this time, we do not offer a self-service or automated tool to permanently erase a server's data. If you contact us to request removal of your data, we will do our best on a case-by-case basis, but we cannot guarantee full, immediate, or automatic deletion, since this currently requires manual action rather than an automated system.</p>
+    <p>All data is stored as JSON files on the infrastructure that hosts the bot, organized by Discord server (guild). There is no automatic expiration — data persists until it is manually deleted.</p>
+    <p>When Pricey is removed from a server, the stored files remain on disk but are no longer actively used. They are not deleted automatically.</p>
+    <p>The bot operator can delete stored ticket data for individual users through the admin panel. Server owners can delete or modify their own configuration, panels, and ticket data through the dashboard. If you need data removed and cannot do it yourself, you can contact us and we will handle it on a case-by-case basis.</p>
 
     <h2 id="sharing">5. How We Share Information</h2>
-    <p>We do not sell or rent personal data. We may share information only in the following limited situations:</p>
+    <p>We do not sell or rent personal data. We may share information only in these situations:</p>
     <ul>
-      <li><strong>With Discord</strong>, as necessary to operate the bot and OAuth2 login, subject to Discord's own <a href="https://discord.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>;</li>
-      <li><strong>Within a server</strong>, where ticket contents and configuration are visible to that server's authorized staff and administrators, as configured by the server owner;</li>
-      <li><strong>For legal reasons</strong>, if required to comply with a valid legal process, protect our rights, or prevent fraud or harm;</li>
-      <li><strong>With service providers</strong> who help us host or run the Service under confidentiality obligations, and only to the extent needed to provide the Service.</li>
+      <li><strong>With Discord</strong> — as needed for bot operations and OAuth2 authentication, subject to Discord's own <a href="https://discord.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</li>
+      <li><strong>Within a server</strong> — ticket contents and configuration are visible to that server's staff and administrators, as set up by the server owner.</li>
+      <li><strong>For legal reasons</strong> — if required by law, to protect our rights, or to prevent fraud.</li>
+      <li><strong>With infrastructure providers</strong> — the hosting and storage providers that run the Service, under confidentiality obligations.</li>
     </ul>
 
-    <h2 id="security">6. Data Security</h2>
-    <p>We use reasonable technical and organizational measures to protect the data we store, including restricted access to hosting infrastructure and secure session handling for the dashboard. However, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security.</p>
+    <h2 id="moderation">6. Moderation Data</h2>
+    <p>Pricey stores moderation records to enforce bans, suspensions, and blacklists across the Service:</p>
+    <ul>
+      <li><strong>Global bans</strong> — user ID, reason, who issued the ban, when it was issued, and whether it has an expiration date. Permanent bans persist indefinitely until manually removed.</li>
+      <li><strong>Global suspensions</strong> — same fields, but always time-limited. Expired suspensions are no longer enforced but remain in the log.</li>
+      <li><strong>Per-server blacklists</strong> — user ID, reason, and timestamp, stored in the server's own configuration.</li>
+      <li><strong>Admin action log</strong> — a record of moderation actions taken through the admin panel (bans, suspensions, data deletions), including the admin's ID, the target user, the reason, and the timestamp. Capped at 2,000 entries.</li>
+    </ul>
+    <p>This data is accessible to the bot operator and, for server-level blacklists, to the server owner through the dashboard.</p>
 
-    <h2 id="rights">7. Your Rights & Choices</h2>
-<p>Depending on your location, local law may give you rights to access, correct, or request deletion of your personal data. You can exercise some of these directly by:</p>
-<ul>
-  <li>Removing Pricey from a server you administer, which stops any further data collection for that server (note: existing stored data is not automatically erased when the bot is removed — see Section 4);</li>
-  <li>Deleting your own messages inside a ticket, where Discord permits;</li>
-  <li>Contacting us to ask what data we have or to request that it be removed.</li>
-</ul>
-<p>We will respond to reasonable requests on a best-effort, case-by-case basis. Because we do not currently have an automated deletion system, we cannot guarantee that every request can be fully or immediately fulfilled.</p>
+    <h2 id="security">7. Security</h2>
+    <p>We use reasonable measures to protect the data we store: restricted access to hosting infrastructure, secure session handling for the dashboard, and internal API authentication between the bot and the server. No system is completely secure, and we cannot guarantee that data will never be accessed by unauthorized parties.</p>
 
-    <h2 id="children">8. Children's Privacy</h2>
-<p>The Service is intended for use in accordance with Discord's own minimum age requirements (currently 13 years old, or higher where required by local law). We do not knowingly collect personal information from children under this age. If we become aware that we have inadvertently collected such information, we will make reasonable efforts to remove it manually as soon as practical.</p>
+    <h2 id="rights">8. Your Rights & Choices</h2>
+    <p>Depending on your jurisdiction, you may have the right to access, correct, or delete your personal data. Here is how you can exercise those rights through the Service:</p>
+    <ul>
+      <li><strong>View your data</strong> — open a ticket and ask staff, or contact us directly.</li>
+      <li><strong>Delete your data</strong> — the bot operator can delete stored ticket data for any user through the admin panel. Server owners can manage their own server's data through the dashboard.</li>
+      <li><strong>Stop data collection</strong> — removing Pricey from a server stops any new data collection for that server. Existing stored data is not automatically removed when the bot leaves (see Section 4).</li>
+      <li><strong>Delete your messages</strong> — you can delete your own messages inside a ticket channel where Discord permits it.</li>
+    </ul>
+    <p>To request data removal that you cannot perform yourself, contact us through our support server. We handle requests on a case-by-case basis.</p>
 
-    <h2 id="cookies">9. Cookies & Session Data</h2>
-    <p>The web dashboard uses a session cookie to keep you logged in after authenticating with Discord. This cookie is used solely to maintain your session and is not used for cross-site tracking or advertising purposes.</p>
+    <h2 id="children">9. Children's Privacy</h2>
+    <p>The Service is designed for users who meet Discord's minimum age requirement (currently 13, or higher where local law requires). We do not knowingly collect data from children below this age. If we discover that we have, we will make reasonable efforts to remove it promptly.</p>
 
-    <h2 id="thirdparty">10. Discord & Payment Providers</h2>
-    <p>Pricey operates on top of Discord and relies on Discord's platform to function; your use of Discord itself is governed by Discord's own <a href="https://discord.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a>.</p>
-    <p>Where a server owner configures payment methods (such as Nequi, PayPal, cryptocurrency, or Bancolombia), any actual payment processing happens entirely outside of Pricey, directly between the buyer and the seller through that provider. We do not control, and are not responsible for, the privacy practices of those third-party payment providers.</p>
+    <h2 id="cookies">10. Cookies & Sessions</h2>
+    <p>The web dashboard uses a single session cookie (<code>connect.sid</code>) to keep you logged in after authenticating with Discord. It is:</p>
+    <ul>
+      <li><strong>httpOnly</strong> — inaccessible to JavaScript on the page.</li>
+      <li><strong>Set to expire after 7 days</strong>, after which you will need to log in again.</li>
+      <li><strong>Used only for authentication</strong> — we do not use it for tracking, analytics, or advertising.</li>
+    </ul>
+    <p>The dashboard loads fonts from Google Fonts (Syne and DM Sans). Google may receive standard web request data (IP address, browser type) when these fonts are loaded, subject to Google's own privacy policy.</p>
 
-    <h2 id="changes">11. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time to reflect changes in our practices or for legal reasons. We will update the "Last updated" date above when we do. Continued use of the Service after a change takes effect means you accept the revised policy.</p>
+    <h2 id="thirdparty">11. Discord & Payment Providers</h2>
+    <p>Your use of Discord is governed by Discord's own <a href="https://discord.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a>. Pricey operates on top of Discord's platform and is subject to Discord's data practices.</p>
+    <p>When a server owner configures payment methods, the actual payment happens entirely outside Pricey, directly between the buyer and the seller through the chosen provider. We do not control and are not responsible for the privacy practices of those payment providers.</p>
 
-    <h2 id="contact">12. Contact Us</h2>
-<p>If you have questions about this Privacy Policy or want to exercise your data rights, please contact us through our official support Discord server: <a href="https://discord.gg/hDdCutjvwX" target="_blank" rel="noopener">discord.gg/hDdCutjvwX</a>.</p>
+    <h2 id="changes">12. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the latest revision. Continued use of the Service after changes take effect means you accept the updated policy.</p>
+
+    <h2 id="contact">13. Contact</h2>
+    <p>Questions about this Privacy Policy or requests regarding your data? Contact us through our official support server: <a href="https://discord.gg/hDdCutjvwX" target="_blank" rel="noopener">discord.gg/hDdCutjvwX</a>.</p>
   </div>
 </div>
 

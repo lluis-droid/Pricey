@@ -116,83 +116,108 @@
 <div class="wrap">
   <div class="page-badge">Legal</div>
   <h1 class="page-title">Terms of Service</h1>
-  <p class="updated">Last updated: July 1, 2026</p>
+  <p class="updated">Last updated: July 12, 2026</p>
 
   <div class="toc">
     <a href="#acceptance">1. Acceptance</a>
-    <a href="#description">2. The Service</a>
-    <a href="#eligibility">3. Eligibility</a>
-    <a href="#accounts">4. Accounts & Servers</a>
-    <a href="#payments">5. Payments</a>
-    <a href="#conduct">6. Acceptable Use</a>
-    <a href="#owners">7. Server Owner Duties</a>
-    <a href="#ip">8. Intellectual Property</a>
-    <a href="#third-party">9. Third-Party Services</a>
-    <a href="#disclaimer">10. Disclaimer</a>
-    <a href="#liability">11. Liability</a>
-    <a href="#termination">12. Termination</a>
-    <a href="#changes">13. Changes</a>
-    <a href="#law">14. Governing Law</a>
+    <a href="#service">2. The Service</a>
+    <a href="#accounts">3. Accounts</a>
+    <a href="#payments">4. Payments</a>
+    <a href="#ticket-data">5. Ticket Data</a>
+    <a href="#moderation">6. Moderation</a>
+    <a href="#conduct">7. Acceptable Use</a>
+    <a href="#owners">8. Server Owners</a>
+    <a href="#ip">9. Intellectual Property</a>
+    <a href="#third-party">10. Third Parties</a>
+    <a href="#disclaimer">11. Disclaimer</a>
+    <a href="#liability">12. Liability</a>
+    <a href="#termination">13. Termination</a>
+    <a href="#changes">14. Changes</a>
     <a href="#contact">15. Contact</a>
   </div>
 
   <div class="legal-card">
     <h2 id="acceptance">1. Acceptance of Terms</h2>
-    <p>These Terms of Service ("Terms") govern your access to and use of the Pricey Discord bot, its associated web dashboard, and any related services (together, the "Service"), operated by the Pricey team ("we," "us," or "our"). By inviting Pricey to a Discord server, logging into the dashboard, or otherwise interacting with the Service, you agree to be bound by these Terms. If you do not agree, you must not use the Service.</p>
+    <p>By inviting Pricey to a Discord server, logging into the web dashboard, or using any part of the Service, you agree to these Terms of Service ("Terms"). If you are using the Service on behalf of a server or organization, you represent that you have the authority to bind that entity to these Terms. You must meet Discord's minimum age requirement (currently 13, or higher where local law requires) and comply with Discord's own <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://discord.com/guidelines" target="_blank" rel="noopener">Community Guidelines</a>.</p>
 
-    <h2 id="description">2. Description of the Service</h2>
-    <p>Pricey is a third-party Discord bot that helps server owners run ticket-based storefronts. It provides tools such as automated purchase tickets, configurable price calculations, panel and embed builders, ticket transcripts, and a web dashboard for configuring these features per server.</p>
-    <p>Pricey is an independent product and is <strong>not created, endorsed, or supported by Discord Inc.</strong> Your use of Discord itself remains subject to Discord's own <a href="https://discord.com/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://discord.com/guidelines" target="_blank" rel="noopener">Community Guidelines</a>.</p>
-
-    <h2 id="eligibility">3. Eligibility</h2>
-    <p>You must meet Discord's minimum age requirement (currently 13 years old, or higher where required by local law) to use the Service. If you are old enough to use Discord in your country but are still considered a minor there, you should only use the Service with the involvement of a parent or legal guardian, particularly for anything involving payments.</p>
-
-    <h2 id="accounts">4. Accounts, Servers & Data You Provide</h2>
-    <p>To access the web dashboard you authenticate through Discord's official OAuth2 login. We never see or store your Discord password. Server administrators are responsible for configuring Pricey correctly for their community and for the conduct of their staff and members within tickets created by the bot.</p>
-
-    <h2 id="payments">5. Payments and Transactions</h2>
-    <p>Pricey <strong>does not process, hold, transmit, or have access to any funds</strong>, and it does not integrate with any payment gateway or processor. Pricey is purely a sales-facilitation and ticket-automation tool: it lets a server owner display their own payment instructions (for example a Nequi phone number, a PayPal email, a crypto wallet address, or a Bancolombia account) inside a private ticket, calculates the price to be paid, and optionally lets staff mark a ticket as "paid" after manually reviewing a proof of payment (such as a screenshot) uploaded by the buyer.</p>
-    <p>All actual money movement happens <strong>entirely outside of Pricey and outside of Discord</strong>, directly between the buyer and the seller through the external payment method the seller chose. Pricey is not a party to any transaction, does not verify that a payment has genuinely been received in a bank or wallet, and does not guarantee the delivery of any goods or services purchased through a ticket.</p>
-    <p>We do not guarantee the legitimacy of any seller or the accuracy of any price calculated by the bot. Disputes about a purchase must be resolved directly between the buyer and the server operating the ticket. We strongly encourage server owners to be transparent about refund and dispute policies before enabling paid features.</p>
-    <p>You are solely responsible for ensuring that any goods, services, or transactions carried out through a ticket comply with applicable law and with Discord's Terms of Service and Community Guidelines, including rules around the sale of prohibited or regulated items.</p>
-
-    <h2 id="conduct">6. Acceptable Use</h2>
-    <p>When using the Service, you agree not to:</p>
+    <h2 id="service">2. Description of the Service</h2>
+    <p>Pricey is a third-party Discord bot and web dashboard that helps server owners manage ticket-based storefronts. Core features include:</p>
     <ul>
-      <li>Use Pricey to facilitate the sale of illegal goods or services, or anything prohibited by Discord's policies;</li>
-      <li>Attempt to exploit, reverse-engineer, abuse, or interfere with the bot, dashboard, or underlying infrastructure;</li>
-      <li>Use the Service to harass, defraud, or scam any other user;</li>
-      <li>Circumvent rate limits, security measures, or access controls;</li>
-      <li>Use automated means (other than Pricey itself) to interact with the Service in a way not intended by us.</li>
+      <li><strong>Purchase panels</strong> — embeds posted to Discord channels that buyers click to open a private ticket.</li>
+      <li><strong>Automated ticket channels</strong> — private channels where the bot walks buyers through questions, pricing, and payment.</li>
+      <li><strong>Price calculation</strong> — configurable currency conversion and margin-based pricing for game currencies and digital goods.</li>
+      <li><strong>Product and coupon management</strong> — fixed-price product lists and discount codes (percent or fixed amount, with usage limits and expiry).</li>
+      <li><strong>Payment flow</strong> — the buyer selects from up to 23 supported payment methods, sees the seller's account details, and submits proof of payment (reference number and screenshot) for manual review.</li>
+      <li><strong>Ticket transcripts</strong> — auto-generated when a ticket is closed, approved, rejected, or refunded.</li>
+      <li><strong>Web dashboard</strong> — a browser-based panel for configuring the bot, managing tickets, viewing activity, and exporting data.</li>
     </ul>
-    <p>We reserve the right to suspend or remove access to the Service for any account, user, or server that violates these Terms.</p>
+    <p>Pricey is an independent product <strong>not created, endorsed, or affiliated with Discord Inc.</strong></p>
 
-    <h2 id="owners">7. Responsibilities of Server Owners & Staff</h2>
-    <p>If you install Pricey on a Discord server, you are responsible for configuring roles, permissions, ticket categories, and payment information correctly. You are also responsible for moderating conduct inside tickets created by the bot and for keeping any staff who can view ticket contents accountable to your own community rules and to applicable law.</p>
+    <h2 id="accounts">3. Accounts & Authentication</h2>
+    <p>The web dashboard uses Discord's official OAuth2 login. We receive your Discord user ID, username, avatar, and the list of servers where you have administrative permissions. We never see or store your Discord password. Your session is maintained through a secure cookie that expires after seven days.</p>
+    <p>Server owners are responsible for assigning the correct staff roles and permissions within Discord so that only authorized people can access ticket channels, approve orders, and change bot settings.</p>
 
-    <h2 id="ip">8. Intellectual Property</h2>
-    <p>The Pricey name, logo, dashboard design, and underlying software are the property of the Pricey team and its licensors. You may not copy, redistribute, resell, or create derivative products based on Pricey's branding or codebase without prior written permission, except as permitted by any open-source license under which parts of the project may be released.</p>
+    <h2 id="payments">4. Payments & Transactions</h2>
+    <p>Pricey <strong>does not process, hold, transmit, or have access to any money</strong>. It has no integration with any payment gateway, bank, card network, or cryptocurrency exchange.</p>
+    <p>Pricey works as follows: the server owner configures their own payment instructions (a PayPal email, a crypto wallet, a Nequi number, and so on) in the dashboard. When a buyer opens a ticket, the bot displays those instructions and the calculated price. The buyer then pays directly to the seller through the external method, returns to the ticket, and submits proof of payment — typically a transaction reference and a screenshot. Staff review the proof and manually approve or reject the order.</p>
+    <p>All money movement happens <strong>entirely outside Pricey and outside Discord</strong>, directly between buyer and seller. Pricey does not verify that a payment was actually received. Any disputes about a purchase must be resolved between the buyer and the server operating the ticket. We strongly recommend that server owners publish clear refund and dispute-resolution policies before enabling paid features.</p>
+    <p>You are responsible for ensuring that anything sold through the Service complies with applicable law and with Discord's policies.</p>
 
-    <h2 id="third-party">9. Third-Party Services</h2>
-    <p>The Service relies on and integrates with third-party platforms, including Discord (for authentication, bot functionality, and messaging) and, where configured by a server owner, external payment providers. We are not responsible for the availability, security, or policies of these third-party services.</p>
+    <h2 id="ticket-data">5. Ticket Data & Transcripts</h2>
+    <p>When a buyer opens a ticket, the bot collects information needed to complete the transaction: answers to the server owner's custom questions (text, numbers, image uploads, or Discord user mentions), the selected product or currency amount, chosen payment method, transaction reference, and any screenshot uploaded as proof of payment.</p>
+    <p>When a ticket is closed, approved, rejected, or refunded, the bot generates a transcript of the conversation and stores it alongside the ticket record. Transcripts are used so that server staff can review past orders and resolve disputes. They are stored on the same infrastructure as all other ticket data, tied to the specific Discord server.</p>
+    <p>Server staff with access to the ticket channel — and the bot's owner for operational purposes — can view ticket contents. Buyers should be aware that anything they write or upload in a ticket channel may be read by staff and retained in the transcript.</p>
 
-    <h2 id="disclaimer">10. Disclaimer of Warranties</h2>
-    <p>The Service is provided "as is" and "as available," without warranties of any kind, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement. We do not warrant that the Service will be uninterrupted, error-free, or completely secure.</p>
+    <h2 id="moderation">6. Moderation</h2>
+    <p>Pricey includes moderation tools that server owners and the bot operator can use:</p>
+    <ul>
+      <li><strong>Per-server blacklists</strong> — server admins can block specific users from opening tickets in their server.</li>
+      <li><strong>Global bans and suspensions</strong> — the bot operator can temporarily or permanently block users across all servers that use Pricey. Banned or suspended users cannot open new tickets until the ban or suspension expires or is lifted.</li>
+      <li><strong>Report flag</strong> — staff can mark a ticket user as "reported" for review by the server owner or the bot operator.</li>
+    </ul>
+    <p>Moderation decisions made through the dashboard are final for the scope of Pricey. They do not affect a user's Discord account or their access to the server itself — only their ability to open tickets through the bot.</p>
 
-    <h2 id="liability">11. Limitation of Liability</h2>
-    <p>To the maximum extent permitted by law, the Pricey team shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits, revenue, data, or goodwill, arising out of or related to your use of the Service, including any transaction facilitated through a ticket. Our total liability for any claim arising from these Terms or the Service shall not exceed the amount, if any, you paid us directly for the Service in the twelve (12) months preceding the claim.</p>
+    <h2 id="conduct">7. Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use Pricey to sell illegal goods or anything prohibited by Discord's policies;</li>
+      <li>Attempt to exploit, reverse-engineer, or interfere with the bot, dashboard, or infrastructure;</li>
+      <li>Use the Service to harass, defraud, or scam others;</li>
+      <li>Circumvent rate limits, security controls, or access restrictions;</li>
+      <li>Automate interaction with the Service in ways not intended by its design.</li>
+    </ul>
+    <p>Violation of these rules may result in suspension or removal from the Service at our discretion.</p>
 
-    <h2 id="termination">12. Termination</h2>
-    <p>We may suspend or terminate your access to the Service, including removing the bot from a server or disabling dashboard access, at any time and for any reason, including violation of these Terms or of Discord's own policies. Server owners may remove Pricey from their server at any time through Discord's standard bot management tools.</p>
+    <h2 id="owners">8. Responsibilities of Server Owners</h2>
+    <p>If you install Pricey on a server, you are responsible for:</p>
+    <ul>
+      <li>Configuring ticket categories, staff roles, log channels, and payment information correctly;</li>
+      <li>Moderating conduct inside tickets created by the bot;</li>
+      <li>Ensuring that staff who can view ticket contents comply with your community rules and applicable privacy law;</li>
+      <li>The accuracy of prices, product descriptions, and payment instructions you configure.</li>
+    </ul>
+    <p>Pricey provides the tools. How you use them in your community is your responsibility.</p>
 
-    <h2 id="changes">13. Changes to These Terms</h2>
-    <p>We may update these Terms from time to time. Material changes will be reflected by updating the "Last updated" date at the top of this page. Continued use of the Service after changes take effect constitutes acceptance of the revised Terms.</p>
+    <h2 id="ip">9. Intellectual Property</h2>
+    <p>The Pricey name, logo, dashboard design, and source code belong to the Pricey team. You may not copy, redistribute, resell, or create derivative works from our branding or code without written permission, except as allowed by any open-source license that may apply to parts of the project.</p>
 
-   <h2 id="law">14. Governing Law</h2>
-<p>Pricey is available to users and server owners around the world, and these Terms are not written to favor the exclusive jurisdiction of any single country. Any dispute relating to these Terms will be interpreted according to generally recognized principles of contract law, without prejudice to any mandatory consumer-protection, data-protection, or local law that applies to you and cannot be waived by agreement in your country of residence.</p>
+    <h2 id="third-party">10. Third-Party Services</h2>
+    <p>Pricey depends on third-party platforms: Discord for bot operations and authentication, and — where configured by a server owner — external payment providers for the actual transfer of funds. We are not responsible for the availability, security, or policies of these third parties. Your use of Discord is governed by its own terms and privacy policy.</p>
 
-    <h2 id="contact">15. Contact Us</h2>
-<p>If you have questions about these Terms, please reach out through our official support Discord server: <a href="https://discord.gg/hDdCutjvwX" target="_blank" rel="noopener">discord.gg/hDdCutjvwX</a>.</p>
+    <h2 id="disclaimer">11. Disclaimer of Warranties</h2>
+    <p>The Service is provided <strong>"as is"</strong> and <strong>"as available"</strong>, without warranties of any kind. We do not guarantee that the Service will be uninterrupted, error-free, or secure. We are not responsible for the conduct of buyers, sellers, or staff using tickets created through Pricey.</p>
+
+    <h2 id="liability">12. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, the Pricey team is not liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of profits, revenue, data, or goodwill arising from your use of the Service — including any transaction conducted through a ticket. Our total liability for any claim will not exceed the amount, if any, you paid us directly in the twelve months before the claim.</p>
+
+    <h2 id="termination">13. Termination</h2>
+    <p>We may suspend or terminate your access to the Service — including removing the bot from a server or disabling dashboard access — at any time, for any reason, including a violation of these Terms or of Discord's policies. Server owners may remove Pricey from their server at any time through Discord's standard bot management.</p>
+
+    <h2 id="changes">14. Changes to These Terms</h2>
+    <p>We may update these Terms periodically. The "Last updated" date at the top reflects the most recent revision. Continuing to use the Service after changes take effect means you accept the updated Terms.</p>
+
+    <h2 id="contact">15. Contact</h2>
+    <p>Questions about these Terms? Reach us through our official support server: <a href="https://discord.gg/hDdCutjvwX" target="_blank" rel="noopener">discord.gg/hDdCutjvwX</a>.</p>
   </div>
 </div>
 

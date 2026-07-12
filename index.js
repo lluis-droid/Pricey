@@ -458,11 +458,37 @@ async function pollActions() {
   } catch {}
 }
 
+async function getSessionFromDisk(guildId, channelId) {
+  try {
+    const r = await apiFetch(`${BASE_URL}/api/tickets/${guildId}`);
+    if (!r) return null;
+    const tickets = await r.json();
+    const t = tickets.find(x => x.channelId === channelId);
+    if (!t) return null;
+    const config = await getConfig(guildId);
+    return {
+      channelId: t.channelId, guildId, config,
+      panel: t.panel || {}, userId: t.userId, username: t.username,
+      status: t.status || 'open', canType: t.canType || false,
+      reported: t.reported || false, priority: t.priority || 'normal',
+      staffNotes: t.staffNotes || [], transcript: t.transcript || null,
+      answers: t.answers || [], selectedProduct: t.selectedProduct || null,
+      totalDisplay: t.totalDisplay || null, totalUSD: t.totalUSD ?? null,
+      currencyAmount: t.currencyAmount || null, appliedCoupon: t.appliedCoupon || null,
+      paymentMethod: t.paymentMethod || null, paymentReference: t.paymentReference || null,
+      paymentNote: t.paymentNote || null, paymentProof: t.paymentProof || null,
+      openedAt: t.openedAt || Date.now(), pastTickets: t.pastTickets || [],
+      pendingModal: null,
+    };
+  } catch { return null; }
+}
+
 async function handleDashboardTicketAction(data) {
   const { guildId, channelId, action, value } = data;
   let channel = client.channels.cache.get(channelId);
   if (!channel) { try { channel = await client.channels.fetch(channelId); } catch {} }
-  const session = sessions.get(channelId);
+  let session = sessions.get(channelId);
+  if (!session && channel) session = await getSessionFromDisk(guildId, channelId);
   const config = session?.config || await getConfig(guildId);
   const t = getLang(config);
   const colors = getColors(config);
@@ -476,23 +502,23 @@ async function handleDashboardTicketAction(data) {
     await channel.send({ embeds: [new EmbedBuilder().setDescription(closedMsg).setColor(colors.error)] });
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 5000);
   }
-  if (action === 'approve' && session) {
+  if (action === 'approve') {
     const approvedMsg = config.approvedMsg || t.approved();
     await generateAndSendTranscript(channel, session, 'Approved');
     await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(colors.success).setTimestamp()] });
-    session.status = 'approved'; syncTicket(session);
+    if (session) { session.status = 'approved'; syncTicket(session); }
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
-  if (action === 'reject' && session) {
+  if (action === 'reject') {
     const rejectedMsg = config.rejectedMsg || t.rejected;
     await generateAndSendTranscript(channel, session, 'Rejected');
     await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(rejectedMsg).setColor(colors.error).setTimestamp()] });
-    session.status = 'rejected'; syncTicket(session);
+    if (session) { session.status = 'rejected'; syncTicket(session); }
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
-  if (action === 'refund' && session) {
+  if (action === 'refund') {
     await generateAndSendTranscript(channel, session, 'Refunded');
-    session.status = 'refunded'; syncTicket(session);
+    if (session) { session.status = 'refunded'; syncTicket(session); }
     await channel.send({ embeds: [new EmbedBuilder().setDescription('This order was marked as **refunded** by an admin.').setColor(colors.warning)] }).catch(() => {});
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
@@ -534,10 +560,9 @@ async function postPanel(guildId, panel) {
   if (panel.bannerUrl) embed.setImage(panel.bannerUrl);
   const thumb = panel.thumbnailUrl || config.thumbnailUrl;
   if (thumb) embed.setThumbnail(thumb);
-  const panels = await getPanels(guildId);
-  const idx = panels.findIndex(p => p.title === panel.title);
+  const panelId = panel.id || 'legacy';
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${idx}`).setLabel(t.openTicket).setEmoji(emojis.ticketOpened).setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${panelId}`).setLabel(t.openTicket).setEmoji(emojis.ticketOpened).setStyle(ButtonStyle.Primary)
   );
   await channel.send({ embeds: [embed], components: [row] });
 }
@@ -556,10 +581,10 @@ function applyCouponToUSD(usdTotal, coupon) {
   if (coupon.type === 'percent') return Math.max(0, usdTotal * (1 - coupon.value / 100));
   return Math.max(0, usdTotal - coupon.value);
 }
-async function incrementCouponUsage(guildId, panelTitle, code) {
+async function incrementCouponUsage(guildId, panelId, code) {
   try {
     const panels = await getPanels(guildId);
-    const p = panels.find(p => p.title === panelTitle);
+    const p = panels.find(p => p.id === panelId) || panels.find(p => p.title === panelId);
     if (!p?.coupons) return;
     const c = p.coupons.find(c => c.code?.toLowerCase() === code.toLowerCase());
     if (c) { c.uses = (c.uses || 0) + 1; await savePanels(guildId, panels); }
@@ -632,12 +657,12 @@ async function handleModalCoupon(interaction) {
     session.totalUSD = parseFloat(usdAfter.toFixed(2));
     session.totalDisplay = `${currencyInfo.symbol}${session.total.toLocaleString()} ${session.currency}`;
     session.appliedCoupon = coupon.code;
-    incrementCouponUsage(session.guildId, session.panel.title, coupon.code);
+    incrementCouponUsage(session.guildId, session.panel.id || session.panel.title, coupon.code);
     await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponApplied(coupon.code, session.totalDisplay)).setColor(colors.success)] });
   } else {
     // Product / service panels: free-text pricing, so we note the coupon for the admin instead of auto-discounting.
     session.appliedCoupon = coupon.code;
-    incrementCouponUsage(session.guildId, session.panel.title, coupon.code);
+    incrementCouponUsage(session.guildId, session.panel.id || session.panel.title, coupon.code);
     await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponNoted(coupon.code)).setColor(colors.success)] });
   }
 
@@ -756,10 +781,12 @@ async function handleProofModalTrigger(interaction) {
 
 // ─── TICKET OPEN ───────────────────────────────────────────────────────────────
 async function handleOpenTicket(interaction) {
-  const [,, guildId, idxStr] = interaction.customId.split('_');
+  const [,, guildId, panelId] = interaction.customId.split('_');
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const panels = await getPanels(guildId);
-  const panel  = panels[parseInt(idxStr)];
+  // Support both stable ID lookup and legacy index-based lookup
+  let panel = panels.find(p => p.id === panelId);
+  if (!panel) panel = panels[parseInt(panelId)];
   if (!panel) return interaction.editReply({ content: 'This panel no longer exists.' });
   const config = await getConfig(guildId);
   const t = getLang(config);
@@ -1219,7 +1246,9 @@ async function handleCloseTicket(interaction) {
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
   const colors = getColors(session?.config);
-  if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels))
+  const hasPermission = interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)
+    || (session?.config?.adminRole && interaction.member.roles.cache.has(session.config.adminRole));
+  if (!hasPermission)
     return interaction.reply({ content: t.staffOnly, flags: MessageFlags.Ephemeral });
   const closedMsg = session?.config?.closedMsg || t.closingIn5;
   await interaction.reply({ content: closedMsg });

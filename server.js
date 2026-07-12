@@ -55,7 +55,7 @@ function logAdminAction(adminId, action, targetUserId, reason, extra = {}) {
   writeJSON(adminLogPath(), log.slice(0, 2000)); // cap log growth
 }
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'pricey_dev_secret',
@@ -87,7 +87,6 @@ function requireAuth(req, res, next) {
 
 function requireInternalSecret(req, res, next) {
   const secret = process.env.PRICEY_INTERNAL_SECRET;
-  if (!secret) return next();
   if (req.headers['x-internal-secret'] === secret) return next();
   res.status(401).json({ error: 'Unauthorized' });
 }
@@ -97,8 +96,12 @@ function requireGuildMember(req, res, next) {
   if (!guildId) return next();
   if (!req.isAuthenticated()) return res.status(401).json({ error: 'Unauthorized' });
   const userGuilds = req.user.guilds || [];
-  const inGuild = userGuilds.some(g => g.id === guildId) || (botStatus.guilds || []).includes(guildId);
-  if (!inGuild) return res.status(403).json({ error: 'Forbidden' });
+  const guild = userGuilds.find(g => g.id === guildId);
+  if (!guild) return res.status(403).json({ error: 'Forbidden' });
+  // MANAGE_GUILD (0x20) or ADMINISTRATOR (0x8)
+  const perms = BigInt(guild.permissions || 0);
+  const hasPermission = (perms & BigInt(0x20)) === BigInt(0x20) || (perms & BigInt(0x8)) === BigInt(0x8);
+  if (!hasPermission) return res.status(403).json({ error: 'Insufficient permissions' });
   next();
 }
 
@@ -114,7 +117,13 @@ async function fetchUserGuilds(accessToken) {
 
 let botStatus = { online: false, tag: '', guilds: [] };
 let pendingBotActions = [];
-function notifyBot(type, data) { pendingBotActions.push({ type, data }); }
+function notifyBot(type, data) { pendingBotActions.push({ type, data, ts: Date.now() }); }
+const ACTION_TTL_MS = 120_000;
+function prunePendingActions() {
+  const cutoff = Date.now() - ACTION_TTL_MS;
+  pendingBotActions = pendingBotActions.filter(a => a.ts > cutoff);
+}
+setInterval(prunePendingActions, 30_000);
 
 /* ===== BOT COMMUNICATION (internal secret required) ===== */
 app.post('/api/bot-status', requireInternalSecret, (req, res) => {
@@ -220,28 +229,40 @@ app.post('/api/config/:guildId', requireAuth, requireGuildMember, (req, res) => 
 
 app.get('/api/panels/:guildId', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  res.json(readJSON(panelsPath(req.params.guildId), []));
+  const panels = readJSON(panelsPath(req.params.guildId), []);
+  let changed = false;
+  for (const p of panels) {
+    if (!p.id) { p.id = require('crypto').randomBytes(8).toString('hex'); changed = true; }
+  }
+  if (changed) writeJSON(panelsPath(req.params.guildId), panels);
+  res.json(panels);
 });
 app.post('/api/panels/:guildId', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  writeJSON(panelsPath(req.params.guildId), req.body);
+  const panels = req.body;
+  if (Array.isArray(panels)) {
+    for (const p of panels) { if (!p.id) p.id = require('crypto').randomBytes(8).toString('hex'); }
+  }
+  writeJSON(panelsPath(req.params.guildId), panels);
   res.json({ ok: true });
 });
 app.post('/api/panels/:guildId/post', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const panels = readJSON(panelsPath(req.params.guildId), []);
-  const panel = panels[req.body.panelIndex];
+  let panel;
+  if (req.body.panelId) {
+    panel = panels.find(p => p.id === req.body.panelId);
+  } else if (typeof req.body.panelIndex === 'number') {
+    panel = panels[req.body.panelIndex];
+  }
   if (!panel) return res.status(404).json({ error: 'Panel not found' });
+  if (!panel.id) panel.id = require('crypto').randomBytes(8).toString('hex');
   notifyBot('post-panel', { guildId: req.params.guildId, panel });
   res.json({ ok: true });
 });
 app.post('/api/donations/:guildId/post', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  const panels = readJSON(panelsPath(req.params.guildId), []);
-  const panel = panels[req.body.panelIndex];
-  if (!panel) return res.status(404).json({ error: 'Panel not found' });
-  notifyBot('post-panel', { guildId: req.params.guildId, panel });
-  res.json({ ok: true });
+  res.status(501).json({ error: 'Donation posting is not yet implemented' });
 });
 
 /* ===== TICKETS API ===== */
