@@ -3,19 +3,11 @@
 <head>
   <link rel="icon" type="image/png" href="/assets/logo-icon.png">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricey — Server Config</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
 <style>
-  :root{
-    --purple:#8B5CF6;--blue:#3B82F6;--green:#84CC16;
-    --bg:#080810;--surface:#0f0f1a;--surface2:#161625;--surface3:#1c1c2e;
-    --border:#1e1e35;--text:#f1f5f9;--muted:#64748b;
-    --grad:linear-gradient(135deg,#8B5CF6,#3B82F6);
-    --red:#ef4444;--yellow:#f59e0b;--gold:#f59e0b;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
-
   /* === TAG SWING LOADER === */
   #loader{
     position:fixed;inset:0;background:var(--bg);z-index:999;
@@ -48,22 +40,12 @@
 
   nav{background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
     padding:0 24px;height:56px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
-  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
-    color:var(--muted);text-decoration:none;transition:color .15s;}
-  .back-btn:hover{color:var(--text);}
-  .back-btn svg{width:16px;height:16px;}
   .nav-sep{color:var(--border);font-size:16px;}
   .nav-server{font-size:13px;font-weight:700;font-family:'Syne',sans-serif;}
-  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
   .nav-logo-wrap{display:flex;align-items:center;gap:7px;}
   .nav-logo-wrap img{height:22px;}
   .nav-logo-text{font-family:'Syne',sans-serif;font-weight:900;font-size:15px;
     background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .user-mini{display:flex;align-items:center;gap:8px;}
-  .user-mini img{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);}
-  .user-mini span{font-size:12px;font-weight:600;color:var(--muted);}
-  .btn-logout{font-size:11px;font-weight:700;color:#f87171;background:rgba(239,68,68,0.1);
-    border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:5px 12px;text-decoration:none;}
 
   .layout{display:flex;flex:1;}
 
@@ -88,61 +70,10 @@
   .main{flex:1;padding:28px 32px;overflow-y:auto;max-width:1040px;}
   .page{display:none;animation:fadeUp .2s ease;}
   .page.active{display:block;}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
   .page-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;flex-wrap:wrap;}
   .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;}
   .page-sub{font-size:13px;color:var(--muted);margin-bottom:22px;max-width:640px;}
-
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;}
-  .card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-  .card-title svg{width:15px;height:15px;color:#a78bfa;flex-shrink:0;}
-
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .form-row{margin-bottom:14px;}
-  .form-row:last-child{margin-bottom:0;}
-  label{display:block;font-size:11px;font-weight:700;color:var(--muted);
-    text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-family:'Syne',sans-serif;}
-  input[type=text],input[type=number],select,textarea{
-    width:100%;background:var(--surface3);border:1px solid var(--border);
-    border-radius:9px;padding:10px 12px;color:var(--text);
-    font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s;}
-  input:focus,select:focus,textarea:focus{border-color:var(--purple);}
-  textarea{resize:vertical;min-height:80px;}
-  .hint{font-size:11px;color:var(--muted);margin-top:5px;}
-
-  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:9px;
-    font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;
-    transition:opacity .15s,transform .1s;}
-  .btn:hover{opacity:.85;}
-  .btn:active{transform:scale(.97);}
-  .btn-primary{background:var(--grad);color:white;box-shadow:0 4px 20px #8B5CF635;}
-  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
-  .btn-ghost:hover{border-color:var(--purple);color:#a78bfa;opacity:1;}
-  .btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
-  .btn-success{background:rgba(132,204,22,0.1);color:var(--green);border:1px solid rgba(132,204,22,0.2);}
-  .btn-sm{padding:6px 12px;font-size:12px;}
-  .btn svg{width:14px;height:14px;flex-shrink:0;}
-
-  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
-  .stat{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;}
-  .stat-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-1px;
-    background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .stat-lbl{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.5px;
-    font-family:'Syne',sans-serif;}
-
-  /* Segmented control for merged pages */
-  .segmented{display:inline-flex;background:var(--surface2);border:1px solid var(--border);
-    border-radius:10px;padding:3px;gap:2px;margin-bottom:20px;}
-  .segmented button{padding:7px 16px;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;
-    color:var(--muted);background:none;border:none;border-radius:7px;cursor:pointer;transition:all .15s;
-    display:flex;align-items:center;gap:6px;}
-  .segmented button svg{width:13px;height:13px;}
-  .segmented button.active{background:var(--grad);color:white;}
-  .segmented button:hover:not(.active){color:var(--text);}
-
-  .subview{display:none;}
-  .subview.active{display:block;}
 
   .panels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
   .panel-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;}
@@ -151,13 +82,6 @@
   .panel-desc{font-size:12px;color:var(--muted);margin-bottom:12px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .panel-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
-  .tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;
-    font-size:11px;font-weight:700;font-family:'Syne',sans-serif;}
-  .tag-purple{background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.2);color:#a78bfa;}
-  .tag-green{background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.2);color:var(--green);}
-  .tag-blue{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.2);color:#60a5fa;}
-  .tag-yellow{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);color:#fbbf24;}
-  .tag-red{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.2);color:#f87171;}
   .panel-actions{display:flex;gap:6px;flex-wrap:wrap;}
 
   .add-panel-card{background:transparent;border:2px dashed var(--border);border-radius:12px;
@@ -174,7 +98,6 @@
   .method-toggle:has(input:checked){border-color:var(--purple);background:rgba(139,92,246,0.08);}
   .method-toggle input{accent-color:var(--purple);}
 
-  /* === LANGUAGE (now inline in Settings) === */
   .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   .lang-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;
     padding:20px;cursor:pointer;transition:all .2s;text-align:center;}
@@ -183,7 +106,6 @@
   .lang-card h4{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
   .lang-card p{font-size:12px;color:var(--muted);}
 
-  /* === TICKETS === */
   .tickets-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
   .tickets-toolbar select{background:var(--surface3);border:1px solid var(--border);
     border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;}
@@ -217,48 +139,10 @@
   .priority-high{background:#fbbf24;}
   .priority-urgent{background:#f87171;}
 
-  /* === MODALS === */
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;
-    display:flex;align-items:stretch;justify-content:flex-end;
-    opacity:0;pointer-events:none;transition:opacity .2s;}
-  .modal-bg.open{opacity:1;pointer-events:all;}
-  .modal-bg.centered{align-items:center;justify-content:center;}
-  .modal-bg.centered .modal-panel{width:100%;max-width:600px;max-height:88vh;border-radius:18px;animation:fadeUp .2s ease;}
-
-  .modal-panel{
-    background:var(--surface);border-left:1px solid var(--border);
-    width:560px;max-width:95vw;height:100vh;overflow-y:auto;
-    display:flex;flex-direction:column;animation:slideIn .25s ease;
-  }
-  @keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
-  .modal-header{padding:24px 24px 16px;border-bottom:1px solid var(--border);
-    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0;}
-  .modal-header-info{flex:1;min-width:0;}
-  .modal-header h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;}
-  .modal-close{background:var(--surface2);border:1px solid var(--border);
-    color:var(--muted);border-radius:8px;padding:6px;cursor:pointer;transition:color .15s;}
-  .modal-close:hover{color:var(--text);}
-  .modal-close svg{width:16px;height:16px;display:block;}
-
-  .modal-body{padding:20px 24px;flex:1;}
-  .modal-footer-bar{padding:16px 24px;border-top:1px solid var(--border);
-    display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;}
-
   .modal-create h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;}
   .modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
   .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;
     padding-top:16px;border-top:1px solid var(--border);}
-  .divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
-
-  .section-block{margin-bottom:20px;}
-  .section-block-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);
-    text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-
-  .info-row{display:flex;align-items:center;justify-content:space-between;
-    padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
-  .info-row:last-child{border-bottom:none;}
-  .info-row span:first-child{color:var(--muted);}
-  .info-row span:last-child{font-weight:600;text-align:right;}
 
   .answers-list{display:flex;flex-direction:column;gap:8px;}
   .answer-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
@@ -281,20 +165,6 @@
   .coupon-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
     color:var(--gold);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);
     padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
-
-  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;
-    border-bottom:1px solid var(--border);font-size:13px;}
-  .toggle-row:last-child{border-bottom:none;}
-  .toggle-label{display:flex;align-items:center;gap:8px;}
-  .toggle-label svg{width:14px;height:14px;color:var(--muted);}
-  .toggle{position:relative;width:38px;height:20px;display:inline-block;flex-shrink:0;}
-  .toggle input{opacity:0;width:0;height:0;}
-  .toggle-slider{position:absolute;inset:0;background:var(--surface3);border-radius:100px;
-    cursor:pointer;transition:.2s;border:1px solid var(--border);}
-  .toggle-slider:before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;
-    background:white;left:2px;top:2px;transition:.2s;}
-  .toggle input:checked + .toggle-slider{background:var(--purple);}
-  .toggle input:checked + .toggle-slider:before{transform:translateX(18px);}
 
   .menu-builder{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px;}
   .menu-builder textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
@@ -320,19 +190,6 @@
   .coupon-item{background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;margin-bottom:8px;}
   .coupon-usage{font-size:11px;color:var(--muted);margin-top:6px;}
 
-  .toast{position:fixed;bottom:24px;right:24px;z-index:999;
-    background:var(--surface);border:1px solid var(--border);border-radius:10px;
-    padding:12px 18px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;
-    transform:translateY(60px);opacity:0;transition:all .3s;font-family:'Syne',sans-serif;}
-  .toast.show{transform:translateY(0);opacity:1;}
-  .toast.ok{border-color:var(--green);color:var(--green);}
-  .toast.err{border-color:var(--red);color:#f87171;}
-
-  .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
-  .empty-state svg{width:40px;height:40px;margin:0 auto 12px;opacity:.4;}
-  .empty-state p{font-size:14px;}
-
-  /* Revenue chart */
   .chart-card-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
   .chart-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;
     background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
@@ -343,6 +200,16 @@
   .activity-item:last-child{border-bottom:none;}
   .activity-item .act-user{font-weight:700;flex-shrink:0;}
   .activity-item .act-detail{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .sidebar-overlay{display:none;}
+
+  @media (max-width:768px){
+    .sidebar-overlay{display:none;position:fixed;inset:0;top:56px;background:rgba(0,0,0,.6);z-index:99;}
+    .sidebar-overlay.open{display:block;}
+    .sidebar{position:fixed;top:56px;left:-260px;width:260px;height:calc(100vh - 56px);z-index:100;transition:left .25s ease;overflow-y:auto;}
+    .sidebar.open{left:0;}
+    .main{padding:20px 16px;}
+  }
 </style>
 </head>
 <body>
@@ -353,6 +220,9 @@
 </div>
 
 <nav>
+  <button class="nav-hamburger" onclick="toggleSidebar()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
   <a href="/dashboard" class="back-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
     Dashboard
@@ -373,6 +243,7 @@
 </nav>
 
 <div class="layout">
+  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
   <aside class="sidebar">
     <button class="nav-item active" onclick="show('overview',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -396,7 +267,7 @@
       Settings
     </button>
     <div class="sidebar-footer">
-      <p>5 sections · bot language and donations now live inside Settings and Payments.</p>
+      <p>5 sections — language and donation settings live inside their respective tabs.</p>
     </div>
   </aside>
 
@@ -482,7 +353,7 @@
         </button>
         <button onclick="showTicketsView('blacklist',this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
-          Lista negra
+          Blacklist
           <span class="nav-badge" id="blacklist-badge" style="display:none">0</span>
         </button>
       </div>
@@ -551,11 +422,11 @@
       <div class="segmented" id="payments-seg">
         <button class="active" onclick="showPaymentsView('sales',this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Ventas
+          Sales
         </button>
         <button onclick="showPaymentsView('donations',this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          Donaciones
+          Donations
         </button>
       </div>
 
@@ -856,6 +727,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="/js/app.js"></script>
 <script>
 const guildId = location.pathname.split('/')[2];
 let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], coupons=[], editIdx=null;
@@ -892,19 +764,13 @@ const DEFAULT_CURRENCIES = [
   { value:'CAD', label:'CAD — Canadian Dollar',   symbol:'$',  rate:0.74 },
 ];
 
-async function retry(fn, max=8, delay=1500) {
-  for (let i=1; i<=max; i++) {
-    try {
-      const r = await fn();
-      if (r) return r;
-      document.getElementById('loader-msg').textContent = `Waiting for bot data... (${i}/${max})`;
-      await new Promise(r=>setTimeout(r, delay));
-    } catch {
-      if (i===max) return null;
-      await new Promise(r=>setTimeout(r, delay));
-    }
-  }
-  return null;
+async function retry(fn, max, delay) { return Pricey.fetchRetry(fn, max, delay, document.getElementById('loader-msg')); }
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
 }
 
 async function init() {
@@ -1028,6 +894,7 @@ async function saveDonations() {
 
 /* ===== NAVIGATION ===== */
 function show(id, btn) {
+  if (window.innerWidth <= 768) { document.querySelector('.sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('open'); }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sidebar > .nav-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -1519,7 +1386,7 @@ function exportTicketsCSV() {
   a.href = url; a.download = `tickets-${guildId}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
-  toast('CSV exportado');
+  toast('CSV exported');
 }
 
 /* ===== OVERVIEW: revenue chart + activity ===== */
@@ -1793,7 +1660,7 @@ async function repost(idx) {
 
 async function duplicatePanel(idx) {
   const clone = JSON.parse(JSON.stringify(panels[idx]));
-  clone.title = clone.title + ' (copia)';
+  clone.title = clone.title + ' (copy)';
   if (clone.coupons) clone.coupons.forEach(c=>c.uses=0);
   panels.push(clone);
   await fetch(`/api/panels/${guildId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(panels)});
@@ -1811,12 +1678,7 @@ async function deletePanel(idx) {
   toast('Panel deleted');
 }
 
-function toast(msg, type='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'), 3000);
-}
+function toast(msg, type) { Pricey.toast(msg, type); }
 
 init();
 </script>

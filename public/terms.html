@@ -6,40 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Terms of Service — Pricey</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
 <style>
-  :root {
-    --purple: #8B5CF6;
-    --purple-dark: #6D28D9;
-    --blue: #3B82F6;
-    --green: #84CC16;
-    --bg: #080810;
-    --surface: #0f0f1a;
-    --surface2: #161625;
-    --border: #1e1e35;
-    --text: #f1f5f9;
-    --muted: #64748b;
-    --grad: linear-gradient(135deg, #8B5CF6, #3B82F6);
-    --grad-green: linear-gradient(135deg, #84CC16, #3B82F6);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  .noise {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  }
-  .glow {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background:
-      radial-gradient(ellipse 80% 60% at 10% 20%, #8B5CF622, transparent),
-      radial-gradient(ellipse 60% 50% at 90% 80%, #3B82F618, transparent),
-      radial-gradient(ellipse 40% 40% at 50% 50%, #84CC1608, transparent);
-  }
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     padding: 16px 48px;
@@ -47,17 +15,6 @@
     background: rgba(8,8,16,0.7);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-  }
-  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration:none; }
-  .nav-logo img { height: 32px; }
-  .nav-logo-text {
-    font-family: 'Syne', sans-serif;
-    font-weight: 900;
-    font-size: 20px;
-    background: var(--grad);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
   }
   .btn-secondary {
     display: inline-flex; align-items: center; gap: 8px;
@@ -139,21 +96,6 @@
     transition: color .15s, border-color .15s;
   }
   .toc a:hover { color: #a78bfa; border-color: var(--purple); }
-
-  footer {
-    position: relative; z-index: 1;
-    text-align: center;
-    padding: 32px;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 13px;
-    display: flex; align-items: center; justify-content: center; gap: 18px;
-    flex-wrap: wrap;
-  }
-  footer .brand { display:flex; align-items:center; gap:8px; }
-  footer img { height: 20px; opacity: .6; }
-  footer a { color: var(--muted); text-decoration: none; }
-  footer a:hover { color: var(--text); }
 </style>
 </head>
 <body>
@@ -255,7 +197,7 @@
 </div>
 
 <footer>
-  <div class="brand"><img src="/assets/logo-icon.png" alt="Pricey"> Pricey &copy; 2025 — Built for Discord sellers</div>
+  <div class="brand"><img src="/assets/logo-icon.png" alt="Pricey"> Pricey &copy; 2026 — Built for Discord sellers</div>
   <a href="/terms.html">Terms of Service</a>
   <a href="/privacy.html">Privacy Policy</a>
 </footer>

@@ -424,11 +424,6 @@ app.get('/server/:id', (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'public', 'server.html'));
 });
-app.get('/admin', (req, res) => {
-  if (!req.isAuthenticated()) return res.redirect('/');
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;

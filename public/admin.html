@@ -6,68 +6,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricey — Owner Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
 <style>
-  :root{
-    --purple:#8B5CF6;--blue:#3B82F6;--green:#84CC16;
-    --bg:#080810;--surface:#0f0f1a;--surface2:#161625;--surface3:#1c1c2e;
-    --border:#1e1e35;--text:#f1f5f9;--muted:#64748b;
-    --grad:linear-gradient(135deg,#8B5CF6,#3B82F6);--red:#ef4444;--yellow:#f59e0b;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-  .glow{position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:radial-gradient(ellipse 70% 50% at 5% 10%,#8B5CF615,transparent),
-               radial-gradient(ellipse 50% 40% at 95% 90%,#3B82F612,transparent);}
-  nav{position:relative;z-index:10;background:rgba(8,8,16,0.9);backdrop-filter:blur(20px);
-    border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;gap:14px;}
-  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;
-    font-family:'DM Sans',sans-serif;}
-  .back-btn:hover{color:var(--text);}
-  .back-btn svg{width:16px;height:16px;}
-  .nav-logo{display:flex;align-items:center;gap:8px;}
-  .nav-logo img{height:28px;}
-  .nav-logo-text{font-family:'Syne',sans-serif;font-weight:900;font-size:18px;
-    background:var(--grad);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .nav-divider{width:1px;height:20px;background:var(--border);}
-  .nav-page{font-size:13px;font-weight:700;color:#a78bfa;font-family:'Syne',sans-serif;}
-
   .content{position:relative;z-index:1;padding:48px 40px;max-width:960px;margin:0 auto;}
   .page-header h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;}
   .page-header p{font-size:13px;color:var(--muted);margin-bottom:28px;}
-  .grad-text{background:var(--grad);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
-  .card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px;}
 
   .search-row{display:flex;gap:8px;}
-  input[type=text],input[type=number],textarea,select{
-    background:var(--surface3);border:1px solid var(--border);border-radius:9px;
-    padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;}
-  input:focus,textarea:focus,select:focus{border-color:var(--purple);}
   .search-row input{flex:1;}
-
-  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:9px;
-    font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;
-    transition:opacity .15s,transform .1s;}
-  .btn:hover{opacity:.85;}
-  .btn:active{transform:scale(.97);}
-  .btn-primary{background:var(--grad);color:white;}
-  .btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
-  .btn-success{background:rgba(132,204,22,0.1);color:var(--green);border:1px solid rgba(132,204,22,0.2);}
-  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
-  .btn-sm{padding:7px 12px;font-size:12px;}
-
-  .hint{font-size:11px;color:var(--muted);margin-top:6px;}
-  .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
-  .info-row:last-child{border-bottom:none;}
-  .info-row span:first-child{color:var(--muted);}
-
-  .ban-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
-    color:#f87171;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);
-    padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
-  .ok-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
-    color:var(--green);background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);
-    padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
 
   .ticket-mini{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
     padding:10px 12px;margin-bottom:8px;font-size:12px;}
@@ -84,7 +30,6 @@
   .tag-unban{background:rgba(132,204,22,0.15);color:var(--green);}
   .tag-delete{background:rgba(245,158,11,0.15);color:#fbbf24;}
 
-  .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
   .locked{text-align:center;padding:100px 20px;color:var(--muted);}
 
   .stat-mini{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
@@ -99,13 +44,6 @@
   .user-row:last-child{border-bottom:none;}
   .user-row .u-name{font-weight:700;flex:1;}
   .user-row .u-meta{color:var(--muted);font-size:11px;flex-shrink:0;}
-
-  .toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--surface);
-    border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:700;
-    transform:translateY(60px);opacity:0;transition:all .3s;font-family:'Syne',sans-serif;}
-  .toast.show{transform:translateY(0);opacity:1;}
-  .toast.ok{border-color:var(--green);color:var(--green);}
-  .toast.err{border-color:var(--red);color:#f87171;}
 </style>
 </head>
 <body>
@@ -219,7 +157,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-
+<script src="/js/app.js"></script>
 <script>
 let currentUserId = null;
 let knownUsers = [];
@@ -236,11 +174,7 @@ async function init() {
   loadLogs();
 }
 
-function toast(msg, type='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'), 3000);
-}
+function toast(msg, type='ok') { Pricey.toast(msg, type); }
 
 /* ===== STATS ===== */
 async function loadStats() {
