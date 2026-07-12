@@ -10,6 +10,18 @@ const app = express();
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
+function readJSON(file, def = {}) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return def; }
+}
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+}
+function configPath(id) { return path.join(DATA_DIR, `config_${id}.json`); }
+function panelsPath(id) { return path.join(DATA_DIR, `panels_${id}.json`); }
+function ticketsPath(id) { return path.join(DATA_DIR, `tickets_${id}.json`); }
+function guildDataPath(id) { return path.join(DATA_DIR, `guilddata_${id}.json`); }
+
+/* ===== OWNER ADMIN — helpers ===== */
 const OWNER_ID = process.env.OWNER_ID;
 
 function globalBansPath() { return path.join(DATA_DIR, 'global-bans.json'); }
@@ -41,14 +53,8 @@ function logAdminAction(adminId, action, targetUserId, reason, extra = {}) {
   writeJSON(adminLogPath(), log.slice(0, 2000)); // cap log growth
 }
 
-function configPath(id) { return path.join(DATA_DIR, `config_${id}.json`); }
-function panelsPath(id) { return path.join(DATA_DIR, `panels_${id}.json`); }
-function ticketsPath(id) { return path.join(DATA_DIR, `tickets_${id}.json`); }
-function guildDataPath(id) { return path.join(DATA_DIR, `guilddata_${id}.json`); }
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use(session({
   secret: process.env.SESSION_SECRET || 'pricey_dev_secret',
   resave: false,
