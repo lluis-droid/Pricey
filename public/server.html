@@ -38,14 +38,8 @@
   }
   #loader p{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.3px;}
 
-  nav{background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
-    padding:0 24px;height:56px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;}
-  .nav-sep{color:var(--border);font-size:16px;}
-  .nav-server{font-size:13px;font-weight:700;font-family:'Syne',sans-serif;}
-  .nav-logo-wrap{display:flex;align-items:center;gap:7px;}
-  .nav-logo-wrap img{height:22px;}
-  .nav-logo-text{font-family:'Syne',sans-serif;font-weight:900;font-size:15px;
-    background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  /* Nav */
+  /* Nav - uses shared .nav styles from styles.css */
 
   .layout{display:flex;flex:1;}
 
@@ -228,14 +222,22 @@
 
   .sidebar-overlay{display:none;}
 
+  @media(max-width:1024px){
+    .main{padding:24px 20px;}
+    .stats-row{grid-template-columns:repeat(3,1fr);gap:10px;}
+    .sidebar{width:180px;}
+    .nav-item{padding:10px 14px;font-size:12px;}
+  }
   @media (max-width:768px){
     .sidebar-overlay{display:none;position:fixed;inset:0;top:0;background:rgba(0,0,0,.6);z-index:99;}
     .sidebar-overlay.open{display:block;}
     .sidebar{position:fixed;top:0;left:-260px;width:260px;height:100vh;z-index:100;transition:left .25s ease;overflow-y:auto;padding-top:12px;}
     .sidebar.open{left:0;}
     .main{padding:20px 16px;}
-    .nav{padding:0 12px;height:52px;}
-    .nav-sep{display:none;}
+    .nav .nav-inner{padding:0 12px;height:52px;}
+    .nav-divider{display:none;}
+    .nav .nav-page{font-size:12px;}
+    .nav .nav-right .user-pill span{display:none;}
     .panels-grid{grid-template-columns:1fr;}
     .tickets-toolbar{flex-direction:column;align-items:stretch;}
     .tickets-toolbar input{min-width:0;min-height:40px;}
@@ -253,7 +255,6 @@
     .page-sub{font-size:12px;}
     .modal-create h3{font-size:16px;}
     .sidebar-footer{display:none;}
-    nav .user-mini span{display:none;}
     .chart-value{font-size:22px;}
   }
 
@@ -304,32 +305,38 @@
 </style>
 </head>
 <body>
+<div class="glow-subtle"></div>
 
 <div id="loader">
   <div class="loader-tag-wrap"><img src="/assets/logo-icon.png" alt="Pricey"></div>
   <p id="loader-msg">Connecting to bot...</p>
 </div>
 
-<nav>
-  <button class="nav-hamburger" onclick="toggleSidebar()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-  <a href="/dashboard" class="back-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-    Dashboard
-  </a>
-  <span class="nav-sep">/</span>
-  <span class="nav-server" id="server-name">...</span>
-    <div class="nav-right">
-      <a href="/" class="nav-logo-wrap">
+<nav class="nav nav-sticky">
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="/dashboard" class="back-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        Dashboard
+      </a>
+      <div class="nav-divider"></div>
+      <a href="/" class="nav-logo">
         <img src="/assets/logo-icon.png" alt="Pricey">
         <span class="nav-logo-text">Pricey</span>
       </a>
-    <div class="user-mini">
-      <img id="avatar" src="">
-      <span id="username"></span>
+      <div class="nav-divider"></div>
+      <button class="nav-hamburger" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="nav-page" id="server-name">...</span>
     </div>
-    <a href="/auth/logout" class="btn-logout">Logout</a>
+    <div class="nav-right">
+      <div class="user-pill">
+        <img id="avatar" src="" alt="">
+        <span id="username">...</span>
+      </div>
+      <a href="/auth/logout" class="btn-logout">Logout</a>
+    </div>
   </div>
 </nav>
 
@@ -360,10 +367,10 @@
     <button class="nav-item" onclick="show('plus',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Pricey Plus
-      <span style="font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 6px;border-radius:100px;background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;margin-left:auto;font-family:'Syne',sans-serif;">SOON</span>
+      <span class="nav-badge" style="background:linear-gradient(135deg,#f59e0b,#ef4444);display:inline-flex;">SOON</span>
     </button>
     <div class="sidebar-footer">
-      <p>Language and donation settings live inside their respective tabs.</p>
+      <p>Configure panels, payments, and settings from the tabs above.</p>
     </div>
   </aside>
 
@@ -1023,12 +1030,12 @@ function buildFormatToolbar(inputId) {
 }
 
 const EMOJI_DATA = {
-  'Smileys': ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','😮‍💨','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫'],
-  'Gestures': ['👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','✋','🤚','🖐️','🖖','👋','🤝','🙏','💪','🦾','🫶','👏','🙌'],
-  'Hearts': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟'],
-  'Objects': ['💰','💎','🏆','🎯','🎁','🛒','💳','🔔','📢','💬','📝','✅','❌','⭐','🌟','💫','🔥','🎉','🎊','🎮','🕹️','💻','📱','🔧','⚡'],
-  'Arrows': ['➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','🔁','🔂'],
-  'Misc': ['🆕','🆙','🔝','🔜','🆗','🆒','🆓','🔢','🆓','❗','❓','❔','❕','‼️','⁉️','💯','🔜','🏷️','🔖','🔗','📌','📍','🗑️','🔒','🔓'],
+  'Smileys': { emojis: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😋','�','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','😮‍💨','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫'], keywords: 'happy sad smile laugh cry face emotion' },
+  'Gestures': { emojis: ['👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','✋','🤚','🖐️','🖖','👋','🤝','🙏','💪','🦾','🫶','👏','🙌'], keywords: 'thumbs up down hand point wave clap peace rock' },
+  'Hearts': { emojis: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟'], keywords: 'love heart red blue green yellow black white broken' },
+  'Objects': { emojis: ['💰','💎','🏆','🎯','🎁','🛒','💳','🔔','📢','💬','📝','✅','❌','⭐','🌟','💫','🔥','🎉','🎊','🎮','🕹️','💻','📱','🔧','⚡'], keywords: 'money gem trophy target gift cart card bell megaphone memo check cross star fire party game joystick computer phone wrench lightning' },
+  'Arrows': { emojis: ['➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','🔁','🔂'], keywords: 'arrow right left up down diagonal swap repeat' },
+  'Misc': { emojis: ['🆕','🆙','🔝','🔜','🆗','🆒','🆓','🔢','❗','❓','❔','❕','‼️','⁉️','💯','🔜','🏷️','🔖','🔗','📌','📍','🗑️','🔒','🔓'], keywords: 'new up top soon ok cool free number exclamation question hundred tag bookmark link pin trash lock unlock' },
 };
 
 let _activeEmojiInput = null;
@@ -1049,14 +1056,16 @@ function filterEmojis(panelId, query) { renderEmojiGrid(panelId, query); }
 
 function renderEmojiGrid(panelId, query) {
   const grid = document.getElementById(panelId + '-grid');
+  const q = (query || '').toLowerCase().trim();
   let html = '';
-  for (const [cat, emojis] of Object.entries(EMOJI_DATA)) {
-    const filtered = query ? emojis.filter(() => true) : emojis;
-    if (!filtered.length) continue;
+  for (const [cat, data] of Object.entries(EMOJI_DATA)) {
+    const matchCat = !q || cat.toLowerCase().includes(q) || (data.keywords && data.keywords.toLowerCase().includes(q));
+    if (!matchCat) continue;
     html += `<div class="emoji-cat-label">${cat}</div><div class="emoji-grid">`;
-    filtered.forEach(e => { html += `<button type="button" onclick="pickEmoji('${e}')">${e}</button>`; });
+    data.emojis.forEach(e => { html += `<button type="button" onclick="pickEmoji('${e}')">${e}</button>`; });
     html += '</div>';
   }
+  if (!html) html = '<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">No emojis match your search.</div>';
   grid.innerHTML = html;
 }
 
@@ -2217,7 +2226,9 @@ function addProduct() {
 }
 
 function renderProducts() {
-  document.getElementById('product-list').innerHTML = products.map((p,i)=>`
+  const el = document.getElementById('product-list');
+  if (!products.length) { el.innerHTML = '<div class="empty-state" style="padding:16px"><p>No fixed-price products yet. Add one above.</p></div>'; return; }
+  el.innerHTML = products.map((p,i)=>`
     <div style="display:flex;gap:8px;margin-bottom:8px;">
       <input type="text" placeholder="Product name" value="${escAttr(p.name)}" oninput="products[${i}].name=this.value"
         style="flex:2;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;">
@@ -2236,7 +2247,7 @@ function addCoupon() {
 function renderCoupons() {
   const el = document.getElementById('coupons-list');
   if (!coupons.length) {
-    el.innerHTML = `<p style="font-size:12px;color:var(--muted);">No coupons yet. Add one if you want to offer a discount code.</p>`;
+    el.innerHTML = `<div class="empty-state" style="padding:20px"><p>No coupons yet. Add one if you want to offer a discount code.</p></div>`;
     return;
   }
   el.innerHTML = coupons.map((c,i)=>`
