@@ -198,6 +198,22 @@ function prunePendingActions() {
 }
 setInterval(prunePendingActions, 30_000);
 
+/* ===== VERSION TRACKING — real-time sync for dashboard ===== */
+const dataVersions = {};
+function bumpVersion(guildId, type) {
+  if (!dataVersions[guildId]) dataVersions[guildId] = { tickets: 0, donations: 0, config: 0 };
+  dataVersions[guildId][type] = Date.now();
+}
+function getVersion(guildId, type) {
+  return dataVersions[guildId]?.[type] || 0;
+}
+app.get('/api/sync/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  const gid = req.params.guildId;
+  if (!dataVersions[gid]) dataVersions[gid] = { tickets: 0, donations: 0, config: 0 };
+  res.json(dataVersions[gid]);
+});
+
 /* ===== BOT COMMUNICATION (internal secret required) ===== */
 app.post('/api/bot-status', requireInternalSecret, (req, res) => {
   const b = req.body;
@@ -228,6 +244,7 @@ app.post('/api/bot-ticket-update', requireInternalSecret, (req, res) => {
   if (idx >= 0) all[idx] = { ...all[idx], ...ticket };
   else all.unshift(ticket);
   writeJSON(ticketsPath(guildId), all);
+  bumpVersion(guildId, 'tickets');
   res.json({ ok: true });
 });
 
@@ -304,6 +321,7 @@ app.post('/api/config/:guildId', requireAuth, requireGuildMember, (req, res) => 
   const existing = readConfig(req.params.guildId);
   const updated = { ...existing, ...req.body };
   writeConfig(req.params.guildId, updated);
+  bumpVersion(req.params.guildId, 'config');
   notifyBot('config-update', { guildId: req.params.guildId, config: updated });
   res.json({ ok: true });
 });
@@ -365,6 +383,7 @@ app.post('/api/donations/:guildId/record', requireInternalSecret, (req, res) => 
   data.donors.unshift({ userId, username, amount, method: method || 'unknown', date: Date.now() });
   data.raised = Math.round((data.raised + amount) * 100) / 100;
   writeJSON(donationsPath(guildId), data);
+  bumpVersion(guildId, 'donations');
   res.json({ ok: true, raised: data.raised });
 });
 app.delete('/api/donations/:guildId/donor/:index', requireAuth, requireGuildMember, (req, res) => {
@@ -376,6 +395,7 @@ app.delete('/api/donations/:guildId/donor/:index', requireAuth, requireGuildMemb
   data.raised = Math.round((data.raised - removed.amount) * 100) / 100;
   if (data.raised < 0) data.raised = 0;
   writeJSON(donationsPath(req.params.guildId), data);
+  bumpVersion(req.params.guildId, 'donations');
   res.json({ ok: true, raised: data.raised });
 });
 app.get('/api/donations/:guildId/stats', requireAuth, requireGuildMember, (req, res) => {
@@ -406,18 +426,21 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, requireGuildMem
   if (action === 'set-reported') {
     ticket.reported = !!value;
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
   if (action === 'set-typing') {
     ticket.canType = !!value;
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
   if (action === 'set-priority') {
     ticket.priority = value || 'normal';
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
@@ -426,30 +449,35 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, requireGuildMem
     ticket.staffNotes = ticket.staffNotes || [];
     ticket.staffNotes.push({ text: value.trim(), author: 'Dashboard', at: Date.now() });
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
   if (action === 'approve') {
     ticket.status = 'approved';
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
   if (action === 'reject') {
     ticket.status = 'rejected';
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
   if (action === 'refund') {
     ticket.status = 'refunded';
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }
   if (action === 'close') {
     ticket.status = 'closed';
     writeJSON(ticketsPath(guildId), tickets);
+    bumpVersion(guildId, 'tickets');
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
   }

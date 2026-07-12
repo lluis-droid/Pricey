@@ -358,6 +358,10 @@
         <div class="stat"><div class="stat-num" id="stat-rejected">0</div><div class="stat-lbl">Rejected</div></div>
         <div class="stat"><div class="stat-num" id="stat-reported">0</div><div class="stat-lbl">Reported Users</div></div>
       </div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num" id="stat-donations">0</div><div class="stat-lbl">Donations</div></div>
+        <div class="stat"><div class="stat-num" id="stat-donation-raised">$0</div><div class="stat-lbl">Total Raised</div></div>
+      </div>
 
       <div class="card">
         <div class="chart-card-top">
@@ -1007,8 +1011,40 @@ async function init() {
   renderPanels();
   document.getElementById('stat-panels').textContent = panels.length;
 
+  await loadAllData();
+  startSyncPoller();
+}
+
+let _lastVersions = { tickets: 0, donations: 0, config: 0 };
+let _syncPoller = null;
+
+function startSyncPoller() {
+  if (_syncPoller) clearInterval(_syncPoller);
+  _syncPoller = setInterval(checkAndRefresh, 3000);
+}
+
+async function checkAndRefresh() {
+  try {
+    const v = await fetch(`/api/sync/${guildId}`).then(r=>r.json()).catch(()=>null);
+    if (!v) return;
+    if (v.tickets !== _lastVersions.tickets || v.donations !== _lastVersions.donations || v.config !== _lastVersions.config) {
+      _lastVersions = { ...v };
+      await loadAllData();
+    }
+  } catch {}
+}
+
+async function loadAllData() {
   await loadTickets();
-  setInterval(loadTickets, 10000);
+  await loadDonationData();
+  updateOverviewDonationStats();
+}
+
+function updateOverviewDonationStats() {
+  const el = document.getElementById('stat-donations');
+  const el2 = document.getElementById('stat-donation-raised');
+  if (el && window._donationData) el.textContent = (window._donationData.donors || []).length;
+  if (el2 && window._donationData) el2.textContent = `$${(window._donationData.raised || 0).toLocaleString()}`;
 }
 
 function populateSelects() {
@@ -1084,15 +1120,6 @@ async function loadDonationData() {
   } catch {}
 }
 
-let _donRefreshInterval = null;
-function startDonationAutoRefresh() {
-  stopDonationAutoRefresh();
-  _donRefreshInterval = setInterval(() => {
-    if (document.getElementById('payments-view-donations')?.style.display !== 'none') loadDonationData();
-  }, 30000);
-}
-function stopDonationAutoRefresh() { if (_donRefreshInterval) { clearInterval(_donRefreshInterval); _donRefreshInterval = null; } }
-
 function renderDonorList(donors) {
   const el = document.getElementById('don-donor-list');
   if (!donors.length) { el.innerHTML = '<p style="font-size:12px;color:var(--muted);">No donations yet.</p>'; return; }
@@ -1120,7 +1147,7 @@ async function deleteDonor(index) {
   if (!confirm('Remove this donor from the record?')) return;
   try {
     const r = await fetch(`/api/donations/${guildId}/donor/${index}`, { method: 'DELETE' });
-    if (r.ok) { toast('Donor removed'); loadDonationData(); }
+    if (r.ok) { toast('Donor removed'); loadAllData(); }
     else toast('Failed to remove donor', 'err');
   } catch { toast('Failed to remove donor', 'err'); }
 }
@@ -1223,7 +1250,6 @@ function show(id, btn) {
   document.querySelectorAll('.sidebar > .nav-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
-  if (id !== 'payments') stopDonationAutoRefresh();
   if (id === 'tickets') loadTickets();
   if (id === 'overview') { renderRevenueChart(); renderActivity(); }
 }
@@ -1240,8 +1266,7 @@ function showPaymentsView(view, btn) {
   btn.classList.add('active');
   document.getElementById('payments-view-sales').classList.toggle('active', view==='sales');
   document.getElementById('payments-view-donations').classList.toggle('active', view==='donations');
-  if (view === 'donations') { loadDonationData(); startDonationAutoRefresh(); }
-  else stopDonationAutoRefresh();
+  if (view === 'donations') loadDonationData();
 }
 
 /* ===== SETTINGS ===== */
@@ -1728,7 +1753,7 @@ async function ticketAction(channelId, action, value) {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action, value })
     });
-    await loadTickets();
+    await loadAllData();
     if (action==='close'||action==='approve'||action==='reject') closeTicketModal();
     toast({
       approve:'Order approved', reject:'Order rejected', close:'Ticket closed',

@@ -370,6 +370,23 @@ function getEmojis(config) {
   return out;
 }
 
+function progressBar(current, total) {
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  const filled = Math.round(pct / 10);
+  return '`' + '█'.repeat(filled) + '░'.repeat(10 - filled) + '` ' + pct + '%';
+}
+
+function stepIndicator(current, total) {
+  return `**Step ${current} of ${total}**`;
+}
+
+async function editTicketMessage(channel, session, embeds, components) {
+  if (!session?.ticketMessageId) return null;
+  const msg = await channel.messages.fetch(session.ticketMessageId).catch(() => null);
+  if (!msg) return null;
+  return msg.edit({ embeds, components: components || [] }).catch(() => null);
+}
+
 function resolveChannelName(config, panel, username, userId) {
   const fmt = config?.ticketNaming || 'ticket-{username}';
   return fmt.replace(/\{username\}/g, username).replace(/\{userId\}/g, userId).replace(/\{panel\}/g, panel).toLowerCase().replace(/[^a-z0-9-_]/g, '-').slice(0, 100);
@@ -645,7 +662,7 @@ async function postPanel(guildId, panel) {
   if (thumb) embed.setThumbnail(thumb);
   const panelId = panel.id || 'legacy';
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${panelId}`).setLabel(t.openTicket).setEmoji(emojis.ticketOpened).setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${panelId}`).setLabel(t.openTicket).setStyle(ButtonStyle.Primary)
   );
   await channel.send({ embeds: [embed], components: [row] });
 }
@@ -658,7 +675,7 @@ async function postDonationPanel(guildId, donation) {
   const donationData = await fetchDonationData(guildId);
   const embed = buildDonationEmbed(config, donation, donationData);
   const donateBtn = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`donate_start_${guildId}`).setLabel('Donate').setEmoji('💎').setStyle(ButtonStyle.Success)
+    new ButtonBuilder().setCustomId(`donate_start_${guildId}`).setLabel('Donate').setStyle(ButtonStyle.Success)
   );
   try {
     if (donation.panelMessageId) {
@@ -714,7 +731,7 @@ function buildDonationEmbed(config, donation, donationData) {
   desc += `\n\n*${t.donatePanelCTA}*`;
 
   return new EmbedBuilder()
-    .setTitle(`💎 ${t.donatePanelTitle}`)
+    .setTitle(t.donatePanelTitle)
     .setDescription(desc)
     .setColor(colors.primary)
     .setFooter({ text: config.footerText || (lang === 'es' ? 'Gracias por tu apoyo' : 'Thank you for your support') })
@@ -733,7 +750,7 @@ async function updateDonationPanel(guildId) {
     const donationData = await fetchDonationData(guildId);
     const embed = buildDonationEmbed(config, donation, donationData);
     const donateBtn = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`donate_start_${guildId}`).setLabel('Donate').setEmoji('💎').setStyle(ButtonStyle.Success)
+      new ButtonBuilder().setCustomId(`donate_start_${guildId}`).setLabel('Donate').setStyle(ButtonStyle.Success)
     );
     await msg.edit({ embeds: [embed], components: [donateBtn] }).catch(() => {});
   } catch (e) { console.error('[updateDonationPanel]', e.message); }
@@ -746,7 +763,6 @@ async function handleDonateStart(interaction) {
   const config = await getConfig(guildId);
   const t = getLang(config);
   const colors = getColors(config);
-  const emojis = getEmojis(config);
   const donation = config.donation || {};
   const guild = interaction.guild;
   const member = interaction.member;
@@ -778,7 +794,7 @@ async function handleDonateStart(interaction) {
     config, donation,
     donationAmount: null, donationMethod: null,
     paymentReference: null, paymentNote: null, paymentProof: null,
-    phase: 'donation-amount', pendingModal: null,
+    phase: 'donation-amount', pendingModal: null, ticketMessageId: null,
     status: 'open', canType: false, reported: false, priority: 'normal',
     staffNotes: [], transcript: null,
     openedAt: Date.now(), pastTickets: [],
@@ -787,22 +803,22 @@ async function handleDonateStart(interaction) {
   syncTicket(session);
   const min = donation.min || 1;
   const embed = new EmbedBuilder()
-    .setTitle('💎 Donation')
-    .setDescription(`<@${member.id}>\n\nHow much would you like to donate?\nMinimum: **$${min}**`)
-    .setColor(colors.primary)
-    .setTimestamp();
-  const modal = new ModalBuilder().setCustomId(`modal_donate_amount_${ticketChannel.id}`).setTitle(t.donateAmountTitle);
-  const input = new TextInputBuilder().setCustomId('amount').setLabel(t.donateAmountLabel)
-    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.donateAmountPlaceholder);
+    .setTitle('Donation')
+    .setDescription(`Welcome <@${member.id}>\n\nHow much would you like to donate?\nMinimum: **$${min}**`)
+    .setColor(colors.primary);
+  const modal = new ModalBuilder().setCustomId(`modal_donate_amount_${ticketChannel.id}`).setTitle('Donation Amount');
+  const input = new TextInputBuilder().setCustomId('amount').setLabel('Donation Amount (USD)')
+    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('e.g. 10, 25, 50');
   modal.addComponents(new ActionRowBuilder().addComponents(input));
   session.pendingModal = modal;
   const msg = await ticketChannel.send({
     embeds: [embed],
     components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_donate_amount_modal_${ticketChannel.id}`).setLabel(t.donateAmountBtn).setEmoji('💰').setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId(`open_donate_amount_modal_${ticketChannel.id}`).setLabel('Enter Amount').setStyle(ButtonStyle.Primary)
     )]
   });
   session.ticketMessageId = msg.id;
+  syncTicket(session);
   await interaction.editReply({ content: t.donateTicketReady(ticketChannel.id) });
 }
 
@@ -816,20 +832,20 @@ async function handleDonateAmountModal(interaction) {
   const amount = parseFloat(raw);
   const min = session.donation?.min || 1;
   if (isNaN(amount) || amount < min) {
-    return interaction.reply({ content: t.donateAmountMin(min), flags: MessageFlags.Ephemeral });
+    return interaction.reply({ content: `Minimum donation is **$${min}**.`, flags: MessageFlags.Ephemeral });
   }
   session.donationAmount = amount;
   session.pendingModal = null;
   session.phase = 'donation-method';
   const methods = session.config.paymentMethods || [];
   if (!methods.length) {
-    await interaction.reply({ content: t.noPaymentMethods, flags: MessageFlags.Ephemeral });
+    await interaction.reply({ content: 'No payment methods configured. Contact an admin.', flags: MessageFlags.Ephemeral });
     return;
   }
-  const select = new StringSelectMenuBuilder().setCustomId('select_donate_method').setPlaceholder(t.donateSelectMethodPlaceholder)
+  const select = new StringSelectMenuBuilder().setCustomId('select_donate_method').setPlaceholder('Select a payment method...')
     .addOptions(methods.map(m => ({ label: (PAYMENT_LABELS[m] || { label: m }).label, value: m })));
   const embed = new EmbedBuilder()
-    .setTitle('💎 Donation')
+    .setTitle('Donation')
     .setDescription(`**$${amount}**\n\nChoose your payment method below.`)
     .setColor(colors.primary);
   const ticketMsg = session.ticketMessageId ? await interaction.channel.messages.fetch(session.ticketMessageId).catch(() => null) : null;
@@ -852,10 +868,10 @@ async function handleDonateMethodSelect(interaction) {
   const info = PAYMENT_LABELS[method] || { label: method };
   const account = (session.config.paymentAccounts || {})[method];
   const amount = session.donationAmount;
-  const modal = new ModalBuilder().setCustomId(`modal_donate_proof_${interaction.channel.id}`).setTitle(t.donateProofModalTitle);
-  const refInput = new TextInputBuilder().setCustomId('reference').setLabel(t.donateProofLabel)
-    .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder(t.donateProofPlaceholder);
-  const noteInput = new TextInputBuilder().setCustomId('note').setLabel(t.donateNoteLabel)
+  const modal = new ModalBuilder().setCustomId(`modal_donate_proof_${interaction.channel.id}`).setTitle('Donation Proof');
+  const refInput = new TextInputBuilder().setCustomId('reference').setLabel('Transaction ID / Reference (optional)')
+    .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. TXN123456789');
+  const noteInput = new TextInputBuilder().setCustomId('note').setLabel('Note (optional)')
     .setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(300);
   modal.addComponents(new ActionRowBuilder().addComponents(refInput), new ActionRowBuilder().addComponents(noteInput));
   session.pendingModal = modal;
@@ -863,13 +879,13 @@ async function handleDonateMethodSelect(interaction) {
   if (account) desc.push(`\nSend to: \`${account}\``);
   desc.push('\nClick **Submit Proof** after sending payment.');
   const embed = new EmbedBuilder()
-    .setTitle('💎 Payment')
+    .setTitle('Payment')
     .setDescription(desc.join('\n'))
     .setColor(colors.warning);
   await interaction.update({
     embeds: [embed],
     components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_donate_proof_modal_${interaction.channel.id}`).setLabel(t.donateSubmitProof).setEmoji('📤').setStyle(ButtonStyle.Success)
+      new ButtonBuilder().setCustomId(`open_donate_proof_modal_${interaction.channel.id}`).setLabel('Submit Proof').setStyle(ButtonStyle.Success)
     )]
   });
 }
@@ -886,8 +902,8 @@ async function handleDonateProofModal(interaction) {
   const t = getLang(session.config);
   const colors = getColors(session.config);
   const embed = new EmbedBuilder()
-    .setTitle('💎 Proof')
-    .setDescription(`${t.donateSendScreenshot}`)
+    .setTitle('Proof')
+    .setDescription('Now send your **payment screenshot** as an image in this channel, or type a message as confirmation.')
     .setColor(colors.primary);
   await interaction.message.edit({ embeds: [embed], components: [] }).catch(() => {});
   await setCanType(interaction.channel, session.userId, true);
@@ -903,7 +919,7 @@ async function handleDonateProofMessage(message, session) {
   await message.react('✅').catch(() => {});
   syncTicket(session);
   const embed = new EmbedBuilder()
-    .setTitle('💎 Submitted')
+    .setTitle('Donation Submitted')
     .setDescription('Your donation has been submitted for review.')
     .setColor(colors.success)
     .addFields(
@@ -914,7 +930,7 @@ async function handleDonateProofMessage(message, session) {
     ).setTimestamp();
   if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
   const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`close_ticket_${message.channel.id}`).setLabel(t.closeTicket).setEmoji('🔒').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`close_ticket_${message.channel.id}`).setLabel('Close Ticket').setStyle(ButtonStyle.Danger)
   );
   await message.channel.send({ embeds: [embed], components: [closeRow] });
   await notifyDonationAdmin(session);
@@ -927,7 +943,7 @@ async function notifyDonationAdmin(session) {
   const t = getLang(session.config);
   const colors = getColors(session.config);
   const embed = new EmbedBuilder()
-    .setTitle('💰 Donation — Pending')
+    .setTitle('Donation — Pending')
     .setColor(colors.warning)
     .addFields(
       { name: 'User', value: `<@${session.userId}>`, inline: true },
@@ -939,8 +955,8 @@ async function notifyDonationAdmin(session) {
     ).setTimestamp();
   if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`donation_approve_${session.channelId}`).setLabel(t.donateApprove).setEmoji('✅').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId(`donation_reject_${session.channelId}`).setLabel(t.donateReject).setEmoji('❌').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`donation_approve_${session.channelId}`).setLabel('Approve Donation').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId(`donation_reject_${session.channelId}`).setLabel('Reject Donation').setStyle(ButtonStyle.Danger)
   );
   await logChannel.send({ embeds: [embed], components: [row] });
 }
@@ -952,12 +968,17 @@ async function handleDonationApprove(interaction) {
   const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`✅ Approved by <@${interaction.user.id}>`).setColor(colors.success)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`Approved by <@${interaction.user.id}>`).setColor(colors.success)],
     components: []
   });
   if (ticketChannel) {
     await generateAndSendTranscript(ticketChannel, session, 'Donation Approved');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle('💎 Approved').setDescription(t.donateApproved()).setColor(colors.success).setTimestamp()] });
+    const embed = new EmbedBuilder().setTitle('Donation Approved').setDescription('Your donation has been approved and recorded. Thank you for your generous support!').setColor(colors.success).setTimestamp();
+    if (session.ticketMessageId) {
+      await editTicketMessage(ticketChannel, session, [embed], []);
+    } else {
+      await ticketChannel.send({ embeds: [embed] });
+    }
     if (session) {
       session.status = 'approved';
       syncTicket(session);
@@ -980,12 +1001,17 @@ async function handleDonationReject(interaction) {
   const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`❌ Rejected by <@${interaction.user.id}>`).setColor(colors.error)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`Rejected by <@${interaction.user.id}>`).setColor(colors.error)],
     components: []
   });
   if (ticketChannel) {
     await generateAndSendTranscript(ticketChannel, session, 'Donation Rejected');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle('💎 Rejected').setDescription(t.donateRejected).setColor(colors.error).setTimestamp()] });
+    const embed = new EmbedBuilder().setTitle('Donation Rejected').setDescription('Your donation could not be verified. Please contact staff if you believe this is a mistake.\n\nThis ticket closes in 2 minutes.').setColor(colors.error).setTimestamp();
+    if (session.ticketMessageId) {
+      await editTicketMessage(ticketChannel, session, [embed], []);
+    } else {
+      await ticketChannel.send({ embeds: [embed] });
+    }
     if (session) { session.status = 'rejected'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
@@ -1024,18 +1050,19 @@ async function proceedToCouponOrPayment(channel, session) {
 async function askCouponPrompt(channel, session) {
   const t = getLang(session.config);
   const colors = getColors(session.config);
-  const modal = new ModalBuilder().setCustomId(`modal_coupon_${channel.id}`).setTitle(t.couponModalTitle);
-  const input = new TextInputBuilder().setCustomId('code').setLabel(t.couponLabel)
-    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.couponPlaceholder);
+  const modal = new ModalBuilder().setCustomId(`modal_coupon_${channel.id}`).setTitle('Coupon Code');
+  const input = new TextInputBuilder().setCustomId('code').setLabel('Code')
+    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('e.g. SAVE10');
   modal.addComponents(new ActionRowBuilder().addComponents(input));
   session.pendingModal = modal;
-  await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`🏷️ **${t.couponPrompt}**`).setColor(colors.primary)],
-    components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_couponmodal_${channel.id}`).setLabel(t.couponEnterBtn).setEmoji('🏷️').setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder().setCustomId(`skip_coupon_${channel.id}`).setLabel(t.couponSkipBtn).setEmoji('➡️').setStyle(ButtonStyle.Primary)
-    )]
-  });
+  const embed = new EmbedBuilder()
+    .setDescription('Do you have a coupon code?')
+    .setColor(colors.primary);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`open_couponmodal_${channel.id}`).setLabel('Enter Coupon').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(`skip_coupon_${channel.id}`).setLabel('Continue').setStyle(ButtonStyle.Primary)
+  );
+  await channel.send({ embeds: [embed], components: [row] });
 }
 
 async function handleCouponModalTrigger(interaction) {
@@ -1205,7 +1232,10 @@ async function handleProofModalTrigger(interaction) {
   const colors = getColors(session.config);
   const channel = interaction.channel;
   setCanType(channel, session.userId, true).catch(() => {});
-  channel.send({ embeds: [new EmbedBuilder().setDescription(t.sendScreenshot).setColor(colors.warning)] }).catch(() => {});
+  const embed = new EmbedBuilder()
+    .setDescription('Now send your **payment screenshot** as an image in this channel.')
+    .setColor(colors.warning);
+  channel.send({ embeds: [embed] }).catch(() => {});
 }
 
 async function handleDonateAmountModalTrigger(interaction) {
@@ -1231,7 +1261,6 @@ async function handleOpenTicket(interaction) {
   const [,, guildId, panelId] = interaction.customId.split('_');
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const panels = await getPanels(guildId);
-  // Support both stable ID lookup and legacy index-based lookup
   let panel = panels.find(p => p.id === panelId);
   if (!panel) panel = panels[parseInt(panelId)];
   if (!panel) return interaction.editReply({ content: 'This panel no longer exists.' });
@@ -1242,20 +1271,17 @@ async function handleOpenTicket(interaction) {
   const guild  = interaction.guild;
   const member = interaction.member;
 
-  // Blacklist check — this was previously never enforced by the bot.
   const blacklist = config.blacklist || [];
   if (blacklist.some(b => b.userId === member.id)) {
     return interaction.editReply({ content: t.blacklisted });
   }
 
-  // Owner-level bot-wide ban check
   const globalBan = getActiveGlobalBan(member.id);
   if (globalBan) {
     const until = globalBan.expiresAt ? new Date(globalBan.expiresAt).toLocaleString() : null;
     return interaction.editReply({ content: t.globalBanned(globalBan.reason, until) });
   }
 
-  // Owner-level bot-wide suspension check
   const suspension = getActiveSuspension(member.id);
   if (suspension) {
     const until = new Date(suspension.expiresAt).toLocaleString();
@@ -1280,16 +1306,19 @@ async function handleOpenTicket(interaction) {
     topic: `Ticket for ${member.user.tag} | ${panel.title}`,
   });
 
+  const totalSteps = (panel.questions?.length || 0) + (panel.type === 'currency' ? 2 : 1) + 1;
+
   const session = {
     channelId: ticketChannel.id, guildId, panel, config,
     userId: member.id, username: member.user.tag,
     phase: 'questions', questionIndex: 0, answers: [],
     currency: null, currencyAmount: null, total: null, totalUSD: null,
     paymentMethod: null, selectedProduct: null, appliedCoupon: null,
-    pendingModal: null,
+    pendingModal: null, ticketMessageId: null,
     status: 'open', canType: false, reported: false, priority: 'normal',
     staffNotes: [], transcript: null,
     openedAt: Date.now(), pastTickets: [],
+    totalSteps, currentStep: 0,
   };
   sessions.set(ticketChannel.id, session);
   syncTicket(session);
@@ -1299,12 +1328,11 @@ async function handleOpenTicket(interaction) {
     .setTitle(panel.title)
     .setDescription(config.welcomeMsg || t.welcome(`<@${member.id}>`))
     .setColor(color)
-    .addFields({ name: t.openedBy, value: `<@${member.id}>`, inline: true })
-    .setTimestamp();
-  const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setEmoji(emojis.ticketClosed).setStyle(ButtonStyle.Danger)
-  );
-  await ticketChannel.send({ embeds: [welcomeEmbed], components: [closeRow] });
+    .setFooter({ text: t.poweredBy });
+  const msg = await ticketChannel.send({ embeds: [welcomeEmbed] });
+  session.ticketMessageId = msg.id;
+  syncTicket(session);
+
   await startNextStep(ticketChannel, session);
   await interaction.editReply({ content: t.ticketReady(ticketChannel.id) });
 }
@@ -1314,6 +1342,7 @@ async function startNextStep(channel, session) {
   if (session.phase !== 'questions') return;
   const questions = session.panel.questions || [];
   if (session.questionIndex < questions.length) return askQuestion(channel, session);
+  session.currentStep = questions.length;
   if (session.panel.type === 'currency') { session.phase = 'currency-select'; return askCurrencySelect(channel, session); }
   if (session.panel.type === 'product')  { session.phase = 'product-select';  return askProductSelect(channel, session); }
   return proceedToCouponOrPayment(channel, session);
@@ -1323,12 +1352,23 @@ async function askQuestion(channel, session) {
   const q = session.panel.questions[session.questionIndex];
   const t = getLang(session.config);
   const colors = getColors(session.config);
+  const step = session.questionIndex + 1;
+  const total = session.panel.questions.length;
+  session.currentStep = step - 1;
+
+  const embed = new EmbedBuilder()
+    .setDescription(`${stepIndicator(step, total)}\n\n**${q.text}**`)
+    .setColor(colors.primary);
 
   if (q.type === 'image') {
     await setCanType(channel, session.userId, true);
-    await channel.send({ embeds: [new EmbedBuilder()
-      .setDescription(`**Question ${session.questionIndex + 1} of ${session.panel.questions.length}**\n\n${q.text}`)
-      .setColor(colors.primary).setFooter({ text: t.sendImageAnswer })] });
+    embed.setFooter({ text: 'Send an image or photo as your answer.' });
+    if (session.ticketMessageId) {
+      await editTicketMessage(channel, session, [embed], []);
+    } else {
+      const msg = await channel.send({ embeds: [embed] });
+      session.ticketMessageId = msg.id;
+    }
     session.phase = 'awaiting-image';
     return;
   }
@@ -1336,37 +1376,40 @@ async function askQuestion(channel, session) {
   if (q.type === 'text' || q.type === 'number') {
     const modal = new ModalBuilder()
       .setCustomId(`modal_question_${channel.id}`)
-      .setTitle(`Question ${session.questionIndex + 1}`);
+      .setTitle(`Question ${step} of ${total}`);
     const input = new TextInputBuilder()
       .setCustomId('answer')
       .setLabel(q.text.slice(0, 45))
       .setStyle(TextInputStyle.Paragraph)
       .setRequired(q.required ?? true)
-      .setPlaceholder(q.type === 'number' ? t.numbersOnly : t.typeAnswer);
+      .setPlaceholder(q.type === 'number' ? 'Numbers only...' : 'Type your answer...');
     if (q.maxLength) input.setMaxLength(q.maxLength);
     if (q.minLength) input.setMinLength(q.minLength);
     modal.addComponents(new ActionRowBuilder().addComponents(input));
-
-    // Store modal in session — the global button handler shows it instantly
     session.pendingModal = modal;
 
-    await channel.send({
-      embeds: [new EmbedBuilder()
-        .setDescription(`**Question ${session.questionIndex + 1} of ${session.panel.questions.length}**\n\n${q.text}`)
-        .setColor(colors.primary)
-        .setFooter({ text: q.required ? t.questionRequired : t.questionOptional })],
-      components: [new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`open_qmodal_${channel.id}`).setLabel(t.answerQuestion).setEmoji('✍️').setStyle(ButtonStyle.Primary)
-      )]
-    });
+    embed.setFooter({ text: q.required ? 'Required' : 'Optional' });
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`open_qmodal_${channel.id}`).setLabel('Answer').setStyle(ButtonStyle.Primary)
+    );
+    if (session.ticketMessageId) {
+      await editTicketMessage(channel, session, [embed], [row]);
+    } else {
+      const msg = await channel.send({ embeds: [embed], components: [row] });
+      session.ticketMessageId = msg.id;
+    }
     return;
   }
 
   if (q.type === 'user') {
     await setCanType(channel, session.userId, true);
-    await channel.send({ embeds: [new EmbedBuilder()
-      .setDescription(`**Question ${session.questionIndex + 1} of ${session.panel.questions.length}**\n\n${q.text}`)
-      .setColor(colors.primary).setFooter({ text: t.mentionUserAnswer })] });
+    embed.setFooter({ text: 'Mention a user with @username' });
+    if (session.ticketMessageId) {
+      await editTicketMessage(channel, session, [embed], []);
+    } else {
+      const msg = await channel.send({ embeds: [embed] });
+      session.ticketMessageId = msg.id;
+    }
     session.phase = 'awaiting-user-mention';
     return;
   }
@@ -1386,9 +1429,12 @@ async function handleModalQuestion(interaction) {
   session.questionIndex++;
   session.pendingModal = null;
   syncTicket(session);
-  await interaction.channel.send({ embeds: [new EmbedBuilder()
-    .setDescription(`**Q${session.questionIndex}:** ${q.text}\n**A:** ${answer || '*(skipped)*'}`)
-    .setColor(colors.success)] });
+
+  const embed = new EmbedBuilder()
+    .setDescription(`> **${q.text}**\n> ${answer || '*(skipped)*'}`)
+    .setColor(colors.success);
+  await interaction.channel.send({ embeds: [embed] });
+
   session.phase = 'questions';
   await startNextStep(interaction.channel, session);
 }
@@ -1449,12 +1495,19 @@ async function askCurrencySelect(channel, session) {
   const t = getLang(session.config);
   const colors = getColors(session.config);
   const currencies = getCurrencies(session.config);
-  const select = new StringSelectMenuBuilder().setCustomId('select_currency').setPlaceholder(t.selectCurrencyPlaceholder)
+  const questions = session.panel.questions || [];
+  session.currentStep = questions.length + 1;
+  const select = new StringSelectMenuBuilder().setCustomId('select_currency').setPlaceholder('Select your currency...')
     .addOptions(currencies.slice(0, 25).map(c => ({ label: c.label, value: c.value })));
-  await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.selectCurrency}**\n${t.selectCurrencyDesc}`).setColor(colors.primary)],
-    components: [new ActionRowBuilder().addComponents(select)]
-  });
+  const embed = new EmbedBuilder()
+    .setDescription(`${stepIndicator(session.currentStep, session.totalSteps)}\n\n**Select your currency**\nThis determines the total amount you will pay.`)
+    .setColor(colors.primary);
+  if (session.ticketMessageId) {
+    await editTicketMessage(channel, session, [embed], [new ActionRowBuilder().addComponents(select)]);
+  } else {
+    const msg = await channel.send({ embeds: [embed], components: [new ActionRowBuilder().addComponents(select)] });
+    session.ticketMessageId = msg.id;
+  }
 }
 
 async function handleCurrencySelect(interaction) {
@@ -1464,25 +1517,25 @@ async function handleCurrencySelect(interaction) {
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   session.currency = interaction.values[0];
   session.phase = 'currency-amount';
-  await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(t.currencySelected(session.currency)).setColor(colors.success)],
-    components: []
-  });
 
-  const modal = new ModalBuilder().setCustomId('modal_currency_amount').setTitle(t.enterAmount(session.panel.title.slice(0, 20)));
-  const input = new TextInputBuilder().setCustomId('amount').setLabel(t.amountLabel)
-    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.enterAmountPlaceholder);
+  const embed = new EmbedBuilder()
+    .setDescription(`${stepIndicator(session.currentStep, session.totalSteps)}\n\nCurrency selected: **${session.currency}**`)
+    .setColor(colors.success);
+  await interaction.update({ embeds: [embed], components: [] });
+
+  const modal = new ModalBuilder().setCustomId('modal_currency_amount').setTitle(`Amount — ${session.panel.title.slice(0, 20)}`);
+  const input = new TextInputBuilder().setCustomId('amount').setLabel('Amount (e.g. 1000, 500, 250)')
+    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder('Enter a number...');
   modal.addComponents(new ActionRowBuilder().addComponents(input));
-
-  // Store modal in session
   session.pendingModal = modal;
 
-  await interaction.channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.enterAmount(session.panel.title)}**`).setColor(colors.primary)],
-    components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_amount_modal_${interaction.channel.id}`).setLabel(t.enterAmountBtn).setEmoji('🔢').setStyle(ButtonStyle.Primary)
-    )]
-  });
+  const msgEmbed = new EmbedBuilder()
+    .setDescription(`${stepIndicator(session.currentStep, session.totalSteps)}\n\nEnter the amount of **${session.panel.title}** you want.`)
+    .setColor(colors.primary);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`open_amount_modal_${interaction.channel.id}`).setLabel('Enter Amount').setStyle(ButtonStyle.Primary)
+  );
+  await interaction.channel.send({ embeds: [msgEmbed], components: [row] });
 }
 
 async function handleCurrencyAmountModal(interaction) {
@@ -1506,12 +1559,17 @@ async function handleCurrencyAmountModal(interaction) {
   session.selectedProduct = `${amount.toLocaleString()} ${panel.title}`;
   session.pendingModal = null;
   await interaction.deferUpdate().catch(() => {});
-  await interaction.channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderSummary).setColor(colors.success)
+
+  const embed = new EmbedBuilder()
+    .setTitle('Order Summary')
+    .setColor(colors.success)
     .addFields(
-      { name: t.item, value: panel.title, inline: true },
-      { name: t.amount, value: `${amount.toLocaleString()}`, inline: true },
-      { name: t.totalToPay, value: `**${session.totalDisplay}**`, inline: false }
-    ).setFooter({ text: t.priceFee })] });
+      { name: 'Item', value: panel.title, inline: true },
+      { name: 'Amount', value: `${amount.toLocaleString()}`, inline: true },
+      { name: 'Total', value: `**${session.totalDisplay}**`, inline: false }
+    )
+    .setFooter({ text: 'Price includes service fee.' });
+  await interaction.channel.send({ embeds: [embed] });
   syncTicket(session);
   await proceedToCouponOrPayment(interaction.channel, session);
 }
@@ -1522,12 +1580,19 @@ async function askProductSelect(channel, session) {
   const colors = getColors(session.config);
   const { products } = session.panel;
   if (!products?.length) return proceedToCouponOrPayment(channel, session);
-  const select = new StringSelectMenuBuilder().setCustomId('select_product').setPlaceholder(t.selectProductPlaceholder)
+  const questions = session.panel.questions || [];
+  session.currentStep = questions.length + 1;
+  const select = new StringSelectMenuBuilder().setCustomId('select_product').setPlaceholder('Select a product...')
     .addOptions(products.map(p => ({ label: p.name, description: String(p.price), value: p.name })));
-  await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.selectProduct}**`).setColor(colors.primary)],
-    components: [new ActionRowBuilder().addComponents(select)]
-  });
+  const embed = new EmbedBuilder()
+    .setDescription(`${stepIndicator(session.currentStep, session.totalSteps)}\n\n**Select the product you want to purchase:**`)
+    .setColor(colors.primary);
+  if (session.ticketMessageId) {
+    await editTicketMessage(channel, session, [embed], [new ActionRowBuilder().addComponents(select)]);
+  } else {
+    const msg = await channel.send({ embeds: [embed], components: [new ActionRowBuilder().addComponents(select)] });
+    session.ticketMessageId = msg.id;
+  }
 }
 
 async function handleProductSelect(interaction) {
@@ -1540,10 +1605,11 @@ async function handleProductSelect(interaction) {
   session.totalDisplay = product.price;
   const parsed = parseFloat(String(product.price).replace(/[^0-9.]/g, ''));
   session.totalUSD = isNaN(parsed) ? null : parsed;
-  await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(t.selectedProduct(product.name, product.price)).setColor(colors.success)],
-    components: []
-  });
+
+  const embed = new EmbedBuilder()
+    .setDescription(`**Selected:** ${product.name}\n**Price:** ${product.price}`)
+    .setColor(colors.success);
+  await interaction.update({ embeds: [embed], components: [] });
   syncTicket(session);
   await proceedToCouponOrPayment(interaction.channel, session);
 }
@@ -1554,15 +1620,23 @@ async function askPaymentSelect(channel, session) {
   const colors = getColors(session.config);
   const methods = session.config.paymentMethods || ['paypal', 'crypto_usdt'];
   if (!methods.length) {
-    await channel.send({ embeds: [new EmbedBuilder().setDescription(t.noPaymentMethods).setColor(colors.error)] });
+    const embed = new EmbedBuilder().setDescription('No payment methods configured. Contact an admin.').setColor(colors.error);
+    if (session.ticketMessageId) await editTicketMessage(channel, session, [embed], []);
+    else await channel.send({ embeds: [embed] });
     return;
   }
-  const select = new StringSelectMenuBuilder().setCustomId('select_payment').setPlaceholder(t.selectPaymentPlaceholder)
+  const totalText = session.totalDisplay || 'as agreed';
+  const select = new StringSelectMenuBuilder().setCustomId('select_payment').setPlaceholder('Choose your payment method...')
     .addOptions(methods.map(m => ({ label: (PAYMENT_LABELS[m] || { label: m }).label, value: m })));
-  await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.selectPayment}**`).setColor(colors.primary)],
-    components: [new ActionRowBuilder().addComponents(select)]
-  });
+  const embed = new EmbedBuilder()
+    .setDescription(`**Choose your payment method**\n\nTotal: **${totalText}**`)
+    .setColor(colors.primary);
+  if (session.ticketMessageId) {
+    await editTicketMessage(channel, session, [embed], [new ActionRowBuilder().addComponents(select)]);
+  } else {
+    const msg = await channel.send({ embeds: [embed], components: [new ActionRowBuilder().addComponents(select)] });
+    session.ticketMessageId = msg.id;
+  }
 }
 
 async function handlePaymentSelect(interaction) {
@@ -1576,32 +1650,26 @@ async function handlePaymentSelect(interaction) {
   const account = (session.config.paymentAccounts || {})[method];
   const totalText = session.totalDisplay || 'as agreed';
 
-  // Build the proof modal and store it in session
-  const modal = new ModalBuilder().setCustomId('modal_payment_proof').setTitle(t.proofModalTitle);
-  const refInput = new TextInputBuilder().setCustomId('reference').setLabel(t.refLabel)
-    .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder(t.refPlaceholder);
-  const noteInput = new TextInputBuilder().setCustomId('note').setLabel(t.noteLabel)
+  const modal = new ModalBuilder().setCustomId('modal_payment_proof').setTitle('Payment Confirmation');
+  const refInput = new TextInputBuilder().setCustomId('reference').setLabel('Transaction ID / Reference (optional)')
+    .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder('e.g. TXN123456789');
+  const noteInput = new TextInputBuilder().setCustomId('note').setLabel('Additional note (optional)')
     .setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(300);
   modal.addComponents(new ActionRowBuilder().addComponents(refInput), new ActionRowBuilder().addComponents(noteInput));
   session.pendingModal = modal;
 
-  await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(t.paymentMethodSelected(info.label)).setColor(colors.success)],
-    components: []
-  });
-
-  const embed = new EmbedBuilder().setTitle(t.payWith(info.label)).setDescription(t.payDesc).setColor(colors.warning)
+  const embed = new EmbedBuilder()
+    .setTitle(`Pay with ${info.label}`)
+    .setDescription('Send the payment then submit your proof of payment.')
+    .setColor(colors.warning)
     .addFields(
-      { name: t.amount, value: `**${totalText}**`, inline: true },
-      ...(account ? [{ name: t.sendTo, value: `\`${account}\``, inline: true }] : [])
+      { name: 'Amount', value: `**${totalText}**`, inline: true },
+      ...(account ? [{ name: 'Send to', value: `\`${account}\``, inline: true }] : [])
     );
-
-  await interaction.channel.send({
-    embeds: [embed],
-    components: [new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId(`open_proof_modal_${interaction.channel.id}`).setLabel(t.submitProof).setEmoji('📤').setStyle(ButtonStyle.Success)
-    )]
-  });
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`open_proof_modal_${interaction.channel.id}`).setLabel('Submit Proof').setStyle(ButtonStyle.Success)
+  );
+  await interaction.update({ embeds: [embed], components: [row] });
 }
 
 async function handlePaymentProofModal(interaction) {
@@ -1617,12 +1685,25 @@ async function handlePaymentProofModal(interaction) {
 async function finishTicket(channel, session) {
   const t = getLang(session.config);
   const colors = getColors(session.config);
-  await channel.send({ embeds: [new EmbedBuilder().setTitle(t.purchaseSubmitted).setDescription(t.purchaseSubmittedDesc).setColor(colors.success)
+  const embed = new EmbedBuilder()
+    .setTitle('Purchase Submitted')
+    .setDescription('Your order has been submitted and is pending verification. An admin will confirm shortly.')
+    .setColor(colors.success)
     .addFields(
-      { name: t.product, value: session.selectedProduct || session.panel.title, inline: true },
-      { name: t.paymentMethod, value: PAYMENT_LABELS[session.paymentMethod]?.label || session.paymentMethod, inline: true },
-      ...(session.totalDisplay ? [{ name: t.total, value: session.totalDisplay, inline: true }] : [])
-    ).setTimestamp()] });
+      { name: 'Product', value: session.selectedProduct || session.panel.title, inline: true },
+      { name: 'Payment', value: PAYMENT_LABELS[session.paymentMethod]?.label || session.paymentMethod, inline: true },
+      ...(session.totalDisplay ? [{ name: 'Total', value: session.totalDisplay, inline: true }] : [])
+    )
+    .setTimestamp();
+  if (session.ticketMessageId) {
+    await editTicketMessage(channel, session, [embed], []);
+  } else {
+    await channel.send({ embeds: [embed] });
+  }
+  const closeRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`close_ticket_${channel.id}`).setLabel('Close Ticket').setStyle(ButtonStyle.Danger)
+  );
+  await channel.send({ components: [closeRow] });
   await notifyAdmin(session);
 }
 
@@ -1632,24 +1713,25 @@ async function notifyAdmin(session) {
   if (!logChannel) return;
   const t = getLang(session.config);
   const colors = getColors(session.config);
-  const emojis = getEmojis(session.config);
-  const embed = new EmbedBuilder().setTitle(t.adminPending).setColor(colors.warning)
+  const embed = new EmbedBuilder()
+    .setTitle('New Purchase — Pending Verification')
+    .setColor(colors.warning)
     .addFields(
-      { name: t.user,    value: `<@${session.userId}> (${session.username})`, inline: true },
-      { name: t.panel,   value: session.panel.title, inline: true },
-      { name: t.ticket,  value: `<#${session.channelId}>`, inline: true },
-      { name: t.payment, value: PAYMENT_LABELS[session.paymentMethod]?.label || session.paymentMethod || 'N/A', inline: true },
-      ...(session.totalDisplay ? [{ name: t.total, value: session.totalDisplay, inline: true }] : []),
+      { name: 'User', value: `<@${session.userId}> (${session.username})`, inline: true },
+      { name: 'Panel', value: session.panel.title, inline: true },
+      { name: 'Ticket', value: `<#${session.channelId}>`, inline: true },
+      { name: 'Payment', value: PAYMENT_LABELS[session.paymentMethod]?.label || session.paymentMethod || 'N/A', inline: true },
+      ...(session.totalDisplay ? [{ name: 'Total', value: session.totalDisplay, inline: true }] : []),
       ...(session.appliedCoupon ? [{ name: 'Coupon', value: session.appliedCoupon, inline: true }] : []),
-      ...(session.paymentReference ? [{ name: t.reference, value: session.paymentReference, inline: true }] : []),
+      ...(session.paymentReference ? [{ name: 'Reference', value: session.paymentReference, inline: true }] : []),
       ...session.answers.map(a => ({ name: a.question.slice(0, 256), value: String(a.answer).slice(0, 1024), inline: true })),
-      ...(session.paymentNote ? [{ name: t.note, value: session.paymentNote }] : []),
-      ...(session.paymentProof?.imageUrl ? [{ name: t.screenshot, value: session.paymentProof.imageUrl }] : [])
-    ).setTimestamp();
+      ...(session.paymentNote ? [{ name: 'Note', value: session.paymentNote }] : [])
+    )
+    .setTimestamp();
   if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`admin_approve_${session.channelId}`).setLabel(t.approveBtn).setEmoji(emojis.success).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId(`admin_reject_${session.channelId}`).setLabel(t.rejectBtn).setEmoji(emojis.error).setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`admin_approve_${session.channelId}`).setLabel('Approve & Deliver').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId(`admin_reject_${session.channelId}`).setLabel('Reject').setStyle(ButtonStyle.Danger)
   );
   await logChannel.send({ embeds: [embed], components: [row] });
 }
@@ -1662,13 +1744,22 @@ async function handleAdminApprove(interaction) {
   const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.approvedBy(`<@${interaction.user.id}>`)).setColor(colors.success)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`Approved by <@${interaction.user.id}>`).setColor(colors.success)],
     components: []
   });
   if (ticketChannel) {
-    const approvedMsg = session?.config?.approvedMsg || t.approved();
+    const approvedMsg = session?.config?.approvedMsg || 'Your payment was confirmed. Items will be delivered shortly. Thank you!';
     await generateAndSendTranscript(ticketChannel, session, 'Approved');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(colors.success).setTimestamp()] });
+    const embed = new EmbedBuilder().setTitle('Order Approved').setDescription(approvedMsg).setColor(colors.success).setTimestamp();
+    if (session.ticketMessageId) {
+      await editTicketMessage(ticketChannel, session, [embed], []);
+    } else {
+      await ticketChannel.send({ embeds: [embed] });
+    }
+    const closeRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`close_ticket_${channelId}`).setLabel('Close Ticket').setStyle(ButtonStyle.Danger)
+    );
+    await ticketChannel.send({ components: [closeRow] });
     if (session) { session.status = 'approved'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
@@ -1681,13 +1772,18 @@ async function handleAdminReject(interaction) {
   const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.rejectedBy(`<@${interaction.user.id}>`)).setColor(colors.error)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`Rejected by <@${interaction.user.id}>`).setColor(colors.error)],
     components: []
   });
   if (ticketChannel) {
-    const rejectedMsg = session?.config?.rejectedMsg || t.rejected;
+    const rejectedMsg = session?.config?.rejectedMsg || 'Payment could not be verified. Contact an admin if this is a mistake.\n\nThis channel closes in 2 minutes.';
     await generateAndSendTranscript(ticketChannel, session, 'Rejected');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(rejectedMsg).setColor(colors.error).setTimestamp()] });
+    const embed = new EmbedBuilder().setTitle('Order Rejected').setDescription(rejectedMsg).setColor(colors.error).setTimestamp();
+    if (session.ticketMessageId) {
+      await editTicketMessage(ticketChannel, session, [embed], []);
+    } else {
+      await ticketChannel.send({ embeds: [embed] });
+    }
     if (session) { session.status = 'rejected'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
@@ -1701,8 +1797,8 @@ async function handleCloseTicket(interaction) {
   const hasPermission = interaction.member.permissions.has(PermissionFlagsBits.ManageChannels)
     || (session?.config?.adminRole && interaction.member.roles.cache.has(session.config.adminRole));
   if (!hasPermission)
-    return interaction.reply({ content: t.staffOnly, flags: MessageFlags.Ephemeral });
-  const closedMsg = session?.config?.closedMsg || t.closingIn5;
+    return interaction.reply({ content: 'Only staff can close tickets.', flags: MessageFlags.Ephemeral });
+  const closedMsg = session?.config?.closedMsg || 'Ticket closed.';
   await interaction.reply({ content: closedMsg });
   await generateAndSendTranscript(interaction.channel, session, 'Closed');
   if (session) { session.status = 'closed'; syncTicket(session); }
