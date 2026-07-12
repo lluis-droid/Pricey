@@ -489,6 +489,7 @@ function syncTicket(session) {
         paymentProof: session.paymentProof || null,
         donationAmount: session.donationAmount || null,
         donationMethod: session.donationMethod || null,
+        ticketMessageId: session.ticketMessageId || null,
         answers: session.answers || [],
         canType: session.canType || false,
         reported: session.reported || false,
@@ -557,6 +558,7 @@ async function getSessionFromDisk(guildId, channelId) {
       paymentMethod: t.paymentMethod || null, paymentReference: t.paymentReference || null,
       paymentNote: t.paymentNote || null, paymentProof: t.paymentProof || null,
       donationAmount: t.donationAmount || null, donationMethod: t.donationMethod || null,
+      ticketMessageId: t.ticketMessageId || null,
       donation: config.donation || {},
       openedAt: t.openedAt || Date.now(), pastTickets: t.pastTickets || [],
       pendingModal: null,
@@ -662,7 +664,7 @@ async function postDonationPanel(guildId, donation) {
     if (donation.panelMessageId) {
       const msg = await channel.messages.fetch(donation.panelMessageId).catch(() => null);
       if (msg) {
-        await msg.edit({ embeds: [embed], components: [donateBtn] });
+        await msg.edit({ embeds: [embed], components: [donateBtn] }).catch(() => {});
         return;
       }
     }
@@ -694,24 +696,23 @@ function buildDonationEmbed(config, donation, donationData) {
   const raised = donationData.raised || 0;
   const goal = donation.goal || 0;
   const donors = donationData.donors || [];
-  const methods = donation.methods || [];
-  const methodLabels = { paypal:'PayPal', zelle:'Zelle', cashapp:'Cash App', venmo:'Venmo', crypto_btc:'Bitcoin', crypto_eth:'Ethereum', crypto_usdt:'USDT', crypto_ltc:'Litecoin', binance_pay:'Binance Pay', nequi:'Nequi', bancolombia:'Bancolombia', daviplata:'Daviplata', mercadopago:'Mercado Pago', pix:'PIX', zinli:'Zinli', bank:'Bank Transfer', wise:'Wise', revolut:'Revolut', skrill:'Skrill', applepay:'Apple Pay', googlepay:'Google Pay', amazon_gc:'Amazon Gift Card', steam_gc:'Steam Gift Card' };
-  let desc = donation.message || (lang === 'es' ? '¿Disfrutando del servidor? ¡Considera apoyarnos!' : 'Enjoying the server? Consider supporting us!');
+  const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+  const filled = goal > 0 ? Math.round(pct / 5) : 0;
+  const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
+
+  let desc = '';
   if (goal > 0) {
-    const pct = Math.min(100, Math.round((raised / goal) * 100));
-    const filled = Math.round(pct / 5);
-    const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
-    desc += `\n\n**${t.donateProgress}**\n$**${raised.toLocaleString()}** / $${goal.toLocaleString()} — **${pct}%**\n\`${bar}\``;
+    desc += `> $**${raised.toLocaleString()}** / $${goal.toLocaleString()} · **${pct}%**\n`;
+    desc += `\`${bar}\`\n`;
   }
-  if (methods.length) {
-    const labels = methods.map(m => methodLabels[m] || m).join(' · ');
-    desc += `\n\n**${t.donateMethods}**\n> ${labels}`;
-  }
+  if (donation.message) desc += `\n${donation.message}\n`;
   if (donation.publicWall && donors.length) {
-    const recent = donors.slice(0, 5);
-    desc += `\n\n**${t.donateRecent}**\n` + recent.map(d => `> **${d.username}** — $${d.amount}`).join('\n');
+    const top = donors.slice(0, 3);
+    desc += `\n**${t.donateRecent}**\n`;
+    desc += top.map(d => `> <@${d.username}> — **$${d.amount}**`).join('\n');
   }
   desc += `\n\n*${t.donatePanelCTA}*`;
+
   return new EmbedBuilder()
     .setTitle(`💎 ${t.donatePanelTitle}`)
     .setDescription(desc)
@@ -784,28 +785,24 @@ async function handleDonateStart(interaction) {
   };
   sessions.set(ticketChannel.id, session);
   syncTicket(session);
-  const welcomeEmbed = new EmbedBuilder()
-    .setTitle('💎 Donation Ticket')
-    .setDescription(t.donateWelcome(`<@${member.id}>`))
-    .setColor(colors.primary)
-    .addFields({ name: 'Opened by', value: `<@${member.id}>`, inline: true })
-    .setTimestamp();
-  const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setEmoji(emojis.ticketClosed).setStyle(ButtonStyle.Danger)
-  );
-  await ticketChannel.send({ embeds: [welcomeEmbed], components: [closeRow] });
   const min = donation.min || 1;
+  const embed = new EmbedBuilder()
+    .setTitle('💎 Donation')
+    .setDescription(`<@${member.id}>\n\nHow much would you like to donate?\nMinimum: **$${min}**`)
+    .setColor(colors.primary)
+    .setTimestamp();
   const modal = new ModalBuilder().setCustomId(`modal_donate_amount_${ticketChannel.id}`).setTitle(t.donateAmountTitle);
   const input = new TextInputBuilder().setCustomId('amount').setLabel(t.donateAmountLabel)
     .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.donateAmountPlaceholder);
   modal.addComponents(new ActionRowBuilder().addComponents(input));
   session.pendingModal = modal;
-  await ticketChannel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.donateAmountBtn}**\nMinimum: $${min}`).setColor(colors.primary)],
+  const msg = await ticketChannel.send({
+    embeds: [embed],
     components: [new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`open_donate_amount_modal_${ticketChannel.id}`).setLabel(t.donateAmountBtn).setEmoji('💰').setStyle(ButtonStyle.Primary)
     )]
   });
+  session.ticketMessageId = msg.id;
   await interaction.editReply({ content: t.donateTicketReady(ticketChannel.id) });
 }
 
@@ -824,18 +821,24 @@ async function handleDonateAmountModal(interaction) {
   session.donationAmount = amount;
   session.pendingModal = null;
   session.phase = 'donation-method';
-  await interaction.deferUpdate().catch(() => {});
   const methods = session.config.paymentMethods || [];
   if (!methods.length) {
-    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.noPaymentMethods).setColor(colors.error)] });
+    await interaction.reply({ content: t.noPaymentMethods, flags: MessageFlags.Ephemeral });
     return;
   }
   const select = new StringSelectMenuBuilder().setCustomId('select_donate_method').setPlaceholder(t.donateSelectMethodPlaceholder)
     .addOptions(methods.map(m => ({ label: (PAYMENT_LABELS[m] || { label: m }).label, value: m })));
-  await interaction.channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**$${amount}** — ${t.donateSelectMethod}`).setColor(colors.primary)],
-    components: [new ActionRowBuilder().addComponents(select)]
-  });
+  const embed = new EmbedBuilder()
+    .setTitle('💎 Donation')
+    .setDescription(`**$${amount}**\n\nChoose your payment method below.`)
+    .setColor(colors.primary);
+  const ticketMsg = session.ticketMessageId ? await interaction.channel.messages.fetch(session.ticketMessageId).catch(() => null) : null;
+  if (ticketMsg) {
+    await interaction.deferUpdate().catch(() => {});
+    await ticketMsg.edit({ embeds: [embed], components: [new ActionRowBuilder().addComponents(select)] }).catch(() => {});
+  } else {
+    await interaction.update({ embeds: [embed], components: [new ActionRowBuilder().addComponents(select)] });
+  }
 }
 
 async function handleDonateMethodSelect(interaction) {
@@ -856,19 +859,14 @@ async function handleDonateMethodSelect(interaction) {
     .setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(300);
   modal.addComponents(new ActionRowBuilder().addComponents(refInput), new ActionRowBuilder().addComponents(noteInput));
   session.pendingModal = modal;
-  await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(`✅ **${info.label}** selected`).setColor(colors.success)],
-    components: []
-  });
+  const desc = [`**$${amount}** · **${info.label}**`];
+  if (account) desc.push(`\nSend to: \`${account}\``);
+  desc.push('\nClick **Submit Proof** after sending payment.');
   const embed = new EmbedBuilder()
-    .setTitle(t.donatePayWith(info.label, amount))
-    .setDescription(t.donatePayDesc)
-    .setColor(colors.warning)
-    .addFields(
-      { name: t.donateAmount, value: `**$${amount}**`, inline: true },
-      ...(account ? [{ name: t.donateSendTo, value: `\`${account}\``, inline: true }] : [])
-    );
-  await interaction.channel.send({
+    .setTitle('💎 Payment')
+    .setDescription(desc.join('\n'))
+    .setColor(colors.warning);
+  await interaction.update({
     embeds: [embed],
     components: [new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`open_donate_proof_modal_${interaction.channel.id}`).setLabel(t.donateSubmitProof).setEmoji('📤').setStyle(ButtonStyle.Success)
@@ -887,10 +885,12 @@ async function handleDonateProofModal(interaction) {
   await interaction.deferUpdate().catch(() => {});
   const t = getLang(session.config);
   const colors = getColors(session.config);
+  const embed = new EmbedBuilder()
+    .setTitle('💎 Proof')
+    .setDescription(`${t.donateSendScreenshot}`)
+    .setColor(colors.primary);
+  await interaction.message.edit({ embeds: [embed], components: [] }).catch(() => {});
   await setCanType(interaction.channel, session.userId, true);
-  await interaction.channel.send({
-    embeds: [new EmbedBuilder().setDescription(t.donateSendScreenshot).setColor(colors.primary)]
-  });
 }
 
 async function handleDonateProofMessage(message, session) {
@@ -902,9 +902,9 @@ async function handleDonateProofMessage(message, session) {
   await setCanType(message.channel, session.userId, false);
   await message.react('✅').catch(() => {});
   syncTicket(session);
-  const proofEmbed = new EmbedBuilder()
-    .setTitle(t.donateSubmitted)
-    .setDescription(t.donateSubmittedDesc)
+  const embed = new EmbedBuilder()
+    .setTitle('💎 Submitted')
+    .setDescription('Your donation has been submitted for review.')
     .setColor(colors.success)
     .addFields(
       { name: 'Amount', value: `**$${session.donationAmount}**`, inline: true },
@@ -912,8 +912,11 @@ async function handleDonateProofMessage(message, session) {
       ...(session.paymentReference ? [{ name: 'Reference', value: session.paymentReference, inline: true }] : []),
       ...(session.paymentNote ? [{ name: 'Note', value: session.paymentNote }] : [])
     ).setTimestamp();
-  if (session.paymentProof?.imageUrl) proofEmbed.setImage(session.paymentProof.imageUrl);
-  await message.channel.send({ embeds: [proofEmbed] });
+  if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
+  const closeRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`close_ticket_${message.channel.id}`).setLabel(t.closeTicket).setEmoji('🔒').setStyle(ButtonStyle.Danger)
+  );
+  await message.channel.send({ embeds: [embed], components: [closeRow] });
   await notifyDonationAdmin(session);
 }
 
@@ -924,10 +927,10 @@ async function notifyDonationAdmin(session) {
   const t = getLang(session.config);
   const colors = getColors(session.config);
   const embed = new EmbedBuilder()
-    .setTitle(t.donateStaffPending)
+    .setTitle('💰 Donation — Pending')
     .setColor(colors.warning)
     .addFields(
-      { name: 'User', value: `<@${session.userId}> (${session.username})`, inline: true },
+      { name: 'User', value: `<@${session.userId}>`, inline: true },
       { name: 'Amount', value: `**$${session.donationAmount}**`, inline: true },
       { name: 'Method', value: (PAYMENT_LABELS[session.donationMethod] || { label: session.donationMethod }).label, inline: true },
       { name: 'Ticket', value: `<#${session.channelId}>`, inline: true },
@@ -949,12 +952,12 @@ async function handleDonationApprove(interaction) {
   const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.donateApprovedBy(`<@${interaction.user.id}>`)).setColor(colors.success)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`✅ Approved by <@${interaction.user.id}>`).setColor(colors.success)],
     components: []
   });
   if (ticketChannel) {
     await generateAndSendTranscript(ticketChannel, session, 'Donation Approved');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.donateApprovedTitle).setDescription(t.donateApproved()).setColor(colors.success).setTimestamp()] });
+    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle('💎 Approved').setDescription(t.donateApproved()).setColor(colors.success).setTimestamp()] });
     if (session) {
       session.status = 'approved';
       syncTicket(session);
@@ -977,12 +980,12 @@ async function handleDonationReject(interaction) {
   const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.donateRejectedBy(`<@${interaction.user.id}>`)).setColor(colors.error)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(`❌ Rejected by <@${interaction.user.id}>`).setColor(colors.error)],
     components: []
   });
   if (ticketChannel) {
     await generateAndSendTranscript(ticketChannel, session, 'Donation Rejected');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.donateRejectedTitle).setDescription(t.donateRejected).setColor(colors.error).setTimestamp()] });
+    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle('💎 Rejected').setDescription(t.donateRejected).setColor(colors.error).setTimestamp()] });
     if (session) { session.status = 'rejected'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }

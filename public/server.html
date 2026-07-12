@@ -1067,6 +1067,7 @@ async function loadDonationData() {
     const r = await fetch(`/api/donations/${guildId}`);
     if (!r.ok) return;
     const data = await r.json();
+    window._donationData = data;
     const don = cfg?.donation || {};
     const goal = don.goal || 0;
     const raised = data.raised || 0;
@@ -1083,15 +1084,28 @@ async function loadDonationData() {
   } catch {}
 }
 
+let _donRefreshInterval = null;
+function startDonationAutoRefresh() {
+  stopDonationAutoRefresh();
+  _donRefreshInterval = setInterval(() => {
+    if (document.getElementById('payments-view-donations')?.style.display !== 'none') loadDonationData();
+  }, 30000);
+}
+function stopDonationAutoRefresh() { if (_donRefreshInterval) { clearInterval(_donRefreshInterval); _donRefreshInterval = null; } }
+
 function renderDonorList(donors) {
   const el = document.getElementById('don-donor-list');
   if (!donors.length) { el.innerHTML = '<p style="font-size:12px;color:var(--muted);">No donations yet.</p>'; return; }
+  const sorted = [...donors].map((d,i) => ({...d, _i: i})).sort((a,b) => (b.amount||0) - (a.amount||0));
+  const rankMap = {}; sorted.forEach((d,rank) => { rankMap[d._i] = rank; });
   el.innerHTML = donors.slice(0, 50).map((d, i) => {
     const date = d.date ? new Date(d.date).toLocaleDateString() : '';
     const method = d.method ? ALL_METHODS[d.method] || d.method : '';
+    const rank = rankMap[i];
+    const medal = rank === 0 ? '🥇' : rank === 1 ? '🥈' : rank === 2 ? '🥉' : '';
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(d.username || 'Unknown')}</div>
+        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${medal} ${esc(d.username || 'Unknown')}</div>
         <div style="font-size:11px;color:var(--muted);">${esc(method)} · ${esc(date)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
@@ -1136,23 +1150,26 @@ function updateDonationPreview() {
   if (!enabled) { el.innerHTML = '<div style="color:var(--muted);font-style:italic;">Enable donations and save to see a preview.</div>'; return; }
   const msg = document.getElementById('don-message').value || 'Enjoying the server? Consider supporting us!';
   const goal = parseFloat(document.getElementById('don-goal').value) || 0;
-  const raised = cfg?.donation?.raised || 0;
+  const raised = window._donationData?.raised || 0;
   const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
   const filled = goal > 0 ? Math.round(pct / 5) : 0;
   const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
-  const methods = [...document.querySelectorAll('#don-methods-wrap input:checked')].map(c => ALL_METHODS[c.value] || c.value);
-  let html = `<div style="margin-bottom:12px;"><strong style="font-size:15px;">💎 Support Us</strong></div>`;
-  html += `<div style="margin-bottom:12px;">${esc(msg)}</div>`;
+  const donors = (window._donationData?.donors || []).slice(0, 3);
+  let html = `<div style="margin-bottom:10px;"><strong style="font-size:15px;">💎 Support Us</strong></div>`;
+  html += `<div style="margin-bottom:12px;color:var(--text-secondary);">${esc(msg)}</div>`;
   if (goal > 0) {
-    html += `<div style="margin-bottom:8px;"><strong>Goal Progress</strong></div>`;
-    html += `<div style="margin-bottom:2px;">$<strong>${raised.toLocaleString()}</strong> / $${goal.toLocaleString()} — <strong>${pct}%</strong></div>`;
-    html += `<div style="font-family:monospace;font-size:12px;margin-bottom:12px;color:var(--accent);">${bar}</div>`;
+    html += `<div style="font-family:monospace;font-size:12px;margin-bottom:2px;color:var(--accent);">${bar}</div>`;
+    html += `<div style="font-size:12px;margin-bottom:12px;color:var(--muted);"><strong>$${raised.toLocaleString()}</strong> / $${goal.toLocaleString()} — <strong>${pct}%</strong></div>`;
   }
-  if (methods.length) {
-    html += `<div style="margin-bottom:8px;"><strong>Accepted Methods</strong></div>`;
-    html += `<div style="margin-bottom:12px;color:var(--muted);">${methods.join(' · ')}</div>`;
+  if (donors.length) {
+    html += `<div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted);">🏆 TOP DONORS</div>`;
+    donors.forEach((d, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+      html += `<div style="font-size:12px;margin-bottom:2px;">${medal} <strong>${esc(d.username)}</strong> — <span style="color:var(--accent);">$${d.amount}</span></div>`;
+    });
+    html += `<div style="margin-bottom:12px;"></div>`;
   }
-  html += `<div style="font-style:italic;color:var(--muted);font-size:12px;">Click the button below to make a donation!</div>`;
+  html += `<div style="font-size:11px;color:var(--muted);font-style:italic;">Click the button below to make a donation!</div>`;
   el.innerHTML = html;
 }
 
@@ -1206,6 +1223,7 @@ function show(id, btn) {
   document.querySelectorAll('.sidebar > .nav-item').forEach(i=>i.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
+  if (id !== 'payments') stopDonationAutoRefresh();
   if (id === 'tickets') loadTickets();
   if (id === 'overview') { renderRevenueChart(); renderActivity(); }
 }
@@ -1222,6 +1240,8 @@ function showPaymentsView(view, btn) {
   btn.classList.add('active');
   document.getElementById('payments-view-sales').classList.toggle('active', view==='sales');
   document.getElementById('payments-view-donations').classList.toggle('active', view==='donations');
+  if (view === 'donations') { loadDonationData(); startDonationAutoRefresh(); }
+  else stopDonationAutoRefresh();
 }
 
 /* ===== SETTINGS ===== */
