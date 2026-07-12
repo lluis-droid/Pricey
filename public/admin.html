@@ -3,6 +3,7 @@
 <head>
 <link rel="icon" type="image/png" href="/assets/logo-icon.png">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pricey — Owner Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -19,59 +20,86 @@
                radial-gradient(ellipse 50% 40% at 95% 90%,#3B82F612,transparent);}
   nav{position:relative;z-index:10;background:rgba(8,8,16,0.9);backdrop-filter:blur(20px);
     border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;gap:14px;}
-  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;}
+  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;
+    font-family:'DM Sans',sans-serif;}
   .back-btn:hover{color:var(--text);}
   .back-btn svg{width:16px;height:16px;}
   .nav-logo{display:flex;align-items:center;gap:8px;}
   .nav-logo img{height:28px;}
   .nav-logo-text{font-family:'Syne',sans-serif;font-weight:900;font-size:18px;
-    background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    background:var(--grad);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .nav-divider{width:1px;height:20px;background:var(--border);}
   .nav-page{font-size:13px;font-weight:700;color:#a78bfa;font-family:'Syne',sans-serif;}
+
   .content{position:relative;z-index:1;padding:48px 40px;max-width:960px;margin:0 auto;}
   .page-header h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;}
   .page-header p{font-size:13px;color:var(--muted);margin-bottom:28px;}
-  .grad-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .grad-text{background:var(--grad);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
   .card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px;}
+
   .search-row{display:flex;gap:8px;}
   input[type=text],input[type=number],textarea,select{
     background:var(--surface3);border:1px solid var(--border);border-radius:9px;
-    padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+    padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;}
   input:focus,textarea:focus,select:focus{border-color:var(--purple);}
   .search-row input{flex:1;}
+
   .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:9px;
-    font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;}
+    font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;
+    transition:opacity .15s,transform .1s;}
+  .btn:hover{opacity:.85;}
+  .btn:active{transform:scale(.97);}
   .btn-primary{background:var(--grad);color:white;}
   .btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
   .btn-success{background:rgba(132,204,22,0.1);color:var(--green);border:1px solid rgba(132,204,22,0.2);}
   .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
   .btn-sm{padding:7px 12px;font-size:12px;}
+
   .hint{font-size:11px;color:var(--muted);margin-top:6px;}
   .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
   .info-row:last-child{border-bottom:none;}
   .info-row span:first-child{color:var(--muted);}
+
   .ban-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
     color:#f87171;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);
     padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
   .ok-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
     color:var(--green);background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);
     padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
+
   .ticket-mini{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
     padding:10px 12px;margin-bottom:8px;font-size:12px;}
   .ticket-mini .tm-top{display:flex;justify-content:space-between;color:var(--muted);margin-bottom:4px;}
+
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
   .form-row label{display:block;font-size:11px;font-weight:700;color:var(--muted);
     text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-family:'Syne',sans-serif;}
-  .form-row input,.form-row select,.form-row textarea{width:100%;}
-  .log-row{font-size:12px;padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;}
+
+  .log-row{font-size:12px;padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .log-row:last-child{border-bottom:none;}
-  .log-tag{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;padding:2px 8px;border-radius:100px;}
+  .log-tag{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;padding:2px 8px;border-radius:100px;flex-shrink:0;}
   .tag-ban{background:rgba(239,68,68,0.15);color:#f87171;}
   .tag-unban{background:rgba(132,204,22,0.15);color:var(--green);}
   .tag-delete{background:rgba(245,158,11,0.15);color:#fbbf24;}
+
   .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
   .locked{text-align:center;padding:100px 20px;color:var(--muted);}
+
+  .stat-mini{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;}
+  .stat-mini .num{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;
+    background:var(--grad);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .stat-mini .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;
+    font-family:'Syne',sans-serif;}
+
+  .user-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);
+    font-size:13px;cursor:pointer;transition:color .15s;}
+  .user-row:hover{color:#a78bfa;}
+  .user-row:last-child{border-bottom:none;}
+  .user-row .u-name{font-weight:700;flex:1;}
+  .user-row .u-meta{color:var(--muted);font-size:11px;flex-shrink:0;}
+
   .toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--surface);
     border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:700;
     transform:translateY(60px);opacity:0;transition:all .3s;font-family:'Syne',sans-serif;}
@@ -82,6 +110,7 @@
 </head>
 <body>
 <div class="glow"></div>
+
 <nav>
   <a href="/dashboard" class="back-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
@@ -99,12 +128,35 @@
     <p>Manage users and enforce the Terms of Service across every server Pricey runs on.</p>
   </div>
 
+  <!-- SUMMARY STATS -->
+  <div class="card">
+    <div class="card-title">Overview</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;" id="stats-grid">
+      <div class="empty-state">Loading...</div>
+    </div>
+  </div>
+
+  <!-- KNOWN USERS (search by name instead of ID) -->
+  <div class="card">
+    <div class="card-title">Known Users</div>
+    <input type="text" id="user-filter" placeholder="Filter by username or ID..." style="margin-bottom:12px;" oninput="renderUserList()">
+    <div id="user-list"><div class="empty-state">Loading...</div></div>
+  </div>
+
+  <!-- ACTIVE BANS -->
+  <div class="card">
+    <div class="card-title">Active Bans</div>
+    <div id="active-bans"><div class="empty-state">Loading...</div></div>
+  </div>
+
+  <!-- MANUAL LOOKUP BY ID -->
   <div class="card">
     <div class="card-title">Search User by Discord ID</div>
     <div class="search-row">
       <input type="text" id="search-id" placeholder="e.g. 803249557571371028">
       <button class="btn btn-primary" onclick="searchUser()">Search</button>
     </div>
+    <p class="hint">Tip: click a name in "Known Users" above instead of typing an ID manually.</p>
   </div>
 
   <div id="results" style="display:none">
@@ -155,6 +207,7 @@
     </div>
   </div>
 
+  <!-- ACTION LOG -->
   <div class="card">
     <div class="card-title">Admin Action Log</div>
     <div id="logs"><div class="empty-state">Loading...</div></div>
@@ -169,6 +222,7 @@
 
 <script>
 let currentUserId = null;
+let knownUsers = [];
 
 async function init() {
   const me = await fetch('/api/me').then(r=>r.json()).catch(()=>({loggedIn:false}));
@@ -176,6 +230,9 @@ async function init() {
   const admin = await fetch('/api/admin/me').then(r=>r.json()).catch(()=>({isOwner:false}));
   if (!admin.isOwner) { document.getElementById('locked').style.display='block'; return; }
   document.getElementById('app').style.display='block';
+  loadStats();
+  loadUserList();
+  loadActiveBans();
   loadLogs();
 }
 
@@ -185,6 +242,69 @@ function toast(msg, type='ok') {
   setTimeout(()=>t.classList.remove('show'), 3000);
 }
 
+/* ===== STATS ===== */
+async function loadStats() {
+  const s = await fetch('/api/admin/stats').then(r=>r.json()).catch(()=>null);
+  const el = document.getElementById('stats-grid');
+  if (!s) { el.innerHTML = `<div class="empty-state">Error loading stats</div>`; return; }
+  el.innerHTML = `
+    <div class="stat-mini"><div class="num">${s.guilds}</div><div class="lbl">Servers</div></div>
+    <div class="stat-mini"><div class="num">${s.uniqueUsers}</div><div class="lbl">Users</div></div>
+    <div class="stat-mini"><div class="num">${s.totalTickets}</div><div class="lbl">Tickets</div></div>
+    <div class="stat-mini"><div class="num">${s.activeBans}</div><div class="lbl">Banned</div></div>
+  `;
+}
+
+/* ===== KNOWN USERS ===== */
+async function loadUserList() {
+  knownUsers = await fetch('/api/admin/users').then(r=>r.json()).catch(()=>[]);
+  renderUserList();
+}
+
+function renderUserList() {
+  const filter = document.getElementById('user-filter').value.toLowerCase();
+  const el = document.getElementById('user-list');
+  const filtered = knownUsers.filter(u => !filter || u.username?.toLowerCase().includes(filter) || u.userId.includes(filter));
+  if (!filtered.length) { el.innerHTML = `<div class="empty-state">No users found.</div>`; return; }
+  el.innerHTML = filtered.slice(0, 100).map(u => `
+    <div class="user-row" onclick="document.getElementById('search-id').value='${u.userId}';searchUser();">
+      <span class="u-name">${u.username}${u.banned ? ' <span class="ban-badge" style="margin-left:6px">🚫</span>' : ''}</span>
+      <span class="u-meta">${u.ticketCount} ticket(s)${u.reportedCount ? ` · ${u.reportedCount} reported` : ''}</span>
+      <span class="u-meta">${u.lastSeen ? new Date(u.lastSeen).toLocaleDateString() : ''}</span>
+    </div>
+  `).join('');
+}
+
+/* ===== ACTIVE BANS ===== */
+async function loadActiveBans() {
+  const bans = await fetch('/api/admin/bans').then(r=>r.json()).catch(()=>[]);
+  const el = document.getElementById('active-bans');
+  if (!bans.length) { el.innerHTML = `<div class="empty-state">No users are currently banned.</div>`; return; }
+  el.innerHTML = bans.map(b => {
+    const until = b.expiresAt ? new Date(b.expiresAt).toLocaleString() : 'Permanent';
+    return `
+      <div class="user-row" style="cursor:default">
+        <span class="u-name">${b.userId}</span>
+        <span class="u-meta">${b.reason} · expires: ${until}</span>
+        <button class="btn btn-success btn-sm" onclick="quickUnban('${b.userId}')">Unban</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function quickUnban(userId) {
+  const reason = prompt('Reason for unbanning (optional):') || '';
+  const r = await fetch(`/api/admin/users/${userId}/unban`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ reason })
+  }).then(r=>r.json()).catch(()=>null);
+  if (!r?.ok) { toast('Unban failed','err'); return; }
+  toast('User unbanned');
+  loadActiveBans(); loadUserList(); loadStats(); loadLogs();
+  if (currentUserId === userId) searchUser();
+}
+
+/* ===== MANUAL LOOKUP ===== */
 async function searchUser() {
   const id = document.getElementById('search-id').value.trim();
   if (!id) { toast('Enter a Discord ID','err'); return; }
@@ -242,19 +362,10 @@ async function submitBan() {
   }).then(r=>r.json()).catch(()=>null);
   if (!r?.ok) { toast('Ban failed','err'); return; }
   toast('User banned');
-  searchUser(); loadLogs();
+  searchUser(); loadActiveBans(); loadUserList(); loadStats(); loadLogs();
 }
 
-async function unbanUser() {
-  const reason = prompt('Reason for unbanning (optional):') || '';
-  const r = await fetch(`/api/admin/users/${currentUserId}/unban`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ reason })
-  }).then(r=>r.json()).catch(()=>null);
-  if (!r?.ok) { toast('Unban failed','err'); return; }
-  toast('User unbanned');
-  searchUser(); loadLogs();
-}
+async function unbanUser() { quickUnban(currentUserId); }
 
 async function submitDelete() {
   const reason = document.getElementById('delete-reason').value.trim();
@@ -266,9 +377,10 @@ async function submitDelete() {
   }).then(r=>r.json()).catch(()=>null);
   if (!r?.ok) { toast('Delete failed','err'); return; }
   toast(`Deleted ${r.removedTickets} record(s)`);
-  searchUser(); loadLogs();
+  searchUser(); loadUserList(); loadStats(); loadLogs();
 }
 
+/* ===== ACTION LOG ===== */
 async function loadLogs() {
   const logs = await fetch('/api/admin/logs').then(r=>r.json()).catch(()=>[]);
   const el = document.getElementById('logs');

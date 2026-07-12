@@ -41,12 +41,6 @@ function logAdminAction(adminId, action, targetUserId, reason, extra = {}) {
   writeJSON(adminLogPath(), log.slice(0, 2000)); // cap log growth
 }
 
-function readJSON(file, def = {}) {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return def; }
-}
-function writeJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
 function configPath(id) { return path.join(DATA_DIR, `config_${id}.json`); }
 function panelsPath(id) { return path.join(DATA_DIR, `panels_${id}.json`); }
 function ticketsPath(id) { return path.join(DATA_DIR, `tickets_${id}.json`); }
@@ -256,7 +250,65 @@ app.get('/api/admin/me', requireAuth, (req, res) => {
   res.json({ isOwner: !!OWNER_ID && req.user.id === OWNER_ID });
 });
 
-// Search a user: their tickets across every guild + current ban status
+// List of known users derived from stored tickets across every guild —
+// lets you search by username instead of typing a raw Discord ID
+app.get('/api/admin/users', requireOwner, (req, res) => {
+  const usersMap = new Map();
+  listGuildIds().forEach(gid => {
+    readJSON(ticketsPath(gid), []).forEach(t => {
+      if (!t.userId) return;
+      const entry = usersMap.get(t.userId) || {
+        userId: t.userId,
+        username: t.username || t.userId,
+        ticketCount: 0,
+        reportedCount: 0,
+        lastSeen: 0,
+      };
+      entry.ticketCount++;
+      if (t.reported) entry.reportedCount++;
+      if (t.username) entry.username = t.username; // keep most recent
+      if ((t.openedAt || 0) > entry.lastSeen) entry.lastSeen = t.openedAt || 0;
+      usersMap.set(t.userId, entry);
+    });
+  });
+  const bans = readJSON(globalBansPath(), []);
+  const users = [...usersMap.values()].map(u => ({
+    ...u,
+    banned: bans.some(b => b.userId === u.userId && (!b.expiresAt || b.expiresAt > Date.now())),
+  })).sort((a, b) => b.lastSeen - a.lastSeen);
+  res.json(users);
+});
+
+// All currently active bans, so you don't have to search one ID at a time
+app.get('/api/admin/bans', requireOwner, (req, res) => {
+  const bans = readJSON(globalBansPath(), [])
+    .filter(b => !b.expiresAt || b.expiresAt > Date.now());
+  res.json(bans);
+});
+
+// General stats for the top of the admin panel
+app.get('/api/admin/stats', requireOwner, (req, res) => {
+  const guildIds = listGuildIds();
+  let totalTickets = 0, reported = 0;
+  const usersSet = new Set();
+  guildIds.forEach(gid => {
+    readJSON(ticketsPath(gid), []).forEach(t => {
+      totalTickets++;
+      if (t.reported) reported++;
+      if (t.userId) usersSet.add(t.userId);
+    });
+  });
+  const bans = readJSON(globalBansPath(), []).filter(b => !b.expiresAt || b.expiresAt > Date.now());
+  res.json({
+    guilds: guildIds.length,
+    totalTickets,
+    reported,
+    uniqueUsers: usersSet.size,
+    activeBans: bans.length,
+  });
+});
+
+// Search a single user: their tickets across every guild + current ban status
 app.get('/api/admin/users/:userId', requireOwner, (req, res) => {
   const { userId } = req.params;
   const tickets = [];
@@ -322,6 +374,7 @@ app.get('/api/admin/logs', requireOwner, (req, res) => {
 // Internal — used only by the bot process to read the current ban list
 app.get('/internal/global-bans', (req, res) => res.json(readJSON(globalBansPath(), [])));
 
+
 /* ===== AUTH ===== */
 app.get('/auth/discord', passport.authenticate('discord'));
 app.get('/auth/callback', (req, res, next) => {
@@ -364,6 +417,10 @@ app.get('/admin', (req, res) => {
 app.get('/server/:id', (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'public', 'server.html'));
+});
+app.get('/admin', (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
