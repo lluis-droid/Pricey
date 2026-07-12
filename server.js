@@ -28,6 +28,7 @@ const OWNER_ID = process.env.OWNER_ID;
 function globalBansPath() { return path.join(DATA_DIR, 'global-bans.json'); }
 function suspensionsPath() { return path.join(DATA_DIR, 'suspensions.json'); }
 function adminLogPath() { return path.join(DATA_DIR, 'admin-log.json'); }
+function donationsPath(id) { return path.join(DATA_DIR, `donations_${id}.json`); }
 
 function listGuildIds() {
   return fs.readdirSync(DATA_DIR)
@@ -262,7 +263,29 @@ app.post('/api/panels/:guildId/post', requireAuth, requireGuildMember, (req, res
 });
 app.post('/api/donations/:guildId/post', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  res.status(501).json({ error: 'Donation posting is not yet implemented' });
+  const cfg = readJSON(configPath(req.params.guildId), {});
+  if (!cfg.donation?.enabled || !cfg.donation?.channelId) {
+    return res.status(400).json({ error: 'Donations not enabled or no channel set' });
+  }
+  notifyBot('post-donation-panel', { guildId: req.params.guildId, donation: cfg.donation });
+  res.json({ ok: true });
+});
+app.get('/api/donations/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  const data = readJSON(donationsPath(req.params.guildId), { donors: [], raised: 0 });
+  res.json(data);
+});
+app.post('/api/donations/:guildId/record', requireInternalSecret, (req, res) => {
+  const { guildId } = req.params;
+  const { userId, username, amount } = req.body;
+  if (!isValidGuildId(guildId) || !userId || typeof amount !== 'number') {
+    return res.status(400).json({ error: 'Invalid body' });
+  }
+  const data = readJSON(donationsPath(guildId), { donors: [], raised: 0 });
+  data.donors.unshift({ userId, username, amount, date: Date.now() });
+  data.raised = Math.round((data.raised + amount) * 100) / 100;
+  writeJSON(donationsPath(guildId), data);
+  res.json({ ok: true, raised: data.raised });
 });
 
 /* ===== TICKETS API ===== */

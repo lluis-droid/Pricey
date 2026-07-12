@@ -61,12 +61,21 @@
     .empty-hint strong { color: var(--text); }
 
     @media (max-width: 768px) {
-      .servers-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+      .servers-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
       .server-card { padding: 18px 12px; }
+      .server-card img, .server-card .server-initial { width: 48px; height: 48px; }
+      .add-card { min-height: 130px; }
     }
     @media (max-width: 480px) {
       .servers-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .server-card { min-height: 0; }
+      .server-card { min-height: 0; padding: 16px 10px; }
+      .server-card img, .server-card .server-initial { width: 44px; height: 44px; }
+      .server-name { font-size: 12px; }
+      .server-tag { font-size: 10px; padding: 2px 8px; }
+      .add-card { min-height: 120px; }
+      .add-card span { font-size: 12px; }
+      .add-card small { font-size: 10px; }
+      .empty-hint { padding: 16px; font-size: 12px; }
     }
   </style>
 </head>

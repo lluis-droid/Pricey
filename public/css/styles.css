@@ -494,39 +494,88 @@ textarea { resize: vertical; min-height: 80px; }
 
 @media (max-width: 768px) {
   /* Nav mobile */
-  .nav-hamburger { display: block; }
+  .nav-hamburger { display: flex; align-items: center; justify-content: center; }
   .nav-right-desktop { display: none; }
   .nav-mobile-menu {
     display: none; position: fixed; inset: 0; z-index: 150;
     background: rgba(8,8,16,0.98); backdrop-filter: blur(20px);
     padding: 80px 24px 24px; flex-direction: column; gap: 12px;
-    animation: fadeIn .2s ease;
+    animation: fadeIn .2s ease; overflow-y: auto;
   }
   .nav-mobile-menu.open { display: flex; }
-  .nav-mobile-menu .btn { width: 100%; justify-content: center; padding: 14px; }
+  .nav-mobile-menu .btn { width: 100%; justify-content: center; padding: 14px; min-height: 44px; }
   .nav-mobile-close {
     position: absolute; top: 16px; right: 16px;
     background: none; border: none; color: var(--muted); cursor: pointer; padding: 8px;
+    min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center;
   }
   .nav-mobile-close svg { width: 24px; height: 24px; }
 
-  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .stats-row { grid-template-columns: repeat(2,1fr); gap: 8px; }
   .form-grid { grid-template-columns: 1fr; }
+
+  /* Cards & buttons */
+  .card { padding: 18px; }
+  .btn { min-height: 44px; padding: 12px 20px; }
+  .btn-sm { min-height: 36px; padding: 8px 14px; }
+
+  /* Tables overflow */
+  .user-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Info rows */
+  .info-row { gap: 12px; }
+  .info-row span:last-child { text-align: right; word-break: break-word; }
+
+  /* Segment control scroll */
+  .segmented { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  .segmented button { white-space: nowrap; flex-shrink: 0; padding: 10px 16px; }
+
+  /* Toggle rows */
+  .toggle-row { gap: 12px; }
 
   /* Legal pages */
   .legal-card { padding: 24px; }
+  .legal-card h2 { font-size: 18px; margin-top: 28px; }
+  .legal-card p, .legal-card li { font-size: 14px; line-height: 1.7; }
+  .legal-card table { font-size: 13px; display: block; overflow-x: auto; }
+  .legal-card th, .legal-card td { padding: 8px 10px; }
   .toc { gap: 6px; }
-  .footer { padding: 24px 16px; font-size: 12px; }
+  .toc a { font-size: 11px; padding: 5px 10px; }
+  .footer { padding: 24px 16px; font-size: 12px; flex-direction: column; gap: 12px; }
 
-  .page-header h1 { font-size: 26px; }
+  .page-header h1 { font-size: 26px; letter-spacing: -1px; }
+  .page-header p { font-size: 13px; }
+
+  /* Modal bottom sheet on mobile */
+  .modal-bg { align-items: flex-end; justify-content: stretch; }
+  .modal-panel { border-radius: 16px 16px 0 0 !important; max-height: 92vh; width: 100% !important; max-width: 100% !important; }
+  .modal-header { padding: 20px 20px 14px; }
+  .modal-body { padding: 16px 20px; }
+  .modal-footer-bar { padding: 14px 20px; }
+
+  /* Badge & tag touch targets */
+  .badge { padding: 8px 14px; }
+  .tag { padding: 5px 12px; }
+
+  /* Toast */
+  .toast { left: 16px; right: 16px; bottom: 16px; justify-content: center; }
 }
 
 @media (max-width: 480px) {
-  .nav-inner { padding: 0 16px; height: 52px; }
-  .stats-row { grid-template-columns: 1fr; }
-  .modal-panel { width: 100vw; max-width: 100vw; }
-  .modal-bg.centered .modal-panel { border-radius: 16px 16px 0 0; max-height: 90vh; }
-  .content { padding: 24px 16px; }
+  .nav-inner { padding: 0 12px; height: 52px; }
+  .stats-row { grid-template-columns: 1fr; gap: 8px; }
+  .content { padding: 20px 14px; }
+  .content-narrow { padding: 20px 14px; }
   .page-header h1 { font-size: 22px; letter-spacing: -1px; }
+  .page-header { margin-bottom: 28px; }
   .btn-lg { padding: 12px 20px; font-size: 14px; }
+  .card { padding: 16px; margin-bottom: 12px; }
+  .legal-wrap { padding: 100px 14px 40px; }
+  .legal-card { padding: 20px; }
+  .legal-card h2 { font-size: 17px; margin-top: 24px; }
+  .stat-num { font-size: 22px; }
+  .stat { padding: 14px; }
+
+  /* Confirm dialog */
+  .confirm-box { width: 100%; max-width: 100%; margin: 0 16px; padding: 24px; }
 }

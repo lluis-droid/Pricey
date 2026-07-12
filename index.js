@@ -453,6 +453,7 @@ async function pollActions() {
     const actions = await r.json();
     for (const action of actions) {
       if (action.type === 'post-panel') await postPanel(action.data.guildId, action.data.panel);
+      if (action.type === 'post-donation-panel') await postDonationPanel(action.data.guildId, action.data.donation);
       if (action.type === 'ticket-action') await handleDashboardTicketAction(action.data);
     }
   } catch {}
@@ -565,6 +566,54 @@ async function postPanel(guildId, panel) {
     new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${panelId}`).setLabel(t.openTicket).setEmoji(emojis.ticketOpened).setStyle(ButtonStyle.Primary)
   );
   await channel.send({ embeds: [embed], components: [row] });
+}
+
+async function postDonationPanel(guildId, donation) {
+  if (!donation.channelId) return;
+  const channel = client.channels.cache.get(donation.channelId) || await client.channels.fetch(donation.channelId).catch(() => null);
+  if (!channel) return;
+  const config = await getConfig(guildId);
+  const colors = getColors(config);
+  const emojis = getEmojis(config);
+  const lang = config.language || 'en';
+  let desc = donation.message || (lang === 'es' ? '¿Disfrutando del servidor? ¡Considera apoyarnos!' : 'Enjoying the server? Consider supporting us!');
+  if (donation.goal > 0) {
+    let raised = 0;
+    try {
+      const r = await apiFetch(`${BASE_URL}/api/donations/${guildId}`);
+      if (r) { const d = await r.json(); raised = d.raised || 0; }
+    } catch {}
+    const pct = Math.min(100, Math.round((raised / donation.goal) * 100));
+    desc += `\n\n**Progress:** $${raised} / $${donation.goal} (${pct}%)`;
+    const filled = Math.round(pct / 10);
+    const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
+    desc += `\n\`${bar}\``;
+  }
+  if (donation.publicWall) {
+    try {
+      const r = await apiFetch(`${BASE_URL}/api/donations/${guildId}`);
+      if (r) {
+        const d = await r.json();
+        if (d.donors?.length) {
+          const recent = d.donors.slice(0, 10);
+          desc += '\n\n**Recent Donors:**\n' + recent.map(dr => `> ${dr.username} — $${dr.amount}`).join('\n');
+        }
+      }
+    } catch {}
+  }
+  const color = colors.primary;
+  const embed = new EmbedBuilder()
+    .setTitle('❤️ Donations')
+    .setDescription(desc)
+    .setColor(color)
+    .setFooter({ text: config.footerText || (lang === 'es' ? 'Gracias por tu apoyo' : 'Thank you for your support') })
+    .setTimestamp();
+  const methods = donation.methods || [];
+  if (methods.length) {
+    const methodLabels = { paypal: 'PayPal', cashapp: 'Cash App', venmo: 'Venmo', zelle: 'Zelle', crypto: 'Crypto', giftcard: 'Gift Card' };
+    embed.addFields({ name: 'Payment Methods', value: methods.map(m => methodLabels[m] || m).join(', '), inline: true });
+  }
+  await channel.send({ embeds: [embed] });
 }
 
 // ─── COUPON HELPERS ─────────────────────────────────────────────────────────

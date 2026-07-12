@@ -204,11 +204,32 @@
   .sidebar-overlay{display:none;}
 
   @media (max-width:768px){
-    .sidebar-overlay{display:none;position:fixed;inset:0;top:56px;background:rgba(0,0,0,.6);z-index:99;}
+    .sidebar-overlay{display:none;position:fixed;inset:0;top:0;background:rgba(0,0,0,.6);z-index:99;}
     .sidebar-overlay.open{display:block;}
-    .sidebar{position:fixed;top:56px;left:-260px;width:260px;height:calc(100vh - 56px);z-index:100;transition:left .25s ease;overflow-y:auto;}
+    .sidebar{position:fixed;top:0;left:-260px;width:260px;height:100vh;z-index:100;transition:left .25s ease;overflow-y:auto;padding-top:12px;}
     .sidebar.open{left:0;}
     .main{padding:20px 16px;}
+    .nav{padding:0 12px;height:52px;}
+    .nav-sep{display:none;}
+    .panels-grid{grid-template-columns:1fr;}
+    .tickets-toolbar{flex-direction:column;align-items:stretch;}
+    .tickets-toolbar input{min-width:0;min-height:40px;}
+    .tickets-toolbar select{min-height:40px;}
+    .ticket-row-top{flex-wrap:wrap;}
+    .ticket-right{width:100%;justify-content:flex-end;margin-top:8px;}
+    .ticket-meta{font-size:10px;}
+    .lang-grid{grid-template-columns:1fr;}
+    .q-row{flex-direction:column;}
+    .q-input{min-width:0;width:100%;}
+    .q-num{width:100%;}
+    .q-controls{flex-wrap:wrap;}
+    .method-toggle{font-size:12px;padding:6px 10px;}
+    .page-title{font-size:18px;}
+    .page-sub{font-size:12px;}
+    .modal-create h3{font-size:16px;}
+    .sidebar-footer{display:none;}
+    nav .user-mini span{display:none;}
+    .chart-value{font-size:22px;}
   }
 
   .color-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
@@ -244,6 +265,16 @@
   @media(max-width:768px){
     .color-grid{grid-template-columns:1fr;}
     .emoji-picker-options{flex-wrap:wrap;}
+    .emoji-custom-input{width:100%;}
+  }
+  @media(max-width:480px){
+    .main{padding:16px 12px;}
+    .panel-card{padding:14px;}
+    .panel-actions{flex-direction:column;}
+    .panel-actions .btn{width:100%;justify-content:center;}
+    .activity-item{flex-wrap:wrap;}
+    .activity-item .act-detail{white-space:normal;}
+    .chart-card-top{flex-direction:column;gap:4px;}
   }
 </style>
 </head>
@@ -508,7 +539,7 @@
           <div class="form-grid" style="margin-top:14px;">
             <div class="form-row">
               <label>Goal (USD, optional)</label>
-              <input type="number" id="don-goal" placeholder="e.g. 500">
+              <input type="number" id="don-goal" placeholder="e.g. 500" oninput="toggleDonGoalCard()">
             </div>
             <div class="form-row">
               <label>Minimum donation (USD)</label>
@@ -999,6 +1030,11 @@ function updateDonationProgress(raised, goal) {
   document.getElementById('don-progress-bar').style.width = pct + '%';
 }
 
+function toggleDonGoalCard() {
+  const val = parseFloat(document.getElementById('don-goal').value) || 0;
+  document.getElementById('don-goal-card').style.display = val > 0 ? '' : 'none';
+}
+
 async function saveDonations() {
   const methods = [...document.querySelectorAll('#don-methods-wrap input:checked')].map(c=>c.value);
   const donation = {
@@ -1016,7 +1052,14 @@ async function saveDonations() {
       body: JSON.stringify({ donation })
     });
     if (!r.ok) throw new Error();
-    toast(donation.enabled ? 'Donation settings saved' : 'Donation settings saved');
+    if (donation.enabled && donation.channelId) {
+      try {
+        const p = await fetch(`/api/donations/${guildId}/post`, { method:'POST' });
+        toast(p.ok ? 'Donation panel posted' : 'Settings saved (post failed)');
+      } catch { toast('Settings saved (post failed)', 'err'); }
+    } else {
+      toast('Donation settings saved');
+    }
   } catch { toast('Failed to save donation settings', 'err'); }
 }
 
