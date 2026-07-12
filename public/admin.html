@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/assets/logo-icon.png">
+<meta charset="UTF-8">
+<title>Pricey — Owner Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#8B5CF6;--blue:#3B82F6;--green:#84CC16;
+    --bg:#080810;--surface:#0f0f1a;--surface2:#161625;--surface3:#1c1c2e;
+    --border:#1e1e35;--text:#f1f5f9;--muted:#64748b;
+    --grad:linear-gradient(135deg,#8B5CF6,#3B82F6);--red:#ef4444;--yellow:#f59e0b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse 70% 50% at 5% 10%,#8B5CF615,transparent),
+               radial-gradient(ellipse 50% 40% at 95% 90%,#3B82F612,transparent);}
+  nav{position:relative;z-index:10;background:rgba(8,8,16,0.9);backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;gap:14px;}
+  .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;}
+  .back-btn:hover{color:var(--text);}
+  .back-btn svg{width:16px;height:16px;}
+  .nav-logo{display:flex;align-items:center;gap:8px;}
+  .nav-logo img{height:28px;}
+  .nav-logo-text{font-family:'Syne',sans-serif;font-weight:900;font-size:18px;
+    background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .nav-divider{width:1px;height:20px;background:var(--border);}
+  .nav-page{font-size:13px;font-weight:700;color:#a78bfa;font-family:'Syne',sans-serif;}
+  .content{position:relative;z-index:1;padding:48px 40px;max-width:960px;margin:0 auto;}
+  .page-header h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;}
+  .page-header p{font-size:13px;color:var(--muted);margin-bottom:28px;}
+  .grad-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
+  .card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:16px;}
+  .search-row{display:flex;gap:8px;}
+  input[type=text],input[type=number],textarea,select{
+    background:var(--surface3);border:1px solid var(--border);border-radius:9px;
+    padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+  input:focus,textarea:focus,select:focus{border-color:var(--purple);}
+  .search-row input{flex:1;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:9px;
+    font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;}
+  .btn-primary{background:var(--grad);color:white;}
+  .btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2);}
+  .btn-success{background:rgba(132,204,22,0.1);color:var(--green);border:1px solid rgba(132,204,22,0.2);}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;}
+  .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .info-row:last-child{border-bottom:none;}
+  .info-row span:first-child{color:var(--muted);}
+  .ban-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+    color:#f87171;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);
+    padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
+  .ok-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+    color:var(--green);background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.25);
+    padding:3px 10px;border-radius:100px;font-family:'Syne',sans-serif;}
+  .ticket-mini{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+    padding:10px 12px;margin-bottom:8px;font-size:12px;}
+  .ticket-mini .tm-top{display:flex;justify-content:space-between;color:var(--muted);margin-bottom:4px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .form-row label{display:block;font-size:11px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-family:'Syne',sans-serif;}
+  .form-row input,.form-row select,.form-row textarea{width:100%;}
+  .log-row{font-size:12px;padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;}
+  .log-row:last-child{border-bottom:none;}
+  .log-tag{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;padding:2px 8px;border-radius:100px;}
+  .tag-ban{background:rgba(239,68,68,0.15);color:#f87171;}
+  .tag-unban{background:rgba(132,204,22,0.15);color:var(--green);}
+  .tag-delete{background:rgba(245,158,11,0.15);color:#fbbf24;}
+  .empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
+  .locked{text-align:center;padding:100px 20px;color:var(--muted);}
+  .toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--surface);
+    border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:700;
+    transform:translateY(60px);opacity:0;transition:all .3s;font-family:'Syne',sans-serif;}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.ok{border-color:var(--green);color:var(--green);}
+  .toast.err{border-color:var(--red);color:#f87171;}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<nav>
+  <a href="/dashboard" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    Dashboard
+  </a>
+  <div class="nav-divider"></div>
+  <div class="nav-logo"><img src="/assets/logo-icon.png" alt="Pricey"><span class="nav-logo-text">Pricey</span></div>
+  <div class="nav-divider"></div>
+  <span class="nav-page">🛡️ Owner Admin</span>
+</nav>
+
+<div class="content" id="app" style="display:none">
+  <div class="page-header">
+    <h1>Owner <span class="grad-text">Admin</span></h1>
+    <p>Manage users and enforce the Terms of Service across every server Pricey runs on.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Search User by Discord ID</div>
+    <div class="search-row">
+      <input type="text" id="search-id" placeholder="e.g. 803249557571371028">
+      <button class="btn btn-primary" onclick="searchUser()">Search</button>
+    </div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="card">
+      <div class="card-title">User Status — <span id="res-id"></span></div>
+      <div id="res-ban-status"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-danger btn-sm" onclick="openBanForm()">Ban User</button>
+        <button class="btn btn-success btn-sm" id="unban-btn" onclick="unbanUser()" style="display:none">Unban User</button>
+        <button class="btn btn-ghost btn-sm" onclick="openDeleteForm()">Delete Stored Data</button>
+      </div>
+
+      <div id="ban-form" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Duration</label>
+            <select id="ban-duration">
+              <option value="">Permanent</option>
+              <option value="3600000">1 hour</option>
+              <option value="86400000">1 day</option>
+              <option value="604800000">7 days</option>
+              <option value="2592000000">30 days</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Reason (required)</label>
+            <input type="text" id="ban-reason" placeholder="e.g. Scamming buyers in tickets">
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="submitBan()">Confirm Ban</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ban-form').style.display='none'">Cancel</button>
+      </div>
+
+      <div id="delete-form" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+        <div class="form-row" style="margin-bottom:10px;">
+          <label>Reason (required)</label>
+          <input type="text" id="delete-reason" placeholder="e.g. GDPR deletion request">
+        </div>
+        <p class="hint" style="margin-bottom:10px;">This permanently deletes this user's ticket records from every server. This cannot be undone.</p>
+        <button class="btn btn-danger btn-sm" onclick="submitDelete()">Confirm Delete</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('delete-form').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Stored Tickets</div>
+      <div id="res-tickets"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Admin Action Log</div>
+    <div id="logs"><div class="empty-state">Loading...</div></div>
+  </div>
+</div>
+
+<div class="locked" id="locked" style="display:none">
+  <p>You do not have access to this page.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentUserId = null;
+
+async function init() {
+  const me = await fetch('/api/me').then(r=>r.json()).catch(()=>({loggedIn:false}));
+  if (!me.loggedIn) { location.href='/'; return; }
+  const admin = await fetch('/api/admin/me').then(r=>r.json()).catch(()=>({isOwner:false}));
+  if (!admin.isOwner) { document.getElementById('locked').style.display='block'; return; }
+  document.getElementById('app').style.display='block';
+  loadLogs();
+}
+
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+async function searchUser() {
+  const id = document.getElementById('search-id').value.trim();
+  if (!id) { toast('Enter a Discord ID','err'); return; }
+  currentUserId = id;
+  const data = await fetch(`/api/admin/users/${id}`).then(r=>r.json()).catch(()=>null);
+  if (!data) { toast('Search failed','err'); return; }
+
+  document.getElementById('results').style.display='block';
+  document.getElementById('res-id').textContent = id;
+  document.getElementById('ban-form').style.display='none';
+  document.getElementById('delete-form').style.display='none';
+
+  const banStatus = document.getElementById('res-ban-status');
+  const unbanBtn = document.getElementById('unban-btn');
+  if (data.ban) {
+    const until = data.ban.expiresAt ? new Date(data.ban.expiresAt).toLocaleString() : 'Permanent';
+    banStatus.innerHTML = `<span class="ban-badge">🚫 Banned</span>
+      <div class="info-row"><span>Reason</span><span>${data.ban.reason}</span></div>
+      <div class="info-row"><span>Expires</span><span>${until}</span></div>`;
+    unbanBtn.style.display = '';
+  } else {
+    banStatus.innerHTML = `<span class="ok-badge">✓ Not banned</span>`;
+    unbanBtn.style.display = 'none';
+  }
+
+  const ticketsEl = document.getElementById('res-tickets');
+  if (!data.tickets.length) {
+    ticketsEl.innerHTML = `<div class="empty-state">No stored tickets found for this user.</div>`;
+  } else {
+    ticketsEl.innerHTML = data.tickets.map(t => `
+      <div class="ticket-mini">
+        <div class="tm-top"><span>Guild ${t.guildId}</span><span>${t.status}</span></div>
+        <div><strong>${t.panel?.title||'—'}</strong> · ${t.totalDisplay||'—'} · ${t.paymentMethod||'—'}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function openBanForm() {
+  document.getElementById('delete-form').style.display='none';
+  document.getElementById('ban-form').style.display='block';
+}
+function openDeleteForm() {
+  document.getElementById('ban-form').style.display='none';
+  document.getElementById('delete-form').style.display='block';
+}
+
+async function submitBan() {
+  const reason = document.getElementById('ban-reason').value.trim();
+  const durationMs = document.getElementById('ban-duration').value || null;
+  if (!reason) { toast('Reason is required','err'); return; }
+  const r = await fetch(`/api/admin/users/${currentUserId}/ban`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ reason, durationMs })
+  }).then(r=>r.json()).catch(()=>null);
+  if (!r?.ok) { toast('Ban failed','err'); return; }
+  toast('User banned');
+  searchUser(); loadLogs();
+}
+
+async function unbanUser() {
+  const reason = prompt('Reason for unbanning (optional):') || '';
+  const r = await fetch(`/api/admin/users/${currentUserId}/unban`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ reason })
+  }).then(r=>r.json()).catch(()=>null);
+  if (!r?.ok) { toast('Unban failed','err'); return; }
+  toast('User unbanned');
+  searchUser(); loadLogs();
+}
+
+async function submitDelete() {
+  const reason = document.getElementById('delete-reason').value.trim();
+  if (!reason) { toast('Reason is required','err'); return; }
+  if (!confirm('This permanently deletes this user\'s stored ticket data across all servers. Continue?')) return;
+  const r = await fetch(`/api/admin/users/${currentUserId}`, {
+    method:'DELETE', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ reason })
+  }).then(r=>r.json()).catch(()=>null);
+  if (!r?.ok) { toast('Delete failed','err'); return; }
+  toast(`Deleted ${r.removedTickets} record(s)`);
+  searchUser(); loadLogs();
+}
+
+async function loadLogs() {
+  const logs = await fetch('/api/admin/logs').then(r=>r.json()).catch(()=>[]);
+  const el = document.getElementById('logs');
+  if (!logs.length) { el.innerHTML = `<div class="empty-state">No admin actions logged yet.</div>`; return; }
+  const tagClass = { 'permanent-ban':'tag-ban','temp-ban':'tag-ban','unban':'tag-unban','delete-user-data':'tag-delete' };
+  const tagLabel = { 'permanent-ban':'PERM BAN','temp-ban':'TEMP BAN','unban':'UNBAN','delete-user-data':'DELETE DATA' };
+  el.innerHTML = logs.slice(0,100).map(l => `
+    <div class="log-row">
+      <span class="log-tag ${tagClass[l.action]||''}">${tagLabel[l.action]||l.action}</span>
+      <span><strong>${l.targetUserId}</strong></span>
+      <span style="color:var(--muted)">${l.reason||'—'}</span>
+      <span style="color:var(--muted);margin-left:auto">${new Date(l.timestamp).toLocaleString()}</span>
+    </div>
+  `).join('');
+}
+
+init();
+</script>
+</body>
+</html>

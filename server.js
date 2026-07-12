@@ -10,6 +10,37 @@ const app = express();
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
+const OWNER_ID = process.env.OWNER_ID;
+
+function globalBansPath() { return path.join(DATA_DIR, 'global-bans.json'); }
+function adminLogPath() { return path.join(DATA_DIR, 'admin-log.json'); }
+
+function listGuildIds() {
+  return fs.readdirSync(DATA_DIR)
+    .filter(f => f.startsWith('config_') && f.endsWith('.json'))
+    .map(f => f.slice('config_'.length, -'.json'.length));
+}
+
+// Server-side gate — this is the ONLY thing that matters for security.
+// The admin.html page itself is just UI; every route below re-checks this.
+function requireOwner(req, res, next) {
+  if (!req.isAuthenticated()) return res.status(401).json({ error: 'Unauthorized' });
+  if (!OWNER_ID || req.user.id !== OWNER_ID) return res.status(403).json({ error: 'Forbidden' });
+  next();
+}
+
+function logAdminAction(adminId, action, targetUserId, reason, extra = {}) {
+  const log = readJSON(adminLogPath(), []);
+  log.unshift({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+    adminId, action, targetUserId,
+    reason: reason || '',
+    extra,
+    timestamp: Date.now(),
+  });
+  writeJSON(adminLogPath(), log.slice(0, 2000)); // cap log growth
+}
+
 function readJSON(file, def = {}) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return def; }
 }
@@ -218,6 +249,79 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
   res.status(400).json({ error: 'Unknown action' });
 });
 
+/* ===== OWNER ADMIN API (server-validated, OWNER_ID only) ===== */
+
+// Lets the frontend know whether to show the admin nav link — NOT a security boundary
+app.get('/api/admin/me', requireAuth, (req, res) => {
+  res.json({ isOwner: !!OWNER_ID && req.user.id === OWNER_ID });
+});
+
+// Search a user: their tickets across every guild + current ban status
+app.get('/api/admin/users/:userId', requireOwner, (req, res) => {
+  const { userId } = req.params;
+  const tickets = [];
+  listGuildIds().forEach(gid => {
+    readJSON(ticketsPath(gid), [])
+      .filter(t => t.userId === userId)
+      .forEach(t => tickets.push({ guildId: gid, ...t }));
+  });
+  const bans = readJSON(globalBansPath(), []);
+  const ban = bans.find(b => b.userId === userId) || null;
+  res.json({ userId, tickets, ban });
+});
+
+// Permanently delete everything stored about a user (all guilds)
+app.delete('/api/admin/users/:userId', requireOwner, (req, res) => {
+  const { userId } = req.params;
+  const reason = req.body?.reason || '';
+  let removed = 0;
+  listGuildIds().forEach(gid => {
+    const all = readJSON(ticketsPath(gid), []);
+    const filtered = all.filter(t => t.userId !== userId);
+    removed += all.length - filtered.length;
+    if (filtered.length !== all.length) writeJSON(ticketsPath(gid), filtered);
+  });
+  logAdminAction(req.user.id, 'delete-user-data', userId, reason, { removedTickets: removed });
+  res.json({ ok: true, removedTickets: removed });
+});
+
+// Ban (temporary if durationMs provided, permanent if not)
+app.post('/api/admin/users/:userId/ban', requireOwner, (req, res) => {
+  const { userId } = req.params;
+  const { reason, durationMs } = req.body || {};
+  if (!reason || !reason.trim()) return res.status(400).json({ error: 'Reason is required' });
+  const bans = readJSON(globalBansPath(), []).filter(b => b.userId !== userId);
+  const ban = {
+    userId,
+    reason: reason.trim(),
+    bannedBy: req.user.id,
+    bannedAt: Date.now(),
+    expiresAt: durationMs ? Date.now() + Number(durationMs) : null,
+  };
+  bans.push(ban);
+  writeJSON(globalBansPath(), bans);
+  logAdminAction(req.user.id, ban.expiresAt ? 'temp-ban' : 'permanent-ban', userId, reason, { expiresAt: ban.expiresAt });
+  notifyBot('global-ban-update', {}); // wakes the bot's poller sooner, harmless no-op otherwise
+  res.json({ ok: true, ban });
+});
+
+app.post('/api/admin/users/:userId/unban', requireOwner, (req, res) => {
+  const { userId } = req.params;
+  const { reason } = req.body || {};
+  const bans = readJSON(globalBansPath(), []).filter(b => b.userId !== userId);
+  writeJSON(globalBansPath(), bans);
+  logAdminAction(req.user.id, 'unban', userId, reason);
+  notifyBot('global-ban-update', {});
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/logs', requireOwner, (req, res) => {
+  res.json(readJSON(adminLogPath(), []));
+});
+
+// Internal — used only by the bot process to read the current ban list
+app.get('/internal/global-bans', (req, res) => res.json(readJSON(globalBansPath(), [])));
+
 /* ===== AUTH ===== */
 app.get('/auth/discord', passport.authenticate('discord'));
 app.get('/auth/callback', (req, res, next) => {
@@ -252,6 +356,10 @@ app.get('/', (req, res) => {
 app.get('/dashboard', (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+app.get('/admin', (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 app.get('/server/:id', (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');

@@ -16,6 +16,20 @@ const client = new Client({
 
 const sessions = new Map();
 
+let globalBans = [];
+async function refreshGlobalBans() {
+  try {
+    const r = await apiFetch(`${BASE_URL}/internal/global-bans`);
+    if (r) globalBans = await r.json();
+  } catch {}
+}
+function getActiveGlobalBan(userId) {
+  const ban = globalBans.find(b => b.userId === userId);
+  if (!ban) return null;
+  if (ban.expiresAt && Date.now() > ban.expiresAt) return null; // expired temp ban
+  return ban;
+}
+
 const DEFAULT_CURRENCIES = [
   { label: 'USD — US Dollar',        value: 'USD', symbol: '$',  rate: 1 },
   { label: 'EUR — Euro',             value: 'EUR', symbol: '€',  rate: 1.08 },
@@ -67,6 +81,7 @@ const PAYMENT_LABELS = {
 
 const T = {
   en: {
+    
     welcome: (mention) => `Welcome ${mention}! Follow the steps below to complete your purchase.`,
     selectCurrency: 'Select your currency',
     selectCurrencyDesc: 'This determines the total amount you will pay.',
@@ -138,6 +153,8 @@ const T = {
     numbersOnly: 'Numbers only...',
     typeAnswer: 'Type your answer...',
     blacklisted: 'You are not able to open tickets in this server. If you think this is a mistake, contact staff directly.',
+globalBanned: (reason, until) =>
+  `🚫 You are banned from using this bot${until ? ` until **${until}**` : ' **permanently**'}.\n**Reason:** ${reason}`,
     couponPrompt: 'Do you have a coupon code?',
     couponEnterBtn: 'Enter coupon',
     couponSkipBtn: 'Continue without coupon',
@@ -220,6 +237,8 @@ const T = {
     numbersOnly: 'Solo números...',
     typeAnswer: 'Escribe tu respuesta...',
     blacklisted: 'No puedes abrir tickets en este servidor. Si crees que esto es un error, contacta al staff directamente.',
+globalBanned: (reason, until) =>
+  `🚫 Estás baneado de este bot${until ? ` hasta **${until}**` : ' **permanentemente**'}.\n**Motivo:** ${reason}`,
     couponPrompt: '¿Tienes un código de cupón?',
     couponEnterBtn: 'Ingresar cupón',
     couponSkipBtn: 'Continuar sin cupón',
@@ -362,8 +381,10 @@ client.once(Events.ClientReady, () => {
     sendBotStatus();
     client.guilds.cache.forEach(g => reportGuildData(g.id));
   }, 2000);
+  refreshGlobalBans();
   setInterval(sendBotStatus, 30000);
   setInterval(pollActions, 2000);
+  setInterval(refreshGlobalBans, 15000); // <-- add this line
 });
 
 client.on(Events.GuildCreate, guild => {
@@ -684,6 +705,13 @@ async function handleOpenTicket(interaction) {
   const blacklist = config.blacklist || [];
   if (blacklist.some(b => b.userId === member.id)) {
     return interaction.editReply({ content: t.blacklisted });
+  }
+
+  // Owner-level bot-wide ban check
+  const globalBan = getActiveGlobalBan(member.id);
+  if (globalBan) {
+    const until = globalBan.expiresAt ? new Date(globalBan.expiresAt).toLocaleString() : null;
+    return interaction.editReply({ content: t.globalBanned(globalBan.reason, until) });
   }
 
   const existing = [...sessions.values()].find(s => s.userId === member.id && s.guildId === guildId);

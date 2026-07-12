@@ -125,6 +125,7 @@
     <span class="nav-page">Dashboard</span>
   </div>
   <div class="nav-right">
+    <a href="/admin" id="admin-link" class="back-btn" style="display:none;">🛡️ Admin</a>
     <div class="bot-status" id="bot-status" style="display:none">
       <span class="status-dot"></span>
       <span id="bot-tag">Online</span>
@@ -162,6 +163,9 @@ async function init() {
   document.getElementById('avatar').src = me.user.avatar
     ? `https://cdn.discordapp.com/avatars/${me.user.id}/${me.user.avatar}.png`
     : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    fetch('/api/admin/me').then(r=>r.json()).then(d=>{
+    if (d.isOwner) document.getElementById('admin-link').style.display = 'inline-flex';
+  }).catch(()=>{});
 
   const status = await fetch('/api/status').then(r=>r.json()).catch(()=>({online:false}));
   if (status.online) {
