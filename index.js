@@ -285,9 +285,8 @@ function getColors(config) {
 }
 
 const EMOJI_DEFAULTS = {
-  success: '✅', error: '❌', warning: '⚠️',
+  success: '✅', error: '❌',
   ticketOpened: '🎫', ticketClosed: '🔒',
-  paymentApproved: '💰', paymentDenied: '🚫',
 };
 
 function getEmojis(config) {
