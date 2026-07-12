@@ -838,6 +838,9 @@ const guildId = location.pathname.split('/')[2];
 let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], coupons=[], editIdx=null;
 let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[], currencies=[];
 
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escAttr(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 const ALL_METHODS = {
   paypal:'PayPal', zelle:'Zelle', cashapp:'Cash App', venmo:'Venmo',
   crypto_btc:'Bitcoin (BTC)', crypto_eth:'Ethereum (ETH)', crypto_usdt:'USDT (Trc20/Erc20)',
@@ -918,15 +921,15 @@ async function init() {
 
 function populateSelects() {
   const catSel = document.getElementById('cfg-category');
-  categories.forEach(c => catSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+  categories.forEach(c => catSel.innerHTML += `<option value="${escAttr(c.id)}">${esc(c.name)}</option>`);
   const roleSel = document.getElementById('cfg-role');
-  roles.filter(r=>r.name!=='@everyone').forEach(r => roleSel.innerHTML += `<option value="${r.id}">@${r.name}</option>`);
+  roles.filter(r=>r.name!=='@everyone').forEach(r => roleSel.innerHTML += `<option value="${escAttr(r.id)}">@${esc(r.name)}</option>`);
   const logSel = document.getElementById('cfg-log');
-  channels.forEach(c => logSel.innerHTML += `<option value="${c.id}">#${c.name}</option>`);
+  channels.forEach(c => logSel.innerHTML += `<option value="${escAttr(c.id)}">#${esc(c.name)}</option>`);
   const pmChan = document.getElementById('pm-channel');
-  channels.forEach(c => pmChan.innerHTML += `<option value="${c.id}">#${c.name}</option>`);
+  channels.forEach(c => pmChan.innerHTML += `<option value="${escAttr(c.id)}">#${esc(c.name)}</option>`);
   const donChan = document.getElementById('don-channel');
-  channels.forEach(c => donChan.innerHTML += `<option value="${c.id}">#${c.name}</option>`);
+  channels.forEach(c => donChan.innerHTML += `<option value="${escAttr(c.id)}">#${esc(c.name)}</option>`);
 }
 
 function loadConfig(cfg) {
@@ -995,14 +998,17 @@ async function saveDonations() {
     publicWall: document.getElementById('don-wall').checked,
     methods,
   };
-  await fetch(`/api/config/${guildId}`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ donation })
-  });
-  if (donation.enabled && donation.channelId) {
-    await fetch(`/api/donations/${guildId}/post`, {method:'POST'}).catch(()=>{});
-  }
-  toast(donation.enabled ? 'Donation panel saved and published' : 'Donation settings saved');
+  try {
+    const r = await fetch(`/api/config/${guildId}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ donation })
+    });
+    if (!r.ok) throw new Error();
+    if (donation.enabled && donation.channelId) {
+      await fetch(`/api/donations/${guildId}/post`, {method:'POST'}).catch(()=>{});
+    }
+    toast(donation.enabled ? 'Donation panel saved and published' : 'Donation settings saved');
+  } catch { toast('Failed to save donation settings', 'err'); }
 }
 
 /* ===== NAVIGATION ===== */
@@ -1068,7 +1074,7 @@ async function saveSettings() {
       language: selectedLang,
       currencies: cleanCurrencies,
     })
-  });
+  }).then(r => { if (!r.ok) throw new Error(); });
   currencies = cleanCurrencies;
   renderCurrencies();
   toast('Settings saved');
@@ -1080,17 +1086,17 @@ function renderCurrencies() {
     <div class="form-grid" style="grid-template-columns:1fr 2fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;">
       <div class="form-row" style="margin:0">
         <label style="font-size:10px;">Code</label>
-        <input type="text" value="${c.value||''}" maxlength="6" style="text-transform:uppercase"
+        <input type="text" value="${escAttr(c.value||'')}" maxlength="6" style="text-transform:uppercase"
           oninput="currencies[${i}].value=this.value.toUpperCase()">
       </div>
       <div class="form-row" style="margin:0">
         <label style="font-size:10px;">Label</label>
-        <input type="text" value="${(c.label||'').replace(/"/g,'&quot;')}" placeholder="e.g. USD — US Dollar"
+        <input type="text" value="${escAttr(c.label||'')}" placeholder="e.g. USD — US Dollar"
           oninput="currencies[${i}].label=this.value">
       </div>
       <div class="form-row" style="margin:0">
         <label style="font-size:10px;">Symbol</label>
-        <input type="text" value="${(c.symbol||'').replace(/"/g,'&quot;')}" placeholder="$"
+        <input type="text" value="${escAttr(c.symbol||'')}" placeholder="$"
           oninput="currencies[${i}].symbol=this.value">
       </div>
       <div class="form-row" style="margin:0">
@@ -1202,9 +1208,9 @@ function updateAccounts() {
   const checked = [...document.querySelectorAll('#methods-wrap input:checked')].map(c=>c.value);
   document.getElementById('accounts-list').innerHTML = checked.map(m=>`
     <div class="form-row">
-      <label>${ALL_METHODS[m]}</label>
-      <input type="text" class="acc-input" data-method="${m}"
-        value="${savedAccounts[m]||''}"
+      <label>${esc(ALL_METHODS[m])}</label>
+      <input type="text" class="acc-input" data-method="${escAttr(m)}"
+        value="${escAttr(savedAccounts[m]||'')}"
         placeholder="Account number, email, address, username...">
     </div>
   `).join('');
@@ -1255,8 +1261,8 @@ function renderBlacklist() {
   }
   el.innerHTML = blacklist.map(b => `
     <div class="past-ticket-item" style="padding:12px;margin-bottom:8px;">
-      <span><strong style="color:var(--text)">${b.userId}</strong> &nbsp;·&nbsp; ${b.reason}</span>
-      <button class="q-del" onclick="removeBlacklist('${b.userId}')">Remove</button>
+      <span><strong style="color:var(--text)">${esc(b.userId)}</strong> &nbsp;·&nbsp; ${esc(b.reason)}</span>
+      <button class="q-del" onclick="removeBlacklist('${escAttr(b.userId)}')">Remove</button>
     </div>
   `).join('');
 }
@@ -1315,14 +1321,14 @@ function renderTickets() {
     const statusClass = `status-${t.status||'open'}`;
     const statusLabel = {open:'Open', pending:'Pending', approved:'Approved', rejected:'Rejected', closed:'Closed', refunded:'Refunded'}[t.status]||t.status;
     const reportedHtml = t.reported ? `<span class="reported-badge"><svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>Reported</span>` : '';
-    const couponHtml = t.appliedCoupon ? `<span class="coupon-badge">🏷️ ${t.appliedCoupon}</span>` : '';
-    return `<div class="ticket-row" onclick="openTicketDetail('${t.channelId}')">
+    const couponHtml = t.appliedCoupon ? `<span class="coupon-badge">🏷️ ${esc(t.appliedCoupon)}</span>` : '';
+    return `<div class="ticket-row" onclick="openTicketDetail('${escAttr(t.channelId)}')">
       <div class="ticket-row-top">
-        <span class="priority-dot priority-${t.priority||'normal'}" title="Priority: ${t.priority||'normal'}"></span>
+        <span class="priority-dot priority-${escAttr(t.priority||'normal')}" title="Priority: ${escAttr(t.priority||'normal')}"></span>
         <div class="ticket-avatar">${initials}</div>
         <div class="ticket-info">
-          <div class="ticket-username">${t.username||'Unknown'} ${reportedHtml} ${couponHtml}</div>
-          <div class="ticket-meta">${t.panel?.title||'—'} &nbsp;·&nbsp; ${t.paymentMethod||'—'} &nbsp;·&nbsp; ${t.totalDisplay||''}</div>
+          <div class="ticket-username">${esc(t.username||'Unknown')} ${reportedHtml} ${couponHtml}</div>
+          <div class="ticket-meta">${esc(t.panel?.title||'—')} &nbsp;·&nbsp; ${esc(t.paymentMethod||'—')} &nbsp;·&nbsp; ${esc(t.totalDisplay||'')}</div>
         </div>
         <div class="ticket-right">
           <span class="ticket-status ${statusClass}">${statusLabel}</span>
@@ -1344,11 +1350,11 @@ function openTicketDetail(channelId) {
   panel.innerHTML = `
     <div class="modal-header">
       <div class="modal-header-info">
-        <h3>${t.username||'Unknown'}</h3>
+        <h3>${esc(t.username||'Unknown')}</h3>
         <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;">
           <span class="ticket-status ${statusClass}">${statusLabel}</span>
           ${t.reported ? `<span class="reported-badge"><svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>Reported</span>` : ''}
-          ${t.appliedCoupon ? `<span class="coupon-badge">🏷️ ${t.appliedCoupon}</span>` : ''}
+          ${t.appliedCoupon ? `<span class="coupon-badge">🏷️ ${esc(t.appliedCoupon)}</span>` : ''}
         </div>
       </div>
       <button class="modal-close" onclick="closeTicketModal()">
@@ -1359,27 +1365,27 @@ function openTicketDetail(channelId) {
 
       <div class="section-block">
         <div class="section-block-title">Order Info</div>
-        <div class="info-row"><span>Panel</span><span>${t.panel?.title||'—'}</span></div>
-        <div class="info-row"><span>Product</span><span>${t.selectedProduct||'—'}</span></div>
-        <div class="info-row"><span>Payment</span><span>${t.paymentMethod||'—'}</span></div>
-        <div class="info-row"><span>Total</span><span>${t.totalDisplay||'—'}${t.totalUSD!=null?` (≈$${Number(t.totalUSD).toFixed(2)} USD)`:''}</span></div>
-        ${t.appliedCoupon ? `<div class="info-row"><span>Coupon</span><span>${t.appliedCoupon}</span></div>` : ''}
-        <div class="info-row"><span>Reference</span><span>${t.paymentReference||'—'}</span></div>
-        <div class="info-row"><span>Channel</span><span>#ticket-${(t.username||'').toLowerCase()}</span></div>
-        ${t.paymentProof?.imageUrl ? `<div class="info-row"><span>Screenshot</span><span><a href="${t.paymentProof.imageUrl}" target="_blank" style="color:#a78bfa;text-decoration:none;">View image</a></span></div>` : ''}
+        <div class="info-row"><span>Panel</span><span>${esc(t.panel?.title||'—')}</span></div>
+        <div class="info-row"><span>Product</span><span>${esc(t.selectedProduct||'—')}</span></div>
+        <div class="info-row"><span>Payment</span><span>${esc(t.paymentMethod||'—')}</span></div>
+        <div class="info-row"><span>Total</span><span>${esc(t.totalDisplay||'—')}${t.totalUSD!=null?` (≈$${Number(t.totalUSD).toFixed(2)} USD)`:''}</span></div>
+        ${t.appliedCoupon ? `<div class="info-row"><span>Coupon</span><span>${esc(t.appliedCoupon)}</span></div>` : ''}
+        <div class="info-row"><span>Reference</span><span>${esc(t.paymentReference||'—')}</span></div>
+        <div class="info-row"><span>Channel</span><span>#ticket-${esc((t.username||'').toLowerCase())}</span></div>
+        ${t.paymentProof?.imageUrl ? `<div class="info-row"><span>Screenshot</span><span><a href="${escAttr(t.paymentProof.imageUrl)}" target="_blank" style="color:#a78bfa;text-decoration:none;">View image</a></span></div>` : ''}
       </div>
 
       ${t.answers?.length ? `<div class="section-block">
         <div class="section-block-title">Answers</div>
         <div class="answers-list">
-          ${t.answers.map(a=>`<div class="answer-item"><div class="answer-q">${a.question}</div><div class="answer-a">${a.answer}</div></div>`).join('')}
+          ${t.answers.map(a=>`<div class="answer-item"><div class="answer-q">${esc(a.question)}</div><div class="answer-a">${esc(a.answer)}</div></div>`).join('')}
         </div>
       </div>` : ''}
 
       ${t.pastTickets?.length ? `<div class="section-block">
         <div class="section-block-title">Past Tickets from this User</div>
         <div class="past-tickets">
-          ${t.pastTickets.map(pt=>`<div class="past-ticket-item"><span>${pt.panel||'—'}</span><span class="tag ${pt.status==='approved'?'tag-green':pt.status==='rejected'?'tag-red':'tag-purple'}">${pt.status}</span></div>`).join('')}
+          ${t.pastTickets.map(pt=>`<div class="past-ticket-item"><span>${esc(pt.panel||'—')}</span><span class="tag ${pt.status==='approved'?'tag-green':pt.status==='rejected'?'tag-red':'tag-purple'}">${esc(pt.status)}</span></div>`).join('')}
         </div>
       </div>` : ''}
 
@@ -1398,7 +1404,7 @@ function openTicketDetail(channelId) {
             Allow user to type
           </div>
           <label class="toggle">
-            <input type="checkbox" id="toggle-typing" ${t.canType?'checked':''} onchange="ticketAction('${t.channelId}','set-typing',this.checked)">
+            <input type="checkbox" id="toggle-typing" ${t.canType?'checked':''} onchange="ticketAction('${escAttr(t.channelId)}','set-typing',this.checked)">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -1408,7 +1414,7 @@ function openTicketDetail(channelId) {
             Mark user as reported
           </div>
           <label class="toggle">
-            <input type="checkbox" id="toggle-report" ${t.reported?'checked':''} onchange="ticketAction('${t.channelId}','set-reported',this.checked)">
+            <input type="checkbox" id="toggle-report" ${t.reported?'checked':''} onchange="ticketAction('${escAttr(t.channelId)}','set-reported',this.checked)">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -1418,7 +1424,7 @@ function openTicketDetail(channelId) {
             Blacklist this user
           </div>
           <label class="toggle">
-            <input type="checkbox" id="toggle-blacklist" ${blacklist.some(b=>b.userId===t.userId)?'checked':''} onchange="ticketToggleBlacklist('${t.channelId}','${t.userId||''}',this.checked)">
+            <input type="checkbox" id="toggle-blacklist" ${blacklist.some(b=>b.userId===t.userId)?'checked':''} onchange="ticketToggleBlacklist('${escAttr(t.channelId)}','${escAttr(t.userId||'')}',this.checked)">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -1427,7 +1433,7 @@ function openTicketDetail(channelId) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
             Priority
           </div>
-          <select class="q-select" onchange="ticketAction('${t.channelId}','set-priority',this.value)">
+          <select class="q-select" onchange="ticketAction('${escAttr(t.channelId)}','set-priority',this.value)">
             <option value="low" ${t.priority==='low'?'selected':''}>Low</option>
             <option value="normal" ${!t.priority||t.priority==='normal'?'selected':''}>Normal</option>
             <option value="high" ${t.priority==='high'?'selected':''}>High</option>
@@ -1440,12 +1446,12 @@ function openTicketDetail(channelId) {
         <div class="section-block-title">Internal Staff Note</div>
         <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Only visible to staff on the dashboard — never sent to the buyer.</p>
         ${t.staffNotes?.length ? `<div class="answers-list" style="margin-bottom:10px;">
-          ${t.staffNotes.map(n=>`<div class="answer-item"><div class="answer-q">${n.author||'Staff'}</div><div class="answer-a">${n.text}</div></div>`).join('')}
+          ${t.staffNotes.map(n=>`<div class="answer-item"><div class="answer-q">${esc(n.author||'Staff')}</div><div class="answer-a">${esc(n.text)}</div></div>`).join('')}
         </div>` : ''}
         <div class="menu-builder">
           <textarea id="note-text" placeholder="Add an internal note about this ticket..."></textarea>
           <div class="menu-builder-footer">
-            <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','add-note',document.getElementById('note-text').value)">
+            <button class="btn btn-ghost btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','add-note',document.getElementById('note-text').value)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               Add Note
             </button>
@@ -1458,7 +1464,7 @@ function openTicketDetail(channelId) {
         <div class="menu-builder">
           <textarea id="menu-text" placeholder="Write a message or menu to send in the ticket channel..."></textarea>
           <div class="menu-builder-footer">
-            <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','send-message',document.getElementById('menu-text').value)">
+            <button class="btn btn-ghost btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','send-message',document.getElementById('menu-text').value)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               Send
             </button>
@@ -1469,30 +1475,30 @@ function openTicketDetail(channelId) {
 
     <div class="modal-footer-bar">
       ${t.status==='pending' ? `
-        <button class="btn btn-success btn-sm" onclick="ticketAction('${t.channelId}','approve')">
+        <button class="btn btn-success btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','approve')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           Approve
         </button>
-        <button class="btn btn-danger btn-sm" onclick="ticketAction('${t.channelId}','reject')">
+        <button class="btn btn-danger btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','reject')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Reject
         </button>
       ` : ''}
       ${t.status==='approved' ? `
-        <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','refund')">
+        <button class="btn btn-ghost btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','refund')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           Mark Refunded
         </button>
       ` : ''}
-      <button class="btn btn-ghost btn-sm" onclick="downloadTranscript('${t.channelId}')">
+      <button class="btn btn-ghost btn-sm" onclick="downloadTranscript('${escAttr(t.channelId)}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Transcript
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="ticketAction('${t.channelId}','clear-chat')">
+      <button class="btn btn-ghost btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','clear-chat')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         Clear Chat
       </button>
-      <button class="btn btn-danger btn-sm" onclick="ticketAction('${t.channelId}','close')" style="margin-left:auto;">
+      <button class="btn btn-danger btn-sm" onclick="ticketAction('${escAttr(t.channelId)}','close')" style="margin-left:auto;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Close Ticket
       </button>
@@ -1630,8 +1636,8 @@ function renderActivity() {
   el.innerHTML = recent.map(t => `
     <div class="activity-item">
       <span>${statusIcon[t.status]||'•'}</span>
-      <span class="act-user">${t.username||'Unknown'}</span>
-      <span class="act-detail">${t.panel?.title||''} ${t.totalDisplay?('· '+t.totalDisplay):''} ${t.appliedCoupon?('· 🏷️ '+t.appliedCoupon):''}</span>
+      <span class="act-user">${esc(t.username||'Unknown')}</span>
+      <span class="act-detail">${esc(t.panel?.title||'')} ${t.totalDisplay?('· '+esc(t.totalDisplay)):''} ${t.appliedCoupon?('· 🏷️ '+esc(t.appliedCoupon)):''}</span>
       <span style="color:var(--muted);flex-shrink:0;">${t.openedAt?new Date(t.openedAt).toLocaleDateString():''}</span>
     </div>
   `).join('');
@@ -1646,10 +1652,10 @@ function renderPanels() {
   let html = visible.map(({p,i})=>`
     <div class="panel-card">
       <div class="panel-card-top">
-        <h4>${p.title}</h4>
-        <div class="tag ${typeTag[p.type]||'tag-purple'}" style="font-size:10px;">${p.type}</div>
+        <h4>${esc(p.title)}</h4>
+        <div class="tag ${typeTag[p.type]||'tag-purple'}" style="font-size:10px;">${esc(p.type)}</div>
       </div>
-      <div class="panel-desc">${p.description||'No description'}</div>
+      <div class="panel-desc">${esc(p.description||'No description')}</div>
       <div class="panel-meta">
         ${p.questions?.length ? `<span class="tag tag-purple">${p.questions.length} questions</span>` : ''}
         ${p.type==='currency' ? `<span class="tag tag-green">+${p.margin||15}% margin</span>` : ''}
@@ -1733,7 +1739,7 @@ function renderQuestions() {
   document.getElementById('questions-list').innerHTML = questions.map((q,i)=>`
     <div class="q-item">
       <div class="q-row">
-        <input class="q-input" type="text" placeholder="Question text..." value="${q.text.replace(/"/g,'&quot;')}" oninput="questions[${i}].text=this.value">
+        <input class="q-input" type="text" placeholder="Question text..." value="${escAttr(q.text)}" oninput="questions[${i}].text=this.value">
         <button class="q-del" onclick="questions.splice(${i},1);renderQuestions()">x</button>
       </div>
       <div class="q-controls">
@@ -1758,9 +1764,9 @@ function addProduct() {
 function renderProducts() {
   document.getElementById('product-list').innerHTML = products.map((p,i)=>`
     <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <input type="text" placeholder="Product name" value="${p.name}" oninput="products[${i}].name=this.value"
+      <input type="text" placeholder="Product name" value="${escAttr(p.name)}" oninput="products[${i}].name=this.value"
         style="flex:2;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;">
-      <input type="text" placeholder="Price (e.g. $5 USD)" value="${p.price}" oninput="products[${i}].price=this.value"
+      <input type="text" placeholder="Price (e.g. $5 USD)" value="${escAttr(p.price)}" oninput="products[${i}].price=this.value"
         style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;">
       <button onclick="products.splice(${i},1);renderProducts()" class="q-del">x</button>
     </div>
@@ -1781,7 +1787,7 @@ function renderCoupons() {
   el.innerHTML = coupons.map((c,i)=>`
     <div class="coupon-item">
       <div class="q-row">
-        <input class="q-input" style="max-width:130px;text-transform:uppercase" placeholder="CODE" value="${c.code}" oninput="coupons[${i}].code=this.value.toUpperCase()">
+        <input class="q-input" style="max-width:130px;text-transform:uppercase" placeholder="CODE" value="${escAttr(c.code)}" oninput="coupons[${i}].code=this.value.toUpperCase()">
         <select class="q-select" onchange="coupons[${i}].type=this.value">
           <option value="percent" ${c.type==='percent'?'selected':''}>% discount</option>
           <option value="fixed" ${c.type==='fixed'?'selected':''}>$ fixed (USD)</option>

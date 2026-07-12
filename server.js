@@ -16,6 +16,7 @@ function readJSON(file, def = {}) {
 function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
+function isValidGuildId(id) { return typeof id === 'string' && /^\d+$/.test(id); }
 function configPath(id) { return path.join(DATA_DIR, `config_${id}.json`); }
 function panelsPath(id) { return path.join(DATA_DIR, `panels_${id}.json`); }
 function ticketsPath(id) { return path.join(DATA_DIR, `tickets_${id}.json`); }
@@ -84,6 +85,22 @@ function requireAuth(req, res, next) {
   res.status(401).json({ error: 'Unauthorized' });
 }
 
+function requireInternalSecret(req, res, next) {
+  const secret = process.env.PRICEY_INTERNAL_SECRET;
+  if (secret && req.headers['x-internal-secret'] === secret) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+}
+
+function requireGuildMember(req, res, next) {
+  const guildId = req.params.guildId || req.params.id;
+  if (!guildId) return next();
+  if (!req.isAuthenticated()) return res.status(401).json({ error: 'Unauthorized' });
+  const userGuilds = req.user.guilds || [];
+  const inGuild = userGuilds.some(g => g.id === guildId) || (botStatus.guilds || []).includes(guildId);
+  if (!inGuild) return res.status(403).json({ error: 'Forbidden' });
+  next();
+}
+
 async function fetchUserGuilds(accessToken) {
   try {
     const r = await fetch('https://discord.com/api/v10/users/@me/guilds', {
@@ -98,26 +115,31 @@ let botStatus = { online: false, tag: '', guilds: [] };
 let pendingBotActions = [];
 function notifyBot(type, data) { pendingBotActions.push({ type, data }); }
 
-/* ===== BOT COMMUNICATION ===== */
-app.post('/api/bot-status', (req, res) => {
-  botStatus = req.body;
+/* ===== BOT COMMUNICATION (internal secret required) ===== */
+app.post('/api/bot-status', requireInternalSecret, (req, res) => {
+  const b = req.body;
+  if (!b || typeof b.online !== 'boolean' || !Array.isArray(b.guilds)) return res.status(400).json({ error: 'Invalid body' });
+  botStatus = { online: b.online, tag: b.tag || '', guilds: b.guilds, guildData: botStatus.guildData };
   console.log('[SERVER] Bot status received, guilds:', botStatus.guilds);
   res.json({ ok: true });
 });
 
-app.get('/api/bot-actions', (req, res) => res.json(pendingBotActions.splice(0)));
+app.get('/api/bot-actions', requireInternalSecret, (req, res) => res.json(pendingBotActions.splice(0)));
 
-app.post('/api/bot-guild-data', (req, res) => {
+app.post('/api/bot-guild-data', requireInternalSecret, (req, res) => {
+  const { guildId, data } = req.body;
+  if (!guildId || !data) return res.status(400).json({ error: 'Invalid body' });
   if (!botStatus.guildData) botStatus.guildData = {};
-  botStatus.guildData[req.body.guildId] = req.body.data;
-  writeJSON(guildDataPath(req.body.guildId), req.body.data);
-  console.log('[SERVER] Guild data received for:', req.body.guildId);
+  botStatus.guildData[guildId] = data;
+  writeJSON(guildDataPath(guildId), data);
+  console.log('[SERVER] Guild data received for:', guildId);
   res.json({ ok: true });
 });
 
-app.post('/api/bot-ticket-update', (req, res) => {
+app.post('/api/bot-ticket-update', requireInternalSecret, (req, res) => {
   const { guildId, ticket } = req.body;
   if (!guildId || !ticket?.channelId) return res.json({ ok: false });
+  if (!isValidGuildId(guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const all = readJSON(ticketsPath(guildId), []);
   const idx = all.findIndex(t => t.channelId === ticket.channelId);
   if (idx >= 0) all[idx] = { ...all[idx], ...ticket };
@@ -126,8 +148,19 @@ app.post('/api/bot-ticket-update', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/internal/config/:guildId', (req, res) => res.json(readJSON(configPath(req.params.guildId))));
-app.get('/internal/panels/:guildId', (req, res) => res.json(readJSON(panelsPath(req.params.guildId), [])));
+app.get('/internal/config/:guildId', requireInternalSecret, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  res.json(readJSON(configPath(req.params.guildId)));
+});
+app.get('/internal/panels/:guildId', requireInternalSecret, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  res.json(readJSON(panelsPath(req.params.guildId), []));
+});
+app.post('/internal/panels/:guildId', requireInternalSecret, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  writeJSON(panelsPath(req.params.guildId), req.body);
+  res.json({ ok: true });
+});
 
 /* ===== PUBLIC STATUS ===== */
 app.get('/api/status', (req, res) => res.json(botStatus));
@@ -147,7 +180,10 @@ app.get('/api/guilds', requireAuth, async (req, res) => {
     req.user.guilds = fresh;
     await new Promise(resolve => req.session.save(resolve));
   }
-  const admin = all.filter(g => (BigInt(g.permissions) & BigInt(0x20)) === BigInt(0x20));
+  const admin = all.filter(g => {
+    try { return (BigInt(g.permissions || 0) & BigInt(0x20)) === BigInt(0x20); }
+    catch { return false; }
+  });
   console.log('[GUILDS] inBot:', admin.filter(g => botStatus.guilds.includes(g.id)).map(g => g.id));
   res.json({
     inBot: admin.filter(g => botStatus.guilds.includes(g.id)),
@@ -156,6 +192,7 @@ app.get('/api/guilds', requireAuth, async (req, res) => {
 });
 
 app.get('/api/guild/:id', requireAuth, async (req, res) => {
+  if (!isValidGuildId(req.params.id)) return res.status(400).json({ error: 'Invalid guild ID' });
   const fresh = await fetchUserGuilds(req.user.accessToken);
   const all = fresh || req.user.guilds || [];
   const g = all.find(x => x.id === req.params.id);
@@ -168,20 +205,37 @@ app.get('/api/guild/:id', requireAuth, async (req, res) => {
   res.json({ name: g.name, icon: g.icon, channels: data.channels || [], roles: data.roles || [], categories: data.categories || [] });
 });
 
-app.get('/api/config/:guildId', requireAuth, (req, res) => res.json(readJSON(configPath(req.params.guildId))));
-app.post('/api/config/:guildId', requireAuth, (req, res) => {
+app.get('/api/config/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  res.json(readJSON(configPath(req.params.guildId)));
+});
+app.post('/api/config/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const updated = { ...readJSON(configPath(req.params.guildId)), ...req.body };
   writeJSON(configPath(req.params.guildId), updated);
   notifyBot('config-update', { guildId: req.params.guildId, config: updated });
   res.json({ ok: true });
 });
 
-app.get('/api/panels/:guildId', requireAuth, (req, res) => res.json(readJSON(panelsPath(req.params.guildId), [])));
-app.post('/api/panels/:guildId', requireAuth, (req, res) => {
+app.get('/api/panels/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  res.json(readJSON(panelsPath(req.params.guildId), []));
+});
+app.post('/api/panels/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   writeJSON(panelsPath(req.params.guildId), req.body);
   res.json({ ok: true });
 });
-app.post('/api/panels/:guildId/post', requireAuth, (req, res) => {
+app.post('/api/panels/:guildId/post', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  const panels = readJSON(panelsPath(req.params.guildId), []);
+  const panel = panels[req.body.panelIndex];
+  if (!panel) return res.status(404).json({ error: 'Panel not found' });
+  notifyBot('post-panel', { guildId: req.params.guildId, panel });
+  res.json({ ok: true });
+});
+app.post('/api/donations/:guildId/post', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const panels = readJSON(panelsPath(req.params.guildId), []);
   const panel = panels[req.body.panelIndex];
   if (!panel) return res.status(404).json({ error: 'Panel not found' });
@@ -190,14 +244,16 @@ app.post('/api/panels/:guildId/post', requireAuth, (req, res) => {
 });
 
 /* ===== TICKETS API ===== */
-app.get('/api/tickets/:guildId', requireAuth, (req, res) => {
+app.get('/api/tickets/:guildId', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const tickets = readJSON(ticketsPath(req.params.guildId), []);
   res.json(tickets);
 });
 
-app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
+app.post('/api/tickets/:guildId/:channelId/action', requireAuth, requireGuildMember, (req, res) => {
   const { guildId, channelId } = req.params;
   const { action, value } = req.body;
+  if (!isValidGuildId(guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
 
   const tickets = readJSON(ticketsPath(guildId), []);
   const ticket = tickets.find(t => t.channelId === channelId);
@@ -215,6 +271,20 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
     notifyBot('ticket-action', { guildId, channelId, action, value });
     return res.json({ ok: true });
   }
+  if (action === 'set-priority') {
+    ticket.priority = value || 'normal';
+    writeJSON(ticketsPath(guildId), tickets);
+    notifyBot('ticket-action', { guildId, channelId, action, value });
+    return res.json({ ok: true });
+  }
+  if (action === 'add-note') {
+    if (!value?.trim()) return res.status(400).json({ error: 'Empty note' });
+    ticket.staffNotes = ticket.staffNotes || [];
+    ticket.staffNotes.push({ text: value.trim(), author: 'Dashboard', at: Date.now() });
+    writeJSON(ticketsPath(guildId), tickets);
+    notifyBot('ticket-action', { guildId, channelId, action, value });
+    return res.json({ ok: true });
+  }
   if (action === 'approve') {
     ticket.status = 'approved';
     writeJSON(ticketsPath(guildId), tickets);
@@ -223,6 +293,12 @@ app.post('/api/tickets/:guildId/:channelId/action', requireAuth, (req, res) => {
   }
   if (action === 'reject') {
     ticket.status = 'rejected';
+    writeJSON(ticketsPath(guildId), tickets);
+    notifyBot('ticket-action', { guildId, channelId, action });
+    return res.json({ ok: true });
+  }
+  if (action === 'refund') {
+    ticket.status = 'refunded';
     writeJSON(ticketsPath(guildId), tickets);
     notifyBot('ticket-action', { guildId, channelId, action });
     return res.json({ ok: true });
@@ -423,20 +499,15 @@ app.get('/api/admin/logs', requireOwner, (req, res) => {
 });
 
 // Internal — used only by the bot process to read the current ban list
-app.get('/internal/global-bans', (req, res) => res.json(readJSON(globalBansPath(), [])));
-
-// Internal — used only by the bot process to read the current suspension list
-app.get('/internal/suspensions', (req, res) => res.json(readJSON(suspensionsPath(), [])));
+app.get('/internal/global-bans', requireInternalSecret, (req, res) => res.json(readJSON(globalBansPath(), [])));
+app.get('/internal/suspensions', requireInternalSecret, (req, res) => res.json(readJSON(suspensionsPath(), [])));
 
 
 /* ===== AUTH ===== */
 app.get('/auth/discord', passport.authenticate('discord'));
 app.get('/auth/callback', (req, res, next) => {
   passport.authenticate('discord', (err, user, info) => {
-    console.error("ERROR:", err);
-    console.error("INFO:", info);
-
-    if (err) return next(err);
+    if (err) { console.error("[AUTH]", err); return next(err); }
     if (!user) return res.status(401).json(info);
 
     req.logIn(user, err => {

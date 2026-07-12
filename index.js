@@ -302,9 +302,13 @@ function resolveChannelName(config, panel, username, userId) {
 }
 
 async function apiFetch(url, opts, retries = 3) {
+  const secret = process.env.PRICEY_INTERNAL_SECRET;
+  const headers = { ...(opts?.headers || {}) };
+  if (secret) headers['x-internal-secret'] = secret;
+  const merged = { ...opts, headers };
   for (let i = 0; i < retries; i++) {
     try {
-      const r = await fetch(url, opts);
+      const r = await fetch(url, merged);
       if (r.ok) return r;
     } catch (e) {
       if (i === retries - 1) throw e;
@@ -323,7 +327,7 @@ async function getPanels(guildId) {
   catch { return []; }
 }
 async function savePanels(guildId, panels) {
-  try { await apiFetch(`${BASE_URL}/api/panels/${guildId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(panels) }); }
+  try { await apiFetch(`${BASE_URL}/internal/panels/${guildId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(panels) }); }
   catch (e) { console.error('[savePanels]', e.message); }
 }
 
@@ -467,7 +471,7 @@ async function handleDashboardTicketAction(data) {
 
   if (action === 'close') {
     await generateAndSendTranscript(channel, session, 'Closed by admin');
-    if (session) syncTicket(session);
+    if (session) { session.status = 'closed'; syncTicket(session); }
     const closedMsg = config.closedMsg || 'Ticket closed by an admin.';
     await channel.send({ embeds: [new EmbedBuilder().setDescription(closedMsg).setColor(colors.error)] });
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 5000);
@@ -487,8 +491,10 @@ async function handleDashboardTicketAction(data) {
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
   if (action === 'refund' && session) {
+    await generateAndSendTranscript(channel, session, 'Refunded');
     session.status = 'refunded'; syncTicket(session);
     await channel.send({ embeds: [new EmbedBuilder().setDescription('This order was marked as **refunded** by an admin.').setColor(colors.warning)] }).catch(() => {});
+    setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
   if (action === 'clear-chat') { try { await channel.bulkDelete(100, true); } catch {} }
   if (action === 'send-message' && value?.trim()) { await channel.send({ content: value }); }
@@ -832,7 +838,8 @@ async function handleOpenTicket(interaction) {
 // ─── FLOW ──────────────────────────────────────────────────────────────────────
 async function startNextStep(channel, session) {
   if (session.phase !== 'questions') return;
-  if (session.questionIndex < session.panel.questions.length) return askQuestion(channel, session);
+  const questions = session.panel.questions || [];
+  if (session.questionIndex < questions.length) return askQuestion(channel, session);
   if (session.panel.type === 'currency') { session.phase = 'currency-select'; return askCurrencySelect(channel, session); }
   if (session.panel.type === 'product')  { session.phase = 'product-select';  return askProductSelect(channel, session); }
   return proceedToCouponOrPayment(channel, session);
@@ -1008,6 +1015,7 @@ async function handleCurrencyAmountModal(interaction) {
   const amount = parseFloat(raw);
   if (isNaN(amount) || amount <= 0) return interaction.reply({ content: t.pleaseValidNumber, flags: MessageFlags.Ephemeral });
   const { panel } = session;
+  if (!panel.baseAmount) return interaction.reply({ content: t.pleaseValidNumber, flags: MessageFlags.Ephemeral });
   const currencies = getCurrencies(session.config);
   const currencyInfo = currencies.find(c => c.value === session.currency) || currencies[0];
   const usdTotal = (amount / panel.baseAmount) * panel.basePrice * (1 + (panel.margin ?? 15) / 100);
