@@ -180,6 +180,43 @@ suspended: (reason, until) =>
     couponInvalid: 'That coupon is invalid, expired, or fully used. Try another code or continue without one.',
     couponApplied: (code, total) => `✅ Coupon **${code}** applied. New total: **${total}**`,
     couponNoted: (code) => `Coupon **${code}** noted for this order. An admin will verify and apply the discount manually for this product/service.`,
+    donateWelcome: (mention) => `Welcome ${mention}! You're about to make a donation to support this server. Every contribution helps!`,
+    donateAmountBtn: 'Enter Donation Amount',
+    donateAmountLabel: 'Donation Amount (USD)',
+    donateAmountPlaceholder: 'e.g. 10, 25, 50',
+    donateAmountMin: (min) => `Minimum donation is **$${min}**.`,
+    donateAmountInvalid: 'Please enter a valid amount greater than 0.',
+    donateAmountTitle: 'Donation Amount',
+    donateSelectMethod: 'Choose your payment method:',
+    donateSelectMethodPlaceholder: 'Select a payment method...',
+    donatePayWith: (method, amount) => `Donate **$${amount}** with ${method}`,
+    donatePayDesc: 'Send the exact amount to the account below, then submit your proof of payment.',
+    donateSendTo: 'Send to',
+    donateAmount: 'Amount',
+    donateSubmitProof: 'Submit Payment Proof',
+    donateProofModalTitle: 'Donation Proof',
+    donateProofLabel: 'Transaction ID / Reference (optional)',
+    donateProofPlaceholder: 'e.g. TXN123456789',
+    donateNoteLabel: 'Note (optional)',
+    donateSendScreenshot: 'Now send your **payment screenshot** as an image in this channel, or type a message as confirmation.',
+    donateSubmitted: 'Donation Submitted',
+    donateSubmittedDesc: 'Your donation has been submitted and is pending verification. A staff member will review it shortly. Thank you for your support!',
+    donateStaffPending: '💰 Donation — Pending Verification',
+    donateApprove: 'Approve Donation',
+    donateReject: 'Reject Donation',
+    donateApproved: () => 'Your donation has been approved and recorded. Thank you for your generous support!',
+    donateRejected: 'Your donation could not be verified. Please contact staff if you believe this is a mistake.\n\nThis ticket closes in 2 minutes.',
+    donateApprovedTitle: 'Donation Approved',
+    donateRejectedTitle: 'Donation Rejected',
+    donateApprovedBy: (mention) => `Approved by ${mention}`,
+    donateRejectedBy: (mention) => `Rejected by ${mention}`,
+    donateAlreadyOpen: (channelId) => `You already have an open donation ticket → <#${channelId}>`,
+    donateTicketReady: (channelId) => `Your donation ticket is ready → <#${channelId}>`,
+    donatePanelTitle: 'Support Us',
+    donatePanelCTA: 'Click the button below to make a donation!',
+    donateProgress: 'Goal Progress',
+    donateRecent: 'Recent Supporters',
+    donateMethods: 'Accepted Methods',
   },
   es: {
     welcome: (mention) => `¡Bienvenido ${mention}! Sigue los pasos a continuación para completar tu compra.`,
@@ -266,6 +303,43 @@ suspended: (reason, until) =>
     couponInvalid: 'Ese cupón es inválido, expiró, o ya alcanzó su límite de usos. Intenta con otro código o continúa sin cupón.',
     couponApplied: (code, total) => `✅ Cupón **${code}** aplicado. Nuevo total: **${total}**`,
     couponNoted: (code) => `Cupón **${code}** anotado para este pedido. Un administrador verificará y aplicará el descuento manualmente para este producto/servicio.`,
+    donateWelcome: (mention) => `¡Bienvenido ${mention}! Estás a punto de hacer una donación para apoyar este servidor. ¡Cada contribución cuenta!`,
+    donateAmountBtn: 'Ingresar Cantidad',
+    donateAmountLabel: 'Cantidad de Donación (USD)',
+    donateAmountPlaceholder: 'ej. 10, 25, 50',
+    donateAmountMin: (min) => `La donación mínima es **$${min}**.`,
+    donateAmountInvalid: 'Por favor ingresa una cantidad válida mayor a 0.',
+    donateAmountTitle: 'Cantidad de Donación',
+    donateSelectMethod: 'Elige tu método de pago:',
+    donateSelectMethodPlaceholder: 'Selecciona un método de pago...',
+    donatePayWith: (method, amount) => `Donar **$${amount}** con ${method}`,
+    donatePayDesc: 'Envía la cantidad exacta a la cuenta de abajo, luego envía tu comprobante de pago.',
+    donateSendTo: 'Enviar a',
+    donateAmount: 'Cantidad',
+    donateSubmitProof: 'Enviar Comprobante de Pago',
+    donateProofModalTitle: 'Comprobante de Donación',
+    donateProofLabel: 'ID de Transacción / Referencia (opcional)',
+    donateProofPlaceholder: 'ej. TXN123456789',
+    donateNoteLabel: 'Nota (opcional)',
+    donateSendScreenshot: 'Ahora envía tu **captura de pantalla del pago** como imagen en este canal, o escribe un mensaje como confirmación.',
+    donateSubmitted: 'Donación Enviada',
+    donateSubmittedDesc: 'Tu donación fue enviada y está pendiente de verificación. Un miembro del staff la revisará pronto. ¡Gracias por tu apoyo!',
+    donateStaffPending: '💰 Donación — Verificación Pendiente',
+    donateApprove: 'Aprobar Donación',
+    donateReject: 'Rechazar Donación',
+    donateApproved: () => '¡Tu donación fue aprobada y registrada. ¡Gracias por tu generoso apoyo!',
+    donateRejected: 'No se pudo verificar tu donación. Contacta al staff si crees que esto es un error.\n\nEste ticket se cierra en 2 minutos.',
+    donateApprovedTitle: 'Donación Aprobada',
+    donateRejectedTitle: 'Donación Rechazada',
+    donateApprovedBy: (mention) => `Aprobado por ${mention}`,
+    donateRejectedBy: (mention) => `Rechazado por ${mention}`,
+    donateAlreadyOpen: (channelId) => `Ya tienes un ticket de donación abierto → <#${channelId}>`,
+    donateTicketReady: (channelId) => `Tu ticket de donación está listo → <#${channelId}>`,
+    donatePanelTitle: 'Apóyanos',
+    donatePanelCTA: '¡Haz clic en el botón de abajo para hacer una donación!',
+    donateProgress: 'Progreso de la Meta',
+    donateRecent: 'Donadores Recientes',
+    donateMethods: 'Métodos de Pago Aceptados',
   }
 };
 
@@ -397,6 +471,7 @@ function syncTicket(session) {
     body: JSON.stringify({
       guildId: session.guildId,
       ticket: {
+        type: session.type || 'sale',
         channelId: session.channelId,
         guildId: session.guildId,
         userId: session.userId,
@@ -412,6 +487,8 @@ function syncTicket(session) {
         paymentReference: session.paymentReference || null,
         paymentNote: session.paymentNote || null,
         paymentProof: session.paymentProof || null,
+        donationAmount: session.donationAmount || null,
+        donationMethod: session.donationMethod || null,
         answers: session.answers || [],
         canType: session.canType || false,
         reported: session.reported || false,
@@ -468,6 +545,7 @@ async function getSessionFromDisk(guildId, channelId) {
     if (!t) return null;
     const config = await getConfig(guildId);
     return {
+      type: t.type || 'sale',
       channelId: t.channelId, guildId, config,
       panel: t.panel || {}, userId: t.userId, username: t.username,
       status: t.status || 'open', canType: t.canType || false,
@@ -478,6 +556,8 @@ async function getSessionFromDisk(guildId, channelId) {
       currencyAmount: t.currencyAmount || null, appliedCoupon: t.appliedCoupon || null,
       paymentMethod: t.paymentMethod || null, paymentReference: t.paymentReference || null,
       paymentNote: t.paymentNote || null, paymentProof: t.paymentProof || null,
+      donationAmount: t.donationAmount || null, donationMethod: t.donationMethod || null,
+      donation: config.donation || {},
       openedAt: t.openedAt || Date.now(), pastTickets: t.pastTickets || [],
       pendingModal: null,
     };
@@ -573,47 +653,339 @@ async function postDonationPanel(guildId, donation) {
   const channel = client.channels.cache.get(donation.channelId) || await client.channels.fetch(donation.channelId).catch(() => null);
   if (!channel) return;
   const config = await getConfig(guildId);
-  const colors = getColors(config);
-  const emojis = getEmojis(config);
-  const lang = config.language || 'en';
-  let desc = donation.message || (lang === 'es' ? '¿Disfrutando del servidor? ¡Considera apoyarnos!' : 'Enjoying the server? Consider supporting us!');
-  if (donation.goal > 0) {
-    let raised = 0;
-    try {
-      const r = await apiFetch(`${BASE_URL}/api/donations/${guildId}`);
-      if (r) { const d = await r.json(); raised = d.raised || 0; }
-    } catch {}
-    const pct = Math.min(100, Math.round((raised / donation.goal) * 100));
-    desc += `\n\n**Progress:** $${raised} / $${donation.goal} (${pct}%)`;
-    const filled = Math.round(pct / 10);
-    const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
-    desc += `\n\`${bar}\``;
-  }
-  if (donation.publicWall) {
-    try {
-      const r = await apiFetch(`${BASE_URL}/api/donations/${guildId}`);
-      if (r) {
-        const d = await r.json();
-        if (d.donors?.length) {
-          const recent = d.donors.slice(0, 10);
-          desc += '\n\n**Recent Donors:**\n' + recent.map(dr => `> ${dr.username} — $${dr.amount}`).join('\n');
-        }
+  const donationData = await fetchDonationData(guildId);
+  const embed = buildDonationEmbed(config, donation, donationData);
+  const donateBtn = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`donate_start_${guildId}`).setLabel('Donate').setEmoji('💎').setStyle(ButtonStyle.Success)
+  );
+  try {
+    if (donation.panelMessageId) {
+      const msg = await channel.messages.fetch(donation.panelMessageId).catch(() => null);
+      if (msg) {
+        await msg.edit({ embeds: [embed], components: [donateBtn] });
+        return;
       }
+    }
+  } catch {}
+  const sent = await channel.send({ embeds: [embed], components: [donateBtn] }).catch(() => null);
+  if (sent) {
+    donation.panelMessageId = sent.id;
+    try {
+      await apiFetch(`${BASE_URL}/internal/config/${guildId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donation }),
+      });
     } catch {}
   }
-  const color = colors.primary;
-  const embed = new EmbedBuilder()
-    .setTitle('❤️ Donations')
+}
+
+async function fetchDonationData(guildId) {
+  try {
+    const r = await apiFetch(`${BASE_URL}/api/donations/${guildId}`);
+    if (r) return await r.json();
+  } catch {}
+  return { donors: [], raised: 0 };
+}
+
+function buildDonationEmbed(config, donation, donationData) {
+  const lang = config.language || 'en';
+  const t = getLang(config);
+  const colors = getColors(config);
+  const raised = donationData.raised || 0;
+  const goal = donation.goal || 0;
+  const donors = donationData.donors || [];
+  const methods = donation.methods || [];
+  const methodLabels = { paypal:'PayPal', zelle:'Zelle', cashapp:'Cash App', venmo:'Venmo', crypto_btc:'Bitcoin', crypto_eth:'Ethereum', crypto_usdt:'USDT', crypto_ltc:'Litecoin', binance_pay:'Binance Pay', nequi:'Nequi', bancolombia:'Bancolombia', daviplata:'Daviplata', mercadopago:'Mercado Pago', pix:'PIX', zinli:'Zinli', bank:'Bank Transfer', wise:'Wise', revolut:'Revolut', skrill:'Skrill', applepay:'Apple Pay', googlepay:'Google Pay', amazon_gc:'Amazon Gift Card', steam_gc:'Steam Gift Card' };
+  let desc = donation.message || (lang === 'es' ? '¿Disfrutando del servidor? ¡Considera apoyarnos!' : 'Enjoying the server? Consider supporting us!');
+  if (goal > 0) {
+    const pct = Math.min(100, Math.round((raised / goal) * 100));
+    const filled = Math.round(pct / 5);
+    const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
+    desc += `\n\n**${t.donateProgress}**\n$**${raised.toLocaleString()}** / $${goal.toLocaleString()} — **${pct}%**\n\`${bar}\``;
+  }
+  if (methods.length) {
+    const labels = methods.map(m => methodLabels[m] || m).join(' · ');
+    desc += `\n\n**${t.donateMethods}**\n> ${labels}`;
+  }
+  if (donation.publicWall && donors.length) {
+    const recent = donors.slice(0, 5);
+    desc += `\n\n**${t.donateRecent}**\n` + recent.map(d => `> **${d.username}** — $${d.amount}`).join('\n');
+  }
+  desc += `\n\n*${t.donatePanelCTA}*`;
+  return new EmbedBuilder()
+    .setTitle(`💎 ${t.donatePanelTitle}`)
     .setDescription(desc)
-    .setColor(color)
+    .setColor(colors.primary)
     .setFooter({ text: config.footerText || (lang === 'es' ? 'Gracias por tu apoyo' : 'Thank you for your support') })
     .setTimestamp();
-  const methods = donation.methods || [];
-  if (methods.length) {
-    const methodLabels = { paypal: 'PayPal', cashapp: 'Cash App', venmo: 'Venmo', zelle: 'Zelle', crypto: 'Crypto', giftcard: 'Gift Card' };
-    embed.addFields({ name: 'Payment Methods', value: methods.map(m => methodLabels[m] || m).join(', '), inline: true });
+}
+
+async function updateDonationPanel(guildId) {
+  try {
+    const config = await getConfig(guildId);
+    const donation = config.donation;
+    if (!donation?.enabled || !donation?.channelId || !donation?.panelMessageId) return;
+    const channel = client.channels.cache.get(donation.channelId) || await client.channels.fetch(donation.channelId).catch(() => null);
+    if (!channel) return;
+    const msg = await channel.messages.fetch(donation.panelMessageId).catch(() => null);
+    if (!msg) return;
+    const donationData = await fetchDonationData(guildId);
+    const embed = buildDonationEmbed(config, donation, donationData);
+    const donateBtn = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`donate_start_${guildId}`).setLabel('Donate').setEmoji('💎').setStyle(ButtonStyle.Success)
+    );
+    await msg.edit({ embeds: [embed], components: [donateBtn] }).catch(() => {});
+  } catch (e) { console.error('[updateDonationPanel]', e.message); }
+}
+
+// ─── DONATION TICKET FLOW ────────────────────────────────────────────────────
+async function handleDonateStart(interaction) {
+  const guildId = interaction.customId.replace('donate_start_', '');
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+  const config = await getConfig(guildId);
+  const t = getLang(config);
+  const colors = getColors(config);
+  const emojis = getEmojis(config);
+  const donation = config.donation || {};
+  const guild = interaction.guild;
+  const member = interaction.member;
+  const blacklist = config.blacklist || [];
+  if (blacklist.some(b => b.userId === member.id)) {
+    return interaction.editReply({ content: t.blacklisted });
   }
-  await channel.send({ embeds: [embed] });
+  const existing = [...sessions.values()].find(s => s.userId === member.id && s.guildId === guildId && s.type === 'donation');
+  if (existing) return interaction.editReply({ content: t.donateAlreadyOpen(existing.channelId) });
+  const anyOpen = [...sessions.values()].find(s => s.userId === member.id && s.guildId === guildId);
+  if (anyOpen) return interaction.editReply({ content: t.alreadyOpen(anyOpen.channelId) });
+  const permissionOverwrites = [
+    { id: guild.id,       deny:  [PermissionFlagsBits.ViewChannel] },
+    { id: member.id,      allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory], deny: [PermissionFlagsBits.SendMessages] },
+    { id: client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels, PermissionFlagsBits.AttachFiles] },
+  ];
+  if (config.adminRole) permissionOverwrites.push({ id: config.adminRole, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] });
+  const username = member.user.username.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+  const ticketChannel = await guild.channels.create({
+    name: `donation-${username}`,
+    type: ChannelType.GuildText,
+    parent: config.ticketCategory || null,
+    permissionOverwrites,
+    topic: `Donation from ${member.user.tag}`,
+  });
+  const session = {
+    type: 'donation', channelId: ticketChannel.id, guildId,
+    userId: member.id, username: member.user.tag,
+    config, donation,
+    donationAmount: null, donationMethod: null,
+    paymentReference: null, paymentNote: null, paymentProof: null,
+    phase: 'donation-amount', pendingModal: null,
+    status: 'open', canType: false, reported: false, priority: 'normal',
+    staffNotes: [], transcript: null,
+    openedAt: Date.now(), pastTickets: [],
+  };
+  sessions.set(ticketChannel.id, session);
+  syncTicket(session);
+  const welcomeEmbed = new EmbedBuilder()
+    .setTitle('💎 Donation Ticket')
+    .setDescription(t.donateWelcome(`<@${member.id}>`))
+    .setColor(colors.primary)
+    .addFields({ name: 'Opened by', value: `<@${member.id}>`, inline: true })
+    .setTimestamp();
+  const closeRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setEmoji(emojis.ticketClosed).setStyle(ButtonStyle.Danger)
+  );
+  await ticketChannel.send({ embeds: [welcomeEmbed], components: [closeRow] });
+  const min = donation.min || 1;
+  const modal = new ModalBuilder().setCustomId(`modal_donate_amount_${ticketChannel.id}`).setTitle(t.donateAmountTitle);
+  const input = new TextInputBuilder().setCustomId('amount').setLabel(t.donateAmountLabel)
+    .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.donateAmountPlaceholder);
+  modal.addComponents(new ActionRowBuilder().addComponents(input));
+  session.pendingModal = modal;
+  await ticketChannel.send({
+    embeds: [new EmbedBuilder().setDescription(`**${t.donateAmountBtn}**\nMinimum: $${min}`).setColor(colors.primary)],
+    components: [new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`open_donate_amount_modal_${ticketChannel.id}`).setLabel(t.donateAmountBtn).setEmoji('💰').setStyle(ButtonStyle.Primary)
+    )]
+  });
+  await interaction.editReply({ content: t.donateTicketReady(ticketChannel.id) });
+}
+
+async function handleDonateAmountModal(interaction) {
+  const channelId = interaction.customId.replace('modal_donate_amount_', '');
+  const session = sessions.get(channelId);
+  const t = getLang(session?.config);
+  const colors = getColors(session?.config);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  const raw = interaction.fields.getTextInputValue('amount').replace(/[$,]/g, '').trim();
+  const amount = parseFloat(raw);
+  const min = session.donation?.min || 1;
+  if (isNaN(amount) || amount < min) {
+    return interaction.reply({ content: t.donateAmountMin(min), flags: MessageFlags.Ephemeral });
+  }
+  session.donationAmount = amount;
+  session.pendingModal = null;
+  session.phase = 'donation-method';
+  await interaction.deferUpdate().catch(() => {});
+  const methods = session.config.paymentMethods || [];
+  if (!methods.length) {
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.noPaymentMethods).setColor(colors.error)] });
+    return;
+  }
+  const select = new StringSelectMenuBuilder().setCustomId('select_donate_method').setPlaceholder(t.donateSelectMethodPlaceholder)
+    .addOptions(methods.map(m => ({ label: (PAYMENT_LABELS[m] || { label: m }).label, value: m })));
+  await interaction.channel.send({
+    embeds: [new EmbedBuilder().setDescription(`**$${amount}** — ${t.donateSelectMethod}`).setColor(colors.primary)],
+    components: [new ActionRowBuilder().addComponents(select)]
+  });
+}
+
+async function handleDonateMethodSelect(interaction) {
+  const session = sessions.get(interaction.channel.id);
+  const t = getLang(session?.config);
+  const colors = getColors(session?.config);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  const method = interaction.values[0];
+  session.donationMethod = method;
+  session.phase = 'donation-proof';
+  const info = PAYMENT_LABELS[method] || { label: method };
+  const account = (session.config.paymentAccounts || {})[method];
+  const amount = session.donationAmount;
+  const modal = new ModalBuilder().setCustomId(`modal_donate_proof_${interaction.channel.id}`).setTitle(t.donateProofModalTitle);
+  const refInput = new TextInputBuilder().setCustomId('reference').setLabel(t.donateProofLabel)
+    .setStyle(TextInputStyle.Short).setRequired(false).setPlaceholder(t.donateProofPlaceholder);
+  const noteInput = new TextInputBuilder().setCustomId('note').setLabel(t.donateNoteLabel)
+    .setStyle(TextInputStyle.Paragraph).setRequired(false).setMaxLength(300);
+  modal.addComponents(new ActionRowBuilder().addComponents(refInput), new ActionRowBuilder().addComponents(noteInput));
+  session.pendingModal = modal;
+  await interaction.update({
+    embeds: [new EmbedBuilder().setDescription(`✅ **${info.label}** selected`).setColor(colors.success)],
+    components: []
+  });
+  const embed = new EmbedBuilder()
+    .setTitle(t.donatePayWith(info.label, amount))
+    .setDescription(t.donatePayDesc)
+    .setColor(colors.warning)
+    .addFields(
+      { name: t.donateAmount, value: `**$${amount}**`, inline: true },
+      ...(account ? [{ name: t.donateSendTo, value: `\`${account}\``, inline: true }] : [])
+    );
+  await interaction.channel.send({
+    embeds: [embed],
+    components: [new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`open_donate_proof_modal_${interaction.channel.id}`).setLabel(t.donateSubmitProof).setEmoji('📤').setStyle(ButtonStyle.Success)
+    )]
+  });
+}
+
+async function handleDonateProofModal(interaction) {
+  const channelId = interaction.customId.replace('modal_donate_proof_', '');
+  const session = sessions.get(channelId);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  session.paymentReference = interaction.fields.getTextInputValue('reference').trim();
+  session.paymentNote = interaction.fields.getTextInputValue('note').trim();
+  session.pendingModal = null;
+  session.phase = 'awaiting-donation-proof-image';
+  await interaction.deferUpdate().catch(() => {});
+  const t = getLang(session.config);
+  const colors = getColors(session.config);
+  await setCanType(interaction.channel, session.userId, true);
+  await interaction.channel.send({
+    embeds: [new EmbedBuilder().setDescription(t.donateSendScreenshot).setColor(colors.primary)]
+  });
+}
+
+async function handleDonateProofMessage(message, session) {
+  const t = getLang(session.config);
+  const colors = getColors(session.config);
+  session.paymentProof = { text: message.content, imageUrl: message.attachments.first()?.url || null };
+  session.phase = 'done';
+  session.status = 'pending';
+  await setCanType(message.channel, session.userId, false);
+  await message.react('✅').catch(() => {});
+  syncTicket(session);
+  const proofEmbed = new EmbedBuilder()
+    .setTitle(t.donateSubmitted)
+    .setDescription(t.donateSubmittedDesc)
+    .setColor(colors.success)
+    .addFields(
+      { name: 'Amount', value: `**$${session.donationAmount}**`, inline: true },
+      { name: 'Method', value: `**${(PAYMENT_LABELS[session.donationMethod] || { label: session.donationMethod }).label}**`, inline: true },
+      ...(session.paymentReference ? [{ name: 'Reference', value: session.paymentReference, inline: true }] : []),
+      ...(session.paymentNote ? [{ name: 'Note', value: session.paymentNote }] : [])
+    ).setTimestamp();
+  if (session.paymentProof?.imageUrl) proofEmbed.setImage(session.paymentProof.imageUrl);
+  await message.channel.send({ embeds: [proofEmbed] });
+  await notifyDonationAdmin(session);
+}
+
+async function notifyDonationAdmin(session) {
+  if (!session.config.logChannel) return;
+  const logChannel = client.channels.cache.get(session.config.logChannel) || await client.channels.fetch(session.config.logChannel).catch(() => null);
+  if (!logChannel) return;
+  const t = getLang(session.config);
+  const colors = getColors(session.config);
+  const embed = new EmbedBuilder()
+    .setTitle(t.donateStaffPending)
+    .setColor(colors.warning)
+    .addFields(
+      { name: 'User', value: `<@${session.userId}> (${session.username})`, inline: true },
+      { name: 'Amount', value: `**$${session.donationAmount}**`, inline: true },
+      { name: 'Method', value: (PAYMENT_LABELS[session.donationMethod] || { label: session.donationMethod }).label, inline: true },
+      { name: 'Ticket', value: `<#${session.channelId}>`, inline: true },
+      ...(session.paymentReference ? [{ name: 'Reference', value: session.paymentReference, inline: true }] : []),
+      ...(session.paymentNote ? [{ name: 'Note', value: session.paymentNote }] : [])
+    ).setTimestamp();
+  if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`donation_approve_${session.channelId}`).setLabel(t.donateApprove).setEmoji('✅').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId(`donation_reject_${session.channelId}`).setLabel(t.donateReject).setEmoji('❌').setStyle(ButtonStyle.Danger)
+  );
+  await logChannel.send({ embeds: [embed], components: [row] });
+}
+
+async function handleDonationApprove(interaction) {
+  const channelId = interaction.customId.replace('donation_approve_', '');
+  const session = sessions.get(channelId);
+  const t = getLang(session?.config);
+  const colors = getColors(session?.config);
+  const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
+  await interaction.update({
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.donateApprovedBy(`<@${interaction.user.id}>`)).setColor(colors.success)],
+    components: []
+  });
+  if (ticketChannel) {
+    await generateAndSendTranscript(ticketChannel, session, 'Donation Approved');
+    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.donateApprovedTitle).setDescription(t.donateApproved()).setColor(colors.success).setTimestamp()] });
+    if (session) {
+      session.status = 'approved';
+      syncTicket(session);
+      try {
+        await apiFetch(`${BASE_URL}/api/donations/${session.guildId}/record`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: session.userId, username: session.username, amount: session.donationAmount, method: session.donationMethod }),
+        });
+        await updateDonationPanel(session.guildId);
+      } catch (e) { console.error('[donation-approve]', e.message); }
+    }
+    setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
+  }
+}
+
+async function handleDonationReject(interaction) {
+  const channelId = interaction.customId.replace('donation_reject_', '');
+  const session = sessions.get(channelId);
+  const t = getLang(session?.config);
+  const colors = getColors(session?.config);
+  const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
+  await interaction.update({
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.donateRejectedBy(`<@${interaction.user.id}>`)).setColor(colors.error)],
+    components: []
+  });
+  if (ticketChannel) {
+    await generateAndSendTranscript(ticketChannel, session, 'Donation Rejected');
+    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.donateRejectedTitle).setDescription(t.donateRejected).setColor(colors.error).setTimestamp()] });
+    if (session) { session.status = 'rejected'; syncTicket(session); }
+    setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
+  }
 }
 
 // ─── COUPON HELPERS ─────────────────────────────────────────────────────────
@@ -765,18 +1137,23 @@ client.on(Events.InteractionCreate, async interaction => {
       if (id.startsWith('admin_approve_'))     return handleAdminApprove(interaction);
       if (id.startsWith('admin_reject_'))      return handleAdminReject(interaction);
       if (id.startsWith('close_ticket_'))      return handleCloseTicket(interaction);
-      // These now go through the global handler — showModal is called immediately
       if (id.startsWith('open_qmodal_'))       return handleQuestionModalTrigger(interaction);
       if (id.startsWith('open_amount_modal_')) return handleAmountModalTrigger(interaction);
       if (id.startsWith('open_proof_modal_'))  return handleProofModalTrigger(interaction);
       if (id.startsWith('open_couponmodal_'))  return handleCouponModalTrigger(interaction);
       if (id.startsWith('skip_coupon_'))       return handleSkipCoupon(interaction);
+      if (id.startsWith('donate_start_'))      return handleDonateStart(interaction);
+      if (id.startsWith('donation_approve_'))  return handleDonationApprove(interaction);
+      if (id.startsWith('donation_reject_'))   return handleDonationReject(interaction);
+      if (id.startsWith('open_donate_amount_modal_')) return handleDonateAmountModalTrigger(interaction);
+      if (id.startsWith('open_donate_proof_modal_'))  return handleDonateProofModalTrigger(interaction);
     }
     if (interaction.isStringSelectMenu()) {
       const id = interaction.customId;
       if (id === 'select_currency')  return handleCurrencySelect(interaction);
       if (id === 'select_product')   return handleProductSelect(interaction);
       if (id === 'select_payment')   return handlePaymentSelect(interaction);
+      if (id === 'select_donate_method') return handleDonateMethodSelect(interaction);
     }
     if (interaction.isModalSubmit()) {
       const id = interaction.customId;
@@ -784,6 +1161,8 @@ client.on(Events.InteractionCreate, async interaction => {
       if (id === 'modal_currency_amount')   return handleCurrencyAmountModal(interaction);
       if (id === 'modal_payment_proof')     return handlePaymentProofModal(interaction);
       if (id.startsWith('modal_coupon_'))   return handleModalCoupon(interaction);
+      if (id.startsWith('modal_donate_amount_')) return handleDonateAmountModal(interaction);
+      if (id.startsWith('modal_donate_proof_'))  return handleDonateProofModal(interaction);
     }
   } catch(e) { console.error(e); }
 });
@@ -816,9 +1195,7 @@ async function handleProofModalTrigger(interaction) {
   const session = sessions.get(channelId);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   if (!session.pendingModal) return interaction.reply({ content: 'No proof modal pending.', flags: MessageFlags.Ephemeral });
-  // showModal FIRST
   await interaction.showModal(session.pendingModal);
-  // Side effects after — non-blocking
   interaction.message.edit({ components: [] }).catch(() => {});
   session.phase = 'awaiting-proof-message';
   const t = getLang(session.config);
@@ -826,6 +1203,24 @@ async function handleProofModalTrigger(interaction) {
   const channel = interaction.channel;
   setCanType(channel, session.userId, true).catch(() => {});
   channel.send({ embeds: [new EmbedBuilder().setDescription(t.sendScreenshot).setColor(colors.warning)] }).catch(() => {});
+}
+
+async function handleDonateAmountModalTrigger(interaction) {
+  const channelId = interaction.customId.replace('open_donate_amount_modal_', '');
+  const session = sessions.get(channelId);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (!session.pendingModal) return interaction.reply({ content: 'No amount modal pending.', flags: MessageFlags.Ephemeral });
+  await interaction.showModal(session.pendingModal);
+  interaction.message.edit({ components: [] }).catch(() => {});
+}
+
+async function handleDonateProofModalTrigger(interaction) {
+  const channelId = interaction.customId.replace('open_donate_proof_modal_', '');
+  const session = sessions.get(channelId);
+  if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
+  if (!session.pendingModal) return interaction.reply({ content: 'No proof modal pending.', flags: MessageFlags.Ephemeral });
+  await interaction.showModal(session.pendingModal);
+  interaction.message.edit({ components: [] }).catch(() => {});
 }
 
 // ─── TICKET OPEN ───────────────────────────────────────────────────────────────
@@ -1037,6 +1432,11 @@ client.on(Events.MessageCreate, async message => {
     await message.react('✅').catch(() => {});
     syncTicket(session);
     await finishTicket(message.channel, session);
+    return;
+  }
+
+  if (session.phase === 'awaiting-donation-proof-image') {
+    await handleDonateProofMessage(message, session);
     return;
   }
 });

@@ -235,6 +235,13 @@ app.get('/internal/config/:guildId', requireInternalSecret, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   res.json(readConfig(req.params.guildId));
 });
+app.post('/internal/config/:guildId', requireInternalSecret, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  const existing = readConfig(req.params.guildId);
+  const updated = { ...existing, ...req.body };
+  writeConfig(req.params.guildId, updated);
+  res.json({ ok: true });
+});
 app.get('/internal/panels/:guildId', requireInternalSecret, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   res.json(readJSON(panelsPath(req.params.guildId), []));
@@ -350,15 +357,34 @@ app.get('/api/donations/:guildId', requireAuth, requireGuildMember, (req, res) =
 });
 app.post('/api/donations/:guildId/record', requireInternalSecret, (req, res) => {
   const { guildId } = req.params;
-  const { userId, username, amount } = req.body;
+  const { userId, username, amount, method } = req.body;
   if (!isValidGuildId(guildId) || !userId || typeof amount !== 'number') {
     return res.status(400).json({ error: 'Invalid body' });
   }
   const data = readJSON(donationsPath(guildId), { donors: [], raised: 0 });
-  data.donors.unshift({ userId, username, amount, date: Date.now() });
+  data.donors.unshift({ userId, username, amount, method: method || 'unknown', date: Date.now() });
   data.raised = Math.round((data.raised + amount) * 100) / 100;
   writeJSON(donationsPath(guildId), data);
   res.json({ ok: true, raised: data.raised });
+});
+app.delete('/api/donations/:guildId/donor/:index', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  const idx = parseInt(req.params.index);
+  const data = readJSON(donationsPath(req.params.guildId), { donors: [], raised: 0 });
+  if (isNaN(idx) || idx < 0 || idx >= data.donors.length) return res.status(400).json({ error: 'Invalid index' });
+  const removed = data.donors.splice(idx, 1)[0];
+  data.raised = Math.round((data.raised - removed.amount) * 100) / 100;
+  if (data.raised < 0) data.raised = 0;
+  writeJSON(donationsPath(req.params.guildId), data);
+  res.json({ ok: true, raised: data.raised });
+});
+app.get('/api/donations/:guildId/stats', requireAuth, requireGuildMember, (req, res) => {
+  if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
+  const data = readJSON(donationsPath(req.params.guildId), { donors: [], raised: 0 });
+  const count = data.donors.length;
+  const avg = count > 0 ? Math.round((data.raised / count) * 100) / 100 : 0;
+  const top = data.donors.length ? data.donors.reduce((a, b) => a.amount > b.amount ? a : b) : null;
+  res.json({ raised: data.raised, count, avg, topDonor: top || null });
 });
 
 /* ===== TICKETS API ===== */

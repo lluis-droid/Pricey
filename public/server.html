@@ -539,7 +539,7 @@
           <div class="form-grid" style="margin-top:14px;">
             <div class="form-row">
               <label>Goal (USD, optional)</label>
-              <input type="number" id="don-goal" placeholder="e.g. 500" oninput="toggleDonGoalCard()">
+              <input type="number" id="don-goal" placeholder="e.g. 500" oninput="updateDonationPreview()">
             </div>
             <div class="form-row">
               <label>Minimum donation (USD)</label>
@@ -552,7 +552,32 @@
           </div>
           <div class="form-row">
             <label>Panel message</label>
-            <textarea id="don-message" placeholder="Enjoying the server? Consider supporting us!"></textarea>
+            <textarea id="don-message" placeholder="Enjoying the server? Consider supporting us!" oninput="updateDonationPreview()"></textarea>
+          </div>
+        </div>
+
+        <div class="card" id="don-stats-card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Statistics
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;">
+            <div style="background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Raised</div>
+              <div id="don-stat-raised" style="font-size:20px;font-weight:700;color:var(--accent);">$0</div>
+            </div>
+            <div style="background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Donors</div>
+              <div id="don-stat-count" style="font-size:20px;font-weight:700;">0</div>
+            </div>
+            <div style="background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Average</div>
+              <div id="don-stat-avg" style="font-size:20px;font-weight:700;">$0</div>
+            </div>
+            <div style="background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Progress</div>
+              <div id="don-stat-pct" style="font-size:20px;font-weight:700;color:var(--success);">0%</div>
+            </div>
           </div>
         </div>
 
@@ -590,10 +615,36 @@
           <p class="hint">Shows users and amounts under the panel embed. Disable for anonymous donations.</p>
         </div>
 
-        <button class="btn btn-primary" onclick="saveDonations()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save and publish
-        </button>
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Recent Donors
+          </div>
+          <div id="don-donor-list" style="max-height:240px;overflow-y:auto;">
+            <p style="font-size:12px;color:var(--muted);">No donations yet.</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="saveDonations()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Settings
+          </button>
+          <button class="btn btn-secondary" onclick="updateDonationPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            Update Panel
+          </button>
+        </div>
+
+        <div class="card" style="margin-top:4px;">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            Live Preview
+          </div>
+          <div id="don-preview" style="background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13px;line-height:1.6;color:var(--text);">
+            <div style="color:var(--muted);font-style:italic;">Enable donations and save to see a preview.</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -876,7 +927,7 @@
 <script src="/js/app.js"></script>
 <script>
 const guildId = location.pathname.split('/')[2];
-let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], coupons=[], editIdx=null;
+let channels=[], roles=[], categories=[], panels=[], questions=[], products=[], coupons=[], editIdx=null, cfg={}, donationData={donors:[],raised:0};
 let savedAccounts={}, tickets=[], selectedLang='en', blacklist=[], currencies=[];
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -948,7 +999,7 @@ async function init() {
   populateSelects();
   document.getElementById('loader').classList.add('hidden');
 
-  const cfg = await fetch(`/api/config/${guildId}`).then(r=>r.json()).catch(()=>({}));
+  cfg = await fetch(`/api/config/${guildId}`).then(r=>r.json()).catch(()=>({}));
   loadConfig(cfg);
 
   const pd = await fetch(`/api/panels/${guildId}`).then(r=>r.json()).catch(()=>[]);
@@ -1005,10 +1056,59 @@ function loadConfig(cfg) {
   document.getElementById('don-wall').checked = !!don.publicWall;
   if (don.channelId) document.getElementById('don-channel').value = don.channelId;
   buildDonationMethodsUI(don.methods || []);
-  updateDonationProgress(don.raised || 0, don.goal || 0);
+  loadDonationData();
 
   blacklist = cfg.blacklist || [];
   renderBlacklist();
+}
+
+async function loadDonationData() {
+  try {
+    const r = await fetch(`/api/donations/${guildId}`);
+    if (!r.ok) return;
+    const data = await r.json();
+    const don = cfg?.donation || {};
+    const goal = don.goal || 0;
+    const raised = data.raised || 0;
+    const count = data.donors?.length || 0;
+    const avg = count > 0 ? Math.round((raised / count) * 100) / 100 : 0;
+    const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+    document.getElementById('don-stat-raised').textContent = `$${raised.toLocaleString()}`;
+    document.getElementById('don-stat-count').textContent = count;
+    document.getElementById('don-stat-avg').textContent = `$${avg.toLocaleString()}`;
+    document.getElementById('don-stat-pct').textContent = goal > 0 ? `${pct}%` : '—';
+    updateDonationProgress(raised, goal);
+    renderDonorList(data.donors || []);
+    updateDonationPreview();
+  } catch {}
+}
+
+function renderDonorList(donors) {
+  const el = document.getElementById('don-donor-list');
+  if (!donors.length) { el.innerHTML = '<p style="font-size:12px;color:var(--muted);">No donations yet.</p>'; return; }
+  el.innerHTML = donors.slice(0, 50).map((d, i) => {
+    const date = d.date ? new Date(d.date).toLocaleDateString() : '';
+    const method = d.method ? ALL_METHODS[d.method] || d.method : '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(d.username || 'Unknown')}</div>
+        <div style="font-size:11px;color:var(--muted);">${esc(method)} · ${esc(date)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span style="font-weight:700;color:var(--accent);">$${d.amount}</span>
+        <button onclick="deleteDonor(${i})" style="background:none;border:none;color:var(--error);cursor:pointer;padding:2px;font-size:14px;" title="Remove">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteDonor(index) {
+  if (!confirm('Remove this donor from the record?')) return;
+  try {
+    const r = await fetch(`/api/donations/${guildId}/donor/${index}`, { method: 'DELETE' });
+    if (r.ok) { toast('Donor removed'); loadDonationData(); }
+    else toast('Failed to remove donor', 'err');
+  } catch { toast('Failed to remove donor', 'err'); }
 }
 
 function buildDonationMethodsUI(enabled) {
@@ -1025,14 +1125,35 @@ function updateDonationProgress(raised, goal) {
   if (!goal || goal <= 0) { card.style.display = 'none'; return; }
   card.style.display = '';
   const pct = Math.min(100, Math.round((raised / goal) * 100));
-  document.getElementById('don-progress-label').textContent = `$${raised} raised`;
-  document.getElementById('don-progress-goal').textContent = `of $${goal} goal`;
+  document.getElementById('don-progress-label').textContent = `$${raised.toLocaleString()} raised`;
+  document.getElementById('don-progress-goal').textContent = `of $${goal.toLocaleString()} goal`;
   document.getElementById('don-progress-bar').style.width = pct + '%';
 }
 
-function toggleDonGoalCard() {
-  const val = parseFloat(document.getElementById('don-goal').value) || 0;
-  document.getElementById('don-goal-card').style.display = val > 0 ? '' : 'none';
+function updateDonationPreview() {
+  const enabled = document.getElementById('don-enabled').checked;
+  const el = document.getElementById('don-preview');
+  if (!enabled) { el.innerHTML = '<div style="color:var(--muted);font-style:italic;">Enable donations and save to see a preview.</div>'; return; }
+  const msg = document.getElementById('don-message').value || 'Enjoying the server? Consider supporting us!';
+  const goal = parseFloat(document.getElementById('don-goal').value) || 0;
+  const raised = cfg?.donation?.raised || 0;
+  const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+  const filled = goal > 0 ? Math.round(pct / 5) : 0;
+  const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
+  const methods = [...document.querySelectorAll('#don-methods-wrap input:checked')].map(c => ALL_METHODS[c.value] || c.value);
+  let html = `<div style="margin-bottom:12px;"><strong style="font-size:15px;">💎 Support Us</strong></div>`;
+  html += `<div style="margin-bottom:12px;">${esc(msg)}</div>`;
+  if (goal > 0) {
+    html += `<div style="margin-bottom:8px;"><strong>Goal Progress</strong></div>`;
+    html += `<div style="margin-bottom:2px;">$<strong>${raised.toLocaleString()}</strong> / $${goal.toLocaleString()} — <strong>${pct}%</strong></div>`;
+    html += `<div style="font-family:monospace;font-size:12px;margin-bottom:12px;color:var(--accent);">${bar}</div>`;
+  }
+  if (methods.length) {
+    html += `<div style="margin-bottom:8px;"><strong>Accepted Methods</strong></div>`;
+    html += `<div style="margin-bottom:12px;color:var(--muted);">${methods.join(' · ')}</div>`;
+  }
+  html += `<div style="font-style:italic;color:var(--muted);font-size:12px;">Click the button below to make a donation!</div>`;
+  el.innerHTML = html;
 }
 
 async function saveDonations() {
@@ -1052,15 +1173,30 @@ async function saveDonations() {
       body: JSON.stringify({ donation })
     });
     if (!r.ok) throw new Error();
-    if (donation.enabled && donation.channelId) {
-      try {
-        const p = await fetch(`/api/donations/${guildId}/post`, { method:'POST' });
-        toast(p.ok ? 'Donation panel posted' : 'Settings saved (post failed)');
-      } catch { toast('Settings saved (post failed)', 'err'); }
-    } else {
-      toast('Donation settings saved');
-    }
+    cfg = { ...cfg, donation };
+    toast('Donation settings saved');
   } catch { toast('Failed to save donation settings', 'err'); }
+}
+
+async function updateDonationPanel() {
+  const donation = {
+    enabled: document.getElementById('don-enabled').checked,
+    goal: parseFloat(document.getElementById('don-goal').value) || 0,
+    min: parseFloat(document.getElementById('don-min').value) || 1,
+    channelId: document.getElementById('don-channel').value,
+    message: document.getElementById('don-message').value,
+    publicWall: document.getElementById('don-wall').checked,
+    methods: [...document.querySelectorAll('#don-methods-wrap input:checked')].map(c=>c.value),
+  };
+  try {
+    await fetch(`/api/config/${guildId}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ donation })
+    });
+    cfg = { ...cfg, donation };
+    const p = await fetch(`/api/donations/${guildId}/post`, { method:'POST' });
+    toast(p.ok ? 'Donation panel updated' : 'Panel update failed', p.ok ? '' : 'err');
+  } catch { toast('Failed to update panel', 'err'); }
 }
 
 /* ===== NAVIGATION ===== */
