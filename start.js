@@ -1,3 +1,7 @@
+if (!process.env.SESSION_SECRET) {
+  console.error('[FATAL] SESSION_SECRET environment variable is required. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+  process.exit(1);
+}
 if (!process.env.PRICEY_INTERNAL_SECRET) {
   const crypto = require('crypto');
   process.env.PRICEY_INTERNAL_SECRET = crypto.randomBytes(32).toString('hex');

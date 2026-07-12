@@ -3,6 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const { Strategy } = require('passport-discord');
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
@@ -56,14 +57,76 @@ function logAdminAction(adminId, action, targetUserId, reason, extra = {}) {
   writeJSON(adminLogPath(), log.slice(0, 2000)); // cap log growth
 }
 
+/* ===== ENCRYPTION — payment accounts at rest ===== */
+const ENC_ALGO = 'aes-256-gcm';
+function getEncryptionKey() {
+  const secret = process.env.ENCRYPTION_KEY || process.env.SESSION_SECRET;
+  return crypto.createHash('sha256').update(secret).digest();
+}
+function encryptValue(plaintext) {
+  const key = getEncryptionKey();
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv(ENC_ALGO, key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
+  return iv.toString('base64') + ':' + cipher.getAuthTag().toString('base64') + ':' + encrypted.toString('base64');
+}
+function decryptValue(ciphertext) {
+  const key = getEncryptionKey();
+  const [ivB64, tagB64, dataB64] = ciphertext.split(':');
+  if (!ivB64 || !tagB64 || !dataB64) throw new Error('Invalid encrypted format');
+  const decipher = crypto.createDecipheriv(ENC_ALGO, key, Buffer.from(ivB64, 'base64'));
+  decipher.setAuthTag(Buffer.from(tagB64, 'base64'));
+  return decipher.update(Buffer.from(dataB64, 'base64'), 'utf8') + decipher.final('utf8');
+}
+function encryptConfig(config) {
+  if (!config?.paymentAccounts || typeof config.paymentAccounts !== 'object') return config;
+  try { return { ...config, paymentAccounts: encryptValue(JSON.stringify(config.paymentAccounts)) }; }
+  catch { return config; }
+}
+function decryptConfig(config) {
+  if (!config?.paymentAccounts) return config;
+  if (typeof config.paymentAccounts !== 'string') return config;
+  try { return { ...config, paymentAccounts: JSON.parse(decryptValue(config.paymentAccounts)) }; }
+  catch { return config; }
+}
+function readConfig(guildId) { return decryptConfig(readJSON(configPath(guildId))); }
+function writeConfig(guildId, data) { writeJSON(configPath(guildId), encryptConfig(data)); }
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'pricey_dev_secret',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true }
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  }
 }));
+
+// CSRF — double-submit cookie pattern
+app.use((req, res, next) => {
+  if (req.session) {
+    if (!req.session.csrfToken) req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+    res.cookie('XSRF-TOKEN', req.session.csrfToken, {
+      sameSite: 'strict', httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+    });
+  }
+  next();
+});
+app.use((req, res, next) => {
+  if (req.headers['x-internal-secret']) return next();
+  if (['POST', 'DELETE', 'PUT', 'PATCH'].includes(req.method)) {
+    const token = req.headers['x-csrf-token'];
+    if (!token || !req.session?.csrfToken || token !== req.session.csrfToken) {
+      return res.status(403).json({ error: 'Invalid CSRF token' });
+    }
+  }
+  next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -92,14 +155,22 @@ function requireInternalSecret(req, res, next) {
   res.status(401).json({ error: 'Unauthorized' });
 }
 
-function requireGuildMember(req, res, next) {
+async function requireGuildMember(req, res, next) {
   const guildId = req.params.guildId || req.params.id;
   if (!guildId) return next();
   if (!req.isAuthenticated()) return res.status(401).json({ error: 'Unauthorized' });
+  const now = Date.now();
+  if (!req.user.guildsFetchedAt || (now - req.user.guildsFetchedAt) > 60_000) {
+    const fresh = await fetchUserGuilds(req.user.accessToken);
+    if (fresh) {
+      req.user.guilds = fresh;
+      req.user.guildsFetchedAt = now;
+      await new Promise(resolve => req.session.save(resolve));
+    }
+  }
   const userGuilds = req.user.guilds || [];
   const guild = userGuilds.find(g => g.id === guildId);
   if (!guild) return res.status(403).json({ error: 'Forbidden' });
-  // MANAGE_GUILD (0x20) or ADMINISTRATOR (0x8)
   const perms = BigInt(guild.permissions || 0);
   const hasPermission = (perms & BigInt(0x20)) === BigInt(0x20) || (perms & BigInt(0x8)) === BigInt(0x8);
   if (!hasPermission) return res.status(403).json({ error: 'Insufficient permissions' });
@@ -161,7 +232,7 @@ app.post('/api/bot-ticket-update', requireInternalSecret, (req, res) => {
 
 app.get('/internal/config/:guildId', requireInternalSecret, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  res.json(readJSON(configPath(req.params.guildId)));
+  res.json(readConfig(req.params.guildId));
 });
 app.get('/internal/panels/:guildId', requireInternalSecret, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
@@ -218,12 +289,13 @@ app.get('/api/guild/:id', requireAuth, async (req, res) => {
 
 app.get('/api/config/:guildId', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  res.json(readJSON(configPath(req.params.guildId)));
+  res.json(readConfig(req.params.guildId));
 });
 app.post('/api/config/:guildId', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  const updated = { ...readJSON(configPath(req.params.guildId)), ...req.body };
-  writeJSON(configPath(req.params.guildId), updated);
+  const existing = readConfig(req.params.guildId);
+  const updated = { ...existing, ...req.body };
+  writeConfig(req.params.guildId, updated);
   notifyBot('config-update', { guildId: req.params.guildId, config: updated });
   res.json({ ok: true });
 });
@@ -233,7 +305,7 @@ app.get('/api/panels/:guildId', requireAuth, requireGuildMember, (req, res) => {
   const panels = readJSON(panelsPath(req.params.guildId), []);
   let changed = false;
   for (const p of panels) {
-    if (!p.id) { p.id = require('crypto').randomBytes(8).toString('hex'); changed = true; }
+    if (!p.id) { p.id = crypto.randomBytes(8).toString('hex'); changed = true; }
   }
   if (changed) writeJSON(panelsPath(req.params.guildId), panels);
   res.json(panels);
@@ -242,7 +314,7 @@ app.post('/api/panels/:guildId', requireAuth, requireGuildMember, (req, res) => 
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
   const panels = req.body;
   if (Array.isArray(panels)) {
-    for (const p of panels) { if (!p.id) p.id = require('crypto').randomBytes(8).toString('hex'); }
+    for (const p of panels) { if (!p.id) p.id = crypto.randomBytes(8).toString('hex'); }
   }
   writeJSON(panelsPath(req.params.guildId), panels);
   res.json({ ok: true });
@@ -257,13 +329,13 @@ app.post('/api/panels/:guildId/post', requireAuth, requireGuildMember, (req, res
     panel = panels[req.body.panelIndex];
   }
   if (!panel) return res.status(404).json({ error: 'Panel not found' });
-  if (!panel.id) panel.id = require('crypto').randomBytes(8).toString('hex');
+  if (!panel.id) panel.id = crypto.randomBytes(8).toString('hex');
   notifyBot('post-panel', { guildId: req.params.guildId, panel });
   res.json({ ok: true });
 });
 app.post('/api/donations/:guildId/post', requireAuth, requireGuildMember, (req, res) => {
   if (!isValidGuildId(req.params.guildId)) return res.status(400).json({ error: 'Invalid guild ID' });
-  const cfg = readJSON(configPath(req.params.guildId), {});
+  const cfg = readConfig(req.params.guildId);
   if (!cfg.donation?.enabled || !cfg.donation?.channelId) {
     return res.status(400).json({ error: 'Donations not enabled or no channel set' });
   }
@@ -566,6 +638,7 @@ app.get('/auth/logout', (req, res, next) => {
     if (err) return next(err);
     req.session.destroy(() => {
       res.clearCookie('connect.sid');
+      res.clearCookie('XSRF-TOKEN');
       res.redirect('/');
     });
   });

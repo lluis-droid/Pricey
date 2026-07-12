@@ -2,6 +2,31 @@
    Pricey — Shared Client Utilities
    ============================================================ */
 
+/* --- CSRF: read token from cookie and attach to all mutating fetches --- */
+function getCookie(name) {
+  const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return m ? m[1] : null;
+}
+(function patchFetchForCSRF() {
+  const _origFetch = window.fetch;
+  window.fetch = function (url, opts = {}) {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(opts.method || 'GET')) {
+      const token = getCookie('XSRF-TOKEN');
+      if (token) {
+        opts.headers = opts.headers || {};
+        if (opts.headers instanceof Headers) {
+          if (!opts.headers.has('X-CSRF-Token')) opts.headers.set('X-CSRF-Token', token);
+        } else if (Array.isArray(opts.headers)) {
+          if (!opts.headers.some(([k]) => k.toLowerCase() === 'x-csrf-token')) opts.headers.push(['X-CSRF-Token', token]);
+        } else {
+          if (!opts.headers['X-CSRF-Token']) opts.headers['X-CSRF-Token'] = token;
+        }
+      }
+    }
+    return _origFetch.call(this, url, opts);
+  };
+})();
+
 const Pricey = (() => {
 
   /* --- Toast notification --- */

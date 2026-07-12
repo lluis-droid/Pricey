@@ -1611,11 +1611,16 @@ function downloadTranscript(channelId) {
 
 function exportTicketsCSV() {
   if (!tickets.length) { toast('No tickets to export','err'); return; }
+  function sanitizeCSV(v) {
+    const s = String(v);
+    if (/^[=+\-@\t\r]/.test(s)) return "'" + s;
+    return s;
+  }
   const rows = [['User','Panel','Product','Payment','Total','TotalUSD','Coupon','Status','Reported','Priority','Opened']];
   tickets.forEach(t=>rows.push([
-    t.username||'', t.panel?.title||'', t.selectedProduct||'', t.paymentMethod||'',
-    t.totalDisplay||'', t.totalUSD??'', t.appliedCoupon||'', t.status||'',
-    t.reported?'yes':'no', t.priority||'normal', t.openedAt?new Date(t.openedAt).toISOString():''
+    sanitizeCSV(t.username||''), sanitizeCSV(t.panel?.title||''), sanitizeCSV(t.selectedProduct||''), sanitizeCSV(t.paymentMethod||''),
+    sanitizeCSV(t.totalDisplay||''), sanitizeCSV(t.totalUSD??''), sanitizeCSV(t.appliedCoupon||''), sanitizeCSV(t.status||''),
+    sanitizeCSV(t.reported?'yes':'no'), sanitizeCSV(t.priority||'normal'), sanitizeCSV(t.openedAt?new Date(t.openedAt).toISOString():'')
   ]));
   const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
