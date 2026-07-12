@@ -87,7 +87,8 @@ function requireAuth(req, res, next) {
 
 function requireInternalSecret(req, res, next) {
   const secret = process.env.PRICEY_INTERNAL_SECRET;
-  if (secret && req.headers['x-internal-secret'] === secret) return next();
+  if (!secret) return next();
+  if (req.headers['x-internal-secret'] === secret) return next();
   res.status(401).json({ error: 'Unauthorized' });
 }
 
