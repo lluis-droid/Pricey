@@ -273,6 +273,35 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 function getLang(config) { return T[config?.language] || T.en; }
 
+function getColors(config) {
+  const ec = config?.embedColors || {};
+  const hex = (v, fallback) => { const h = v || fallback; return parseInt(h.replace('#',''), 16); };
+  return {
+    primary: hex(ec.primary, '#8B5CF6'),
+    success: hex(ec.success, '#84CC16'),
+    error: hex(ec.error, '#EF4444'),
+    warning: hex(ec.warning, '#F59E0B'),
+  };
+}
+
+const EMOJI_DEFAULTS = {
+  success: '✅', error: '❌', warning: '⚠️',
+  ticketOpened: '🎫', ticketClosed: '🔒',
+  paymentApproved: '💰', paymentDenied: '🚫',
+};
+
+function getEmojis(config) {
+  const saved = config?.emojis || {};
+  const out = {};
+  for (const [k, def] of Object.entries(EMOJI_DEFAULTS)) out[k] = saved[k] || def;
+  return out;
+}
+
+function resolveChannelName(config, panel, username, userId) {
+  const fmt = config?.ticketNaming || 'ticket-{username}';
+  return fmt.replace(/\{username\}/g, username).replace(/\{userId\}/g, userId).replace(/\{panel\}/g, panel).toLowerCase().replace(/[^a-z0-9-_]/g, '-').slice(0, 100);
+}
+
 async function apiFetch(url, opts, retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
@@ -433,30 +462,34 @@ async function handleDashboardTicketAction(data) {
   const session = sessions.get(channelId);
   const config = session?.config || await getConfig(guildId);
   const t = getLang(config);
+  const colors = getColors(config);
+  const emojis = getEmojis(config);
   if (!channel) return;
 
   if (action === 'close') {
     await generateAndSendTranscript(channel, session, 'Closed by admin');
     if (session) syncTicket(session);
-    await channel.send({ embeds: [new EmbedBuilder().setDescription('Ticket closed by an admin.').setColor(0xef4444)] });
+    const closedMsg = config.closedMsg || 'Ticket closed by an admin.';
+    await channel.send({ embeds: [new EmbedBuilder().setDescription(closedMsg).setColor(colors.error)] });
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 5000);
   }
   if (action === 'approve' && session) {
     const approvedMsg = config.approvedMsg || t.approved();
     await generateAndSendTranscript(channel, session, 'Approved');
-    await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(0x84CC16).setTimestamp()] });
+    await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(colors.success).setTimestamp()] });
     session.status = 'approved'; syncTicket(session);
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
   if (action === 'reject' && session) {
+    const rejectedMsg = config.rejectedMsg || t.rejected;
     await generateAndSendTranscript(channel, session, 'Rejected');
-    await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(t.rejected).setColor(0xef4444).setTimestamp()] });
+    await channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(rejectedMsg).setColor(colors.error).setTimestamp()] });
     session.status = 'rejected'; syncTicket(session);
     setTimeout(() => { channel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
   if (action === 'refund' && session) {
     session.status = 'refunded'; syncTicket(session);
-    await channel.send({ embeds: [new EmbedBuilder().setDescription('This order was marked as **refunded** by an admin.').setColor(0xf59e0b)] }).catch(() => {});
+    await channel.send({ embeds: [new EmbedBuilder().setDescription('This order was marked as **refunded** by an admin.').setColor(colors.warning)] }).catch(() => {});
   }
   if (action === 'clear-chat') { try { await channel.bulkDelete(100, true); } catch {} }
   if (action === 'send-message' && value?.trim()) { await channel.send({ content: value }); }
@@ -485,17 +518,21 @@ async function postPanel(guildId, panel) {
   if (!channel) return;
   const config = await getConfig(guildId);
   const t = getLang(config);
-  const color = parseInt((panel.color || '#8B5CF6').replace('#', ''), 16);
+  const colors = getColors(config);
+  const emojis = getEmojis(config);
+  const color = panel.color ? parseInt(panel.color.replace('#', ''), 16) : colors.primary;
   let desc = panel.description || 'Click the button below to open a purchase ticket.';
   if (panel.type === 'product' && panel.products?.length)
     desc += '\n\n**Available Products:**\n' + panel.products.map(p => `> **${p.name}** — ${p.price}`).join('\n');
-  const embed = new EmbedBuilder().setTitle(panel.title).setDescription(desc).setColor(color).setFooter({ text: t.poweredBy }).setTimestamp();
+  const footerText = config.footerText || t.poweredBy;
+  const embed = new EmbedBuilder().setTitle(panel.title).setDescription(desc).setColor(color).setFooter({ text: footerText }).setTimestamp();
   if (panel.bannerUrl) embed.setImage(panel.bannerUrl);
-  if (panel.thumbnailUrl) embed.setThumbnail(panel.thumbnailUrl);
+  const thumb = panel.thumbnailUrl || config.thumbnailUrl;
+  if (thumb) embed.setThumbnail(thumb);
   const panels = await getPanels(guildId);
   const idx = panels.findIndex(p => p.title === panel.title);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${idx}`).setLabel(t.openTicket).setEmoji('🛒').setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId(`open_ticket_${guildId}_${idx}`).setLabel(t.openTicket).setEmoji(emojis.ticketOpened).setStyle(ButtonStyle.Primary)
   );
   await channel.send({ embeds: [embed], components: [row] });
 }
@@ -532,13 +569,14 @@ async function proceedToCouponOrPayment(channel, session) {
 
 async function askCouponPrompt(channel, session) {
   const t = getLang(session.config);
+  const colors = getColors(session.config);
   const modal = new ModalBuilder().setCustomId(`modal_coupon_${channel.id}`).setTitle(t.couponModalTitle);
   const input = new TextInputBuilder().setCustomId('code').setLabel(t.couponLabel)
     .setStyle(TextInputStyle.Short).setRequired(true).setPlaceholder(t.couponPlaceholder);
   modal.addComponents(new ActionRowBuilder().addComponents(input));
   session.pendingModal = modal;
   await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`🏷️ **${t.couponPrompt}**`).setColor(0x8B5CF6)],
+    embeds: [new EmbedBuilder().setDescription(`🏷️ **${t.couponPrompt}**`).setColor(colors.primary)],
     components: [new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`open_couponmodal_${channel.id}`).setLabel(t.couponEnterBtn).setEmoji('🏷️').setStyle(ButtonStyle.Secondary),
       new ButtonBuilder().setCustomId(`skip_coupon_${channel.id}`).setLabel(t.couponSkipBtn).setEmoji('➡️').setStyle(ButtonStyle.Primary)
@@ -568,6 +606,7 @@ async function handleModalCoupon(interaction) {
   const channelId = interaction.customId.replace('modal_coupon_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const code = interaction.fields.getTextInputValue('code').trim();
   session.pendingModal = null;
@@ -575,7 +614,7 @@ async function handleModalCoupon(interaction) {
   await interaction.deferUpdate().catch(() => {});
 
   if (!coupon) {
-    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponInvalid).setColor(0xef4444)] });
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponInvalid).setColor(colors.error)] });
     return askCouponPrompt(interaction.channel, session);
   }
 
@@ -589,12 +628,12 @@ async function handleModalCoupon(interaction) {
     session.totalDisplay = `${currencyInfo.symbol}${session.total.toLocaleString()} ${session.currency}`;
     session.appliedCoupon = coupon.code;
     incrementCouponUsage(session.guildId, session.panel.title, coupon.code);
-    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponApplied(coupon.code, session.totalDisplay)).setColor(0x84CC16)] });
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponApplied(coupon.code, session.totalDisplay)).setColor(colors.success)] });
   } else {
     // Product / service panels: free-text pricing, so we note the coupon for the admin instead of auto-discounting.
     session.appliedCoupon = coupon.code;
     incrementCouponUsage(session.guildId, session.panel.title, coupon.code);
-    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponNoted(coupon.code)).setColor(0x84CC16)] });
+    await interaction.channel.send({ embeds: [new EmbedBuilder().setDescription(t.couponNoted(coupon.code)).setColor(colors.success)] });
   }
 
   syncTicket(session);
@@ -704,9 +743,10 @@ async function handleProofModalTrigger(interaction) {
   interaction.message.edit({ components: [] }).catch(() => {});
   session.phase = 'awaiting-proof-message';
   const t = getLang(session.config);
+  const colors = getColors(session.config);
   const channel = interaction.channel;
   setCanType(channel, session.userId, true).catch(() => {});
-  channel.send({ embeds: [new EmbedBuilder().setDescription(t.sendScreenshot).setColor(0xf59e0b)] }).catch(() => {});
+  channel.send({ embeds: [new EmbedBuilder().setDescription(t.sendScreenshot).setColor(colors.warning)] }).catch(() => {});
 }
 
 // ─── TICKET OPEN ───────────────────────────────────────────────────────────────
@@ -718,6 +758,8 @@ async function handleOpenTicket(interaction) {
   if (!panel) return interaction.editReply({ content: 'This panel no longer exists.' });
   const config = await getConfig(guildId);
   const t = getLang(config);
+  const colors = getColors(config);
+  const emojis = getEmojis(config);
   const guild  = interaction.guild;
   const member = interaction.member;
 
@@ -752,7 +794,7 @@ async function handleOpenTicket(interaction) {
   if (config.adminRole) permissionOverwrites.push({ id: config.adminRole, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] });
 
   const ticketChannel = await guild.channels.create({
-    name: `ticket-${member.user.username.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20)}`,
+    name: resolveChannelName(config, panel.title, member.user.username.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20), member.id),
     type: ChannelType.GuildText,
     parent: config.ticketCategory || null,
     permissionOverwrites,
@@ -773,7 +815,7 @@ async function handleOpenTicket(interaction) {
   sessions.set(ticketChannel.id, session);
   syncTicket(session);
 
-  const color = parseInt((panel.color || '#8B5CF6').replace('#', ''), 16);
+  const color = panel.color ? parseInt(panel.color.replace('#', ''), 16) : colors.primary;
   const welcomeEmbed = new EmbedBuilder()
     .setTitle(panel.title)
     .setDescription(config.welcomeMsg || t.welcome(`<@${member.id}>`))
@@ -781,7 +823,7 @@ async function handleOpenTicket(interaction) {
     .addFields({ name: t.openedBy, value: `<@${member.id}>`, inline: true })
     .setTimestamp();
   const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setEmoji('🔒').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`close_ticket_${ticketChannel.id}`).setLabel(t.closeTicket).setEmoji(emojis.ticketClosed).setStyle(ButtonStyle.Danger)
   );
   await ticketChannel.send({ embeds: [welcomeEmbed], components: [closeRow] });
   await startNextStep(ticketChannel, session);
@@ -800,12 +842,13 @@ async function startNextStep(channel, session) {
 async function askQuestion(channel, session) {
   const q = session.panel.questions[session.questionIndex];
   const t = getLang(session.config);
+  const colors = getColors(session.config);
 
   if (q.type === 'image') {
     await setCanType(channel, session.userId, true);
     await channel.send({ embeds: [new EmbedBuilder()
       .setDescription(`**Question ${session.questionIndex + 1} of ${session.panel.questions.length}**\n\n${q.text}`)
-      .setColor(0x8B5CF6).setFooter({ text: t.sendImageAnswer })] });
+      .setColor(colors.primary).setFooter({ text: t.sendImageAnswer })] });
     session.phase = 'awaiting-image';
     return;
   }
@@ -830,7 +873,7 @@ async function askQuestion(channel, session) {
     await channel.send({
       embeds: [new EmbedBuilder()
         .setDescription(`**Question ${session.questionIndex + 1} of ${session.panel.questions.length}**\n\n${q.text}`)
-        .setColor(0x8B5CF6)
+        .setColor(colors.primary)
         .setFooter({ text: q.required ? t.questionRequired : t.questionOptional })],
       components: [new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`open_qmodal_${channel.id}`).setLabel(t.answerQuestion).setEmoji('✍️').setStyle(ButtonStyle.Primary)
@@ -843,7 +886,7 @@ async function askQuestion(channel, session) {
     await setCanType(channel, session.userId, true);
     await channel.send({ embeds: [new EmbedBuilder()
       .setDescription(`**Question ${session.questionIndex + 1} of ${session.panel.questions.length}**\n\n${q.text}`)
-      .setColor(0x8B5CF6).setFooter({ text: t.mentionUserAnswer })] });
+      .setColor(colors.primary).setFooter({ text: t.mentionUserAnswer })] });
     session.phase = 'awaiting-user-mention';
     return;
   }
@@ -853,6 +896,7 @@ async function handleModalQuestion(interaction) {
   const channelId = interaction.customId.replace('modal_question_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const q = session.panel.questions[session.questionIndex];
   let answer = interaction.fields.getTextInputValue('answer').trim();
@@ -864,7 +908,7 @@ async function handleModalQuestion(interaction) {
   syncTicket(session);
   await interaction.channel.send({ embeds: [new EmbedBuilder()
     .setDescription(`**Q${session.questionIndex}:** ${q.text}\n**A:** ${answer || '*(skipped)*'}`)
-    .setColor(0x84CC16)] });
+    .setColor(colors.success)] });
   session.phase = 'questions';
   await startNextStep(interaction.channel, session);
 }
@@ -918,11 +962,12 @@ client.on(Events.MessageCreate, async message => {
 // ─── CURRENCY ──────────────────────────────────────────────────────────────────
 async function askCurrencySelect(channel, session) {
   const t = getLang(session.config);
+  const colors = getColors(session.config);
   const currencies = getCurrencies(session.config);
   const select = new StringSelectMenuBuilder().setCustomId('select_currency').setPlaceholder(t.selectCurrencyPlaceholder)
     .addOptions(currencies.slice(0, 25).map(c => ({ label: c.label, value: c.value })));
   await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.selectCurrency}**\n${t.selectCurrencyDesc}`).setColor(0x8B5CF6)],
+    embeds: [new EmbedBuilder().setDescription(`**${t.selectCurrency}**\n${t.selectCurrencyDesc}`).setColor(colors.primary)],
     components: [new ActionRowBuilder().addComponents(select)]
   });
 }
@@ -930,11 +975,12 @@ async function askCurrencySelect(channel, session) {
 async function handleCurrencySelect(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   session.currency = interaction.values[0];
   session.phase = 'currency-amount';
   await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(t.currencySelected(session.currency)).setColor(0x84CC16)],
+    embeds: [new EmbedBuilder().setDescription(t.currencySelected(session.currency)).setColor(colors.success)],
     components: []
   });
 
@@ -947,7 +993,7 @@ async function handleCurrencySelect(interaction) {
   session.pendingModal = modal;
 
   await interaction.channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.enterAmount(session.panel.title)}**`).setColor(0x8B5CF6)],
+    embeds: [new EmbedBuilder().setDescription(`**${t.enterAmount(session.panel.title)}**`).setColor(colors.primary)],
     components: [new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId(`open_amount_modal_${interaction.channel.id}`).setLabel(t.enterAmountBtn).setEmoji('🔢').setStyle(ButtonStyle.Primary)
     )]
@@ -957,6 +1003,7 @@ async function handleCurrencySelect(interaction) {
 async function handleCurrencyAmountModal(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const raw = interaction.fields.getTextInputValue('amount').replace(/,/g, '').trim();
   const amount = parseFloat(raw);
@@ -973,7 +1020,7 @@ async function handleCurrencyAmountModal(interaction) {
   session.selectedProduct = `${amount.toLocaleString()} ${panel.title}`;
   session.pendingModal = null;
   await interaction.deferUpdate().catch(() => {});
-  await interaction.channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderSummary).setColor(0x84CC16)
+  await interaction.channel.send({ embeds: [new EmbedBuilder().setTitle(t.orderSummary).setColor(colors.success)
     .addFields(
       { name: t.item, value: panel.title, inline: true },
       { name: t.amount, value: `${amount.toLocaleString()}`, inline: true },
@@ -986,12 +1033,13 @@ async function handleCurrencyAmountModal(interaction) {
 // ─── PRODUCT ───────────────────────────────────────────────────────────────────
 async function askProductSelect(channel, session) {
   const t = getLang(session.config);
+  const colors = getColors(session.config);
   const { products } = session.panel;
   if (!products?.length) return proceedToCouponOrPayment(channel, session);
   const select = new StringSelectMenuBuilder().setCustomId('select_product').setPlaceholder(t.selectProductPlaceholder)
     .addOptions(products.map(p => ({ label: p.name, description: String(p.price), value: p.name })));
   await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.selectProduct}**`).setColor(0x8B5CF6)],
+    embeds: [new EmbedBuilder().setDescription(`**${t.selectProduct}**`).setColor(colors.primary)],
     components: [new ActionRowBuilder().addComponents(select)]
   });
 }
@@ -999,6 +1047,7 @@ async function askProductSelect(channel, session) {
 async function handleProductSelect(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const product = session.panel.products.find(p => p.name === interaction.values[0]);
   session.selectedProduct = product.name;
@@ -1006,7 +1055,7 @@ async function handleProductSelect(interaction) {
   const parsed = parseFloat(String(product.price).replace(/[^0-9.]/g, ''));
   session.totalUSD = isNaN(parsed) ? null : parsed;
   await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(t.selectedProduct(product.name, product.price)).setColor(0x84CC16)],
+    embeds: [new EmbedBuilder().setDescription(t.selectedProduct(product.name, product.price)).setColor(colors.success)],
     components: []
   });
   syncTicket(session);
@@ -1016,15 +1065,16 @@ async function handleProductSelect(interaction) {
 // ─── PAYMENT ───────────────────────────────────────────────────────────────────
 async function askPaymentSelect(channel, session) {
   const t = getLang(session.config);
+  const colors = getColors(session.config);
   const methods = session.config.paymentMethods || ['paypal', 'crypto_usdt'];
   if (!methods.length) {
-    await channel.send({ embeds: [new EmbedBuilder().setDescription(t.noPaymentMethods).setColor(0xef4444)] });
+    await channel.send({ embeds: [new EmbedBuilder().setDescription(t.noPaymentMethods).setColor(colors.error)] });
     return;
   }
   const select = new StringSelectMenuBuilder().setCustomId('select_payment').setPlaceholder(t.selectPaymentPlaceholder)
     .addOptions(methods.map(m => ({ label: (PAYMENT_LABELS[m] || { label: m }).label, value: m })));
   await channel.send({
-    embeds: [new EmbedBuilder().setDescription(`**${t.selectPayment}**`).setColor(0x8B5CF6)],
+    embeds: [new EmbedBuilder().setDescription(`**${t.selectPayment}**`).setColor(colors.primary)],
     components: [new ActionRowBuilder().addComponents(select)]
   });
 }
@@ -1032,6 +1082,7 @@ async function askPaymentSelect(channel, session) {
 async function handlePaymentSelect(interaction) {
   const session = sessions.get(interaction.channel.id);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!session || interaction.user.id !== session.userId) return interaction.reply({ content: 'Not your ticket.', flags: MessageFlags.Ephemeral });
   const method = interaction.values[0];
   session.paymentMethod = method;
@@ -1049,11 +1100,11 @@ async function handlePaymentSelect(interaction) {
   session.pendingModal = modal;
 
   await interaction.update({
-    embeds: [new EmbedBuilder().setDescription(t.paymentMethodSelected(info.label)).setColor(0x84CC16)],
+    embeds: [new EmbedBuilder().setDescription(t.paymentMethodSelected(info.label)).setColor(colors.success)],
     components: []
   });
 
-  const embed = new EmbedBuilder().setTitle(t.payWith(info.label)).setDescription(t.payDesc).setColor(0xf59e0b)
+  const embed = new EmbedBuilder().setTitle(t.payWith(info.label)).setDescription(t.payDesc).setColor(colors.warning)
     .addFields(
       { name: t.amount, value: `**${totalText}**`, inline: true },
       ...(account ? [{ name: t.sendTo, value: `\`${account}\``, inline: true }] : [])
@@ -1079,7 +1130,8 @@ async function handlePaymentProofModal(interaction) {
 // ─── FINISH ────────────────────────────────────────────────────────────────────
 async function finishTicket(channel, session) {
   const t = getLang(session.config);
-  await channel.send({ embeds: [new EmbedBuilder().setTitle(t.purchaseSubmitted).setDescription(t.purchaseSubmittedDesc).setColor(0x84CC16)
+  const colors = getColors(session.config);
+  await channel.send({ embeds: [new EmbedBuilder().setTitle(t.purchaseSubmitted).setDescription(t.purchaseSubmittedDesc).setColor(colors.success)
     .addFields(
       { name: t.product, value: session.selectedProduct || session.panel.title, inline: true },
       { name: t.paymentMethod, value: PAYMENT_LABELS[session.paymentMethod]?.label || session.paymentMethod, inline: true },
@@ -1093,7 +1145,9 @@ async function notifyAdmin(session) {
   const logChannel = client.channels.cache.get(session.config.logChannel) || await client.channels.fetch(session.config.logChannel).catch(() => null);
   if (!logChannel) return;
   const t = getLang(session.config);
-  const embed = new EmbedBuilder().setTitle(t.adminPending).setColor(0xf59e0b)
+  const colors = getColors(session.config);
+  const emojis = getEmojis(session.config);
+  const embed = new EmbedBuilder().setTitle(t.adminPending).setColor(colors.warning)
     .addFields(
       { name: t.user,    value: `<@${session.userId}> (${session.username})`, inline: true },
       { name: t.panel,   value: session.panel.title, inline: true },
@@ -1108,8 +1162,8 @@ async function notifyAdmin(session) {
     ).setTimestamp();
   if (session.paymentProof?.imageUrl) embed.setImage(session.paymentProof.imageUrl);
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`admin_approve_${session.channelId}`).setLabel(t.approveBtn).setEmoji('✅').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId(`admin_reject_${session.channelId}`).setLabel(t.rejectBtn).setEmoji('❌').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId(`admin_approve_${session.channelId}`).setLabel(t.approveBtn).setEmoji(emojis.success).setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId(`admin_reject_${session.channelId}`).setLabel(t.rejectBtn).setEmoji(emojis.error).setStyle(ButtonStyle.Danger)
   );
   await logChannel.send({ embeds: [embed], components: [row] });
 }
@@ -1119,15 +1173,16 @@ async function handleAdminApprove(interaction) {
   const channelId = interaction.customId.replace('admin_approve_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.approvedBy(`<@${interaction.user.id}>`)).setColor(0x84CC16)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.approvedBy(`<@${interaction.user.id}>`)).setColor(colors.success)],
     components: []
   });
   if (ticketChannel) {
     const approvedMsg = session?.config?.approvedMsg || t.approved();
     await generateAndSendTranscript(ticketChannel, session, 'Approved');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(0x84CC16).setTimestamp()] });
+    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderApproved).setDescription(approvedMsg).setColor(colors.success).setTimestamp()] });
     if (session) { session.status = 'approved'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 60_000);
   }
@@ -1137,14 +1192,16 @@ async function handleAdminReject(interaction) {
   const channelId = interaction.customId.replace('admin_reject_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   const ticketChannel = client.channels.cache.get(channelId) || await client.channels.fetch(channelId).catch(() => null);
   await interaction.update({
-    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.rejectedBy(`<@${interaction.user.id}>`)).setColor(0xef4444)],
+    embeds: [...interaction.message.embeds, new EmbedBuilder().setDescription(t.rejectedBy(`<@${interaction.user.id}>`)).setColor(colors.error)],
     components: []
   });
   if (ticketChannel) {
+    const rejectedMsg = session?.config?.rejectedMsg || t.rejected;
     await generateAndSendTranscript(ticketChannel, session, 'Rejected');
-    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(t.rejected).setColor(0xef4444).setTimestamp()] });
+    await ticketChannel.send({ embeds: [new EmbedBuilder().setTitle(t.orderRejected).setDescription(rejectedMsg).setColor(colors.error).setTimestamp()] });
     if (session) { session.status = 'rejected'; syncTicket(session); }
     setTimeout(() => { ticketChannel.delete().catch(() => {}); sessions.delete(channelId); }, 120_000);
   }
@@ -1154,9 +1211,11 @@ async function handleCloseTicket(interaction) {
   const channelId = interaction.customId.replace('close_ticket_', '');
   const session = sessions.get(channelId);
   const t = getLang(session?.config);
+  const colors = getColors(session?.config);
   if (!interaction.member.permissions.has(PermissionFlagsBits.ManageChannels))
     return interaction.reply({ content: t.staffOnly, flags: MessageFlags.Ephemeral });
-  await interaction.reply({ content: t.closingIn5 });
+  const closedMsg = session?.config?.closedMsg || t.closingIn5;
+  await interaction.reply({ content: closedMsg });
   await generateAndSendTranscript(interaction.channel, session, 'Closed');
   if (session) { session.status = 'closed'; syncTicket(session); }
   setTimeout(() => { interaction.channel.delete().catch(() => {}); sessions.delete(channelId); }, 5000);
