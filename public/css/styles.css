@@ -412,7 +412,7 @@ textarea { resize: vertical; min-height: 80px; }
   display: flex; align-items: center; justify-content: center; gap: 18px;
   flex-wrap: wrap;
 }
-.footer .brand { display: flex; align-items: center; gap: 8px; }
+.footer .brand { display: flex; align-items: center; gap: 8px; color: var(--text); }
 .footer img { height: 20px; opacity: .6; }
 .footer a { color: var(--muted); text-decoration: none; transition: color .15s; }
 .footer a:hover { color: var(--text); }
