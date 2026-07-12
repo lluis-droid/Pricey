@@ -25,6 +25,7 @@ function guildDataPath(id) { return path.join(DATA_DIR, `guilddata_${id}.json`);
 const OWNER_ID = process.env.OWNER_ID;
 
 function globalBansPath() { return path.join(DATA_DIR, 'global-bans.json'); }
+function suspensionsPath() { return path.join(DATA_DIR, 'suspensions.json'); }
 function adminLogPath() { return path.join(DATA_DIR, 'admin-log.json'); }
 
 function listGuildIds() {
@@ -278,9 +279,11 @@ app.get('/api/admin/users', requireOwner, (req, res) => {
     });
   });
   const bans = readJSON(globalBansPath(), []);
+  const suspensions = readJSON(suspensionsPath(), []);
   const users = [...usersMap.values()].map(u => ({
     ...u,
     banned: bans.some(b => b.userId === u.userId && (!b.expiresAt || b.expiresAt > Date.now())),
+    suspended: suspensions.some(s => s.userId === u.userId && s.expiresAt > Date.now()),
   })).sort((a, b) => b.lastSeen - a.lastSeen);
   res.json(users);
 });
@@ -305,12 +308,14 @@ app.get('/api/admin/stats', requireOwner, (req, res) => {
     });
   });
   const bans = readJSON(globalBansPath(), []).filter(b => !b.expiresAt || b.expiresAt > Date.now());
+  const suspensions = readJSON(suspensionsPath(), []).filter(s => s.expiresAt > Date.now());
   res.json({
     guilds: guildIds.length,
     totalTickets,
     reported,
     uniqueUsers: usersSet.size,
     activeBans: bans.length,
+    activeSuspensions: suspensions.length,
   });
 });
 
@@ -325,7 +330,9 @@ app.get('/api/admin/users/:userId', requireOwner, (req, res) => {
   });
   const bans = readJSON(globalBansPath(), []);
   const ban = bans.find(b => b.userId === userId) || null;
-  res.json({ userId, tickets, ban });
+  const suspensions = readJSON(suspensionsPath(), []);
+  const suspension = suspensions.find(s => s.userId === userId && s.expiresAt > Date.now()) || null;
+  res.json({ userId, tickets, ban, suspension });
 });
 
 // Permanently delete everything stored about a user (all guilds)
@@ -373,12 +380,53 @@ app.post('/api/admin/users/:userId/unban', requireOwner, (req, res) => {
   res.json({ ok: true });
 });
 
+/* ===== SUSPENSIONS ===== */
+app.get('/api/admin/suspensions', requireOwner, (req, res) => {
+  const suspensions = readJSON(suspensionsPath(), [])
+    .filter(s => !s.expiresAt || s.expiresAt > Date.now());
+  res.json(suspensions);
+});
+
+app.post('/api/admin/users/:userId/suspend', requireOwner, (req, res) => {
+  const { userId } = req.params;
+  const { reason, durationMs } = req.body || {};
+  if (!reason || !reason.trim()) return res.status(400).json({ error: 'Reason is required' });
+  if (!durationMs) return res.status(400).json({ error: 'Duration is required for suspensions' });
+  const expiresAt = Date.now() + Number(durationMs);
+  const suspensions = readJSON(suspensionsPath(), []).filter(s => s.userId !== userId);
+  const suspension = {
+    userId,
+    reason: reason.trim(),
+    suspendedBy: req.user.id,
+    suspendedAt: Date.now(),
+    expiresAt,
+  };
+  suspensions.push(suspension);
+  writeJSON(suspensionsPath(), suspensions);
+  logAdminAction(req.user.id, 'suspend', userId, reason, { expiresAt });
+  notifyBot('global-ban-update', {});
+  res.json({ ok: true, suspension });
+});
+
+app.post('/api/admin/users/:userId/unsuspend', requireOwner, (req, res) => {
+  const { userId } = req.params;
+  const { reason } = req.body || {};
+  const suspensions = readJSON(suspensionsPath(), []).filter(s => s.userId !== userId);
+  writeJSON(suspensionsPath(), suspensions);
+  logAdminAction(req.user.id, 'unsuspend', userId, reason);
+  notifyBot('global-ban-update', {});
+  res.json({ ok: true });
+});
+
 app.get('/api/admin/logs', requireOwner, (req, res) => {
   res.json(readJSON(adminLogPath(), []));
 });
 
 // Internal — used only by the bot process to read the current ban list
 app.get('/internal/global-bans', (req, res) => res.json(readJSON(globalBansPath(), [])));
+
+// Internal — used only by the bot process to read the current suspension list
+app.get('/internal/suspensions', (req, res) => res.json(readJSON(suspensionsPath(), [])));
 
 
 /* ===== AUTH ===== */
@@ -409,7 +457,6 @@ app.get('/auth/logout', (req, res, next) => {
 
 /* ===== PAGES ===== */
 app.get('/', (req, res) => {
-  if (req.isAuthenticated()) return res.redirect('/dashboard');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 app.get('/dashboard', (req, res) => {

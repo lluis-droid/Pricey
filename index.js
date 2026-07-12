@@ -30,6 +30,20 @@ function getActiveGlobalBan(userId) {
   return ban;
 }
 
+let globalSuspensions = [];
+async function refreshGlobalSuspensions() {
+  try {
+    const r = await apiFetch(`${BASE_URL}/internal/suspensions`);
+    if (r) globalSuspensions = await r.json();
+  } catch {}
+}
+function getActiveSuspension(userId) {
+  const s = globalSuspensions.find(x => x.userId === userId);
+  if (!s) return null;
+  if (s.expiresAt && Date.now() > s.expiresAt) return null;
+  return s;
+}
+
 const DEFAULT_CURRENCIES = [
   { label: 'USD — US Dollar',        value: 'USD', symbol: '$',  rate: 1 },
   { label: 'EUR — Euro',             value: 'EUR', symbol: '€',  rate: 1.08 },
@@ -155,6 +169,8 @@ const T = {
     blacklisted: 'You are not able to open tickets in this server. If you think this is a mistake, contact staff directly.',
 globalBanned: (reason, until) =>
   `🚫 You are banned from using this bot${until ? ` until **${until}**` : ' **permanently**'}.\n**Reason:** ${reason}`,
+suspended: (reason, until) =>
+  `⏳ You are temporarily suspended from using this bot until **${until}**.\n**Reason:** ${reason}`,
     couponPrompt: 'Do you have a coupon code?',
     couponEnterBtn: 'Enter coupon',
     couponSkipBtn: 'Continue without coupon',
@@ -239,6 +255,8 @@ globalBanned: (reason, until) =>
     blacklisted: 'No puedes abrir tickets en este servidor. Si crees que esto es un error, contacta al staff directamente.',
 globalBanned: (reason, until) =>
   `🚫 Estás baneado de este bot${until ? ` hasta **${until}**` : ' **permanentemente**'}.\n**Motivo:** ${reason}`,
+suspended: (reason, until) =>
+  `⏳ Estás temporalmente suspendido de este bot hasta **${until}**.\n**Motivo:** ${reason}`,
     couponPrompt: '¿Tienes un código de cupón?',
     couponEnterBtn: 'Ingresar cupón',
     couponSkipBtn: 'Continuar sin cupón',
@@ -382,9 +400,11 @@ client.once(Events.ClientReady, () => {
     client.guilds.cache.forEach(g => reportGuildData(g.id));
   }, 2000);
   refreshGlobalBans();
+  refreshGlobalSuspensions();
   setInterval(sendBotStatus, 30000);
   setInterval(pollActions, 2000);
-  setInterval(refreshGlobalBans, 15000); // <-- add this line
+  setInterval(refreshGlobalBans, 15000);
+  setInterval(refreshGlobalSuspensions, 15000);
 });
 
 client.on(Events.GuildCreate, guild => {
@@ -712,6 +732,13 @@ async function handleOpenTicket(interaction) {
   if (globalBan) {
     const until = globalBan.expiresAt ? new Date(globalBan.expiresAt).toLocaleString() : null;
     return interaction.editReply({ content: t.globalBanned(globalBan.reason, until) });
+  }
+
+  // Owner-level bot-wide suspension check
+  const suspension = getActiveSuspension(member.id);
+  if (suspension) {
+    const until = new Date(suspension.expiresAt).toLocaleString();
+    return interaction.editReply({ content: t.suspended(suspension.reason, until) });
   }
 
   const existing = [...sessions.values()].find(s => s.userId === member.id && s.guildId === guildId);
