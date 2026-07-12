@@ -94,6 +94,7 @@ function writeConfig(guildId, data) { writeJSON(configPath(guildId), encryptConf
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false }));
+app.set('trust proxy', 1);
 app.use(session({
   secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
   resave: false,
