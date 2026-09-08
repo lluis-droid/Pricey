@@ -30,6 +30,7 @@ function globalBansPath() { return path.join(DATA_DIR, 'global-bans.json'); }
 function suspensionsPath() { return path.join(DATA_DIR, 'suspensions.json'); }
 function adminLogPath() { return path.join(DATA_DIR, 'admin-log.json'); }
 function donationsPath(id) { return path.join(DATA_DIR, `donations_${id}.json`); }
+function feedbackPath() { return path.join(DATA_DIR, 'feedback.json'); }
 
 function listGuildIds() {
   return fs.readdirSync(DATA_DIR)
@@ -271,6 +272,27 @@ app.post('/internal/panels/:guildId', requireInternalSecret, (req, res) => {
 
 /* ===== PUBLIC STATUS ===== */
 app.get('/api/status', (req, res) => res.json(botStatus));
+
+// Lightweight public stats for the landing page — no sensitive data
+app.get('/api/stats/public', (req, res) => {
+  const guildIds = listGuildIds();
+  let totalTickets = 0, raised = 0;
+  const users = new Set();
+  guildIds.forEach(gid => {
+    readJSON(ticketsPath(gid), []).forEach(t => {
+      totalTickets++;
+      if (t.userId) users.add(t.userId);
+    });
+    const d = readJSON(donationsPath(gid), { donors: [], raised: 0 });
+    raised += (d.raised || 0);
+  });
+  res.json({
+    servers: botStatus.guilds.length,
+    tickets: totalTickets,
+    users: users.size,
+    raised: Math.round(raised * 100) / 100,
+  });
+});
 
 app.get('/api/me', (req, res) => {
   if (!req.isAuthenticated()) return res.json({ loggedIn: false });
@@ -677,6 +699,76 @@ app.get('/api/admin/logs', requireOwner, (req, res) => {
 // Internal — used only by the bot process to read the current ban list
 app.get('/internal/global-bans', requireInternalSecret, (req, res) => res.json(readJSON(globalBansPath(), [])));
 app.get('/internal/suspensions', requireInternalSecret, (req, res) => res.json(readJSON(suspensionsPath(), [])));
+
+
+/* ===== PUBLIC FEEDBACK ===== */
+const feedbackRateLimit = new Map(); // ip -> last submission timestamp
+
+app.post('/api/feedback', (req, res) => {
+  // Honeypot: if a bot fills the hidden field, silently accept without storing
+  if (req.body.website) return res.json({ ok: true });
+
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  const last = feedbackRateLimit.get(ip);
+  if (last && Date.now() - last < 60_000) {
+    return res.status(429).json({ error: 'Please wait a moment before sending another comment.' });
+  }
+
+  // Logged-in users are identified by their real Discord account, never typed input
+  let username = (req.body.username || '').toString().trim().slice(0, 50);
+  if (req.isAuthenticated()) username = req.user.username;
+  const message = (req.body.message || '').toString().trim().slice(0, 2000);
+  const rating = Math.min(5, Math.max(1, parseInt(req.body.rating) || 5));
+
+  if (message.length < 10) return res.status(400).json({ error: 'Your comment must be at least 10 characters.' });
+  if (!/^[\p{L}\p{N}_.\s-]{2,50}$/u.test(username)) {
+    return res.status(400).json({ error: 'Please enter a valid Discord username.' });
+  }
+
+  const all = readJSON(feedbackPath(), []);
+  // One open comment per logged-in user keeps the inbox actionable
+  if (req.isAuthenticated() && all.some(f => f.userId === req.user.id && f.status !== 'resolved')) {
+    return res.status(429).json({ error: 'You already have an open comment — we will review it soon.' });
+  }
+
+  all.unshift({
+    id: crypto.randomBytes(8).toString('hex'),
+    userId: req.isAuthenticated() ? req.user.id : null,
+    username,
+    rating,
+    message,
+    status: 'new',
+    createdAt: Date.now(),
+  });
+  writeJSON(feedbackPath(), all);
+  feedbackRateLimit.set(ip, Date.now());
+  res.json({ ok: true });
+});
+
+app.get('/api/admin/feedback', requireOwner, (req, res) => {
+  res.json(readJSON(feedbackPath(), []));
+});
+
+app.post('/api/admin/feedback/:id/status', requireOwner, (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  if (!['new', 'read', 'resolved'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  const all = readJSON(feedbackPath(), []);
+  const item = all.find(f => f.id === id);
+  if (!item) return res.status(404).json({ error: 'Comment not found' });
+  item.status = status;
+  writeJSON(feedbackPath(), all);
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/feedback/:id', requireOwner, (req, res) => {
+  const { id } = req.params;
+  const all = readJSON(feedbackPath(), []);
+  const filtered = all.filter(f => f.id !== id);
+  if (filtered.length === all.length) return res.status(404).json({ error: 'Comment not found' });
+  writeJSON(feedbackPath(), filtered);
+  res.json({ ok: true });
+});
 
 
 /* ===== AUTH ===== */

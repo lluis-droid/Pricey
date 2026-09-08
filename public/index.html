@@ -90,6 +90,64 @@
     .feature-card h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
     .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
+    /* Stats strip */
+    .landing-stats {
+      position: relative; z-index: 1;
+      padding: 40px 48px; max-width: 1100px; margin: 0 auto;
+    }
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 32px 24px;
+    }
+    .stats-bar .stat-item { text-align: center; }
+    .stats-bar .stat-num {
+      font-family: 'Syne', sans-serif; font-size: clamp(22px, 3vw, 32px);
+      font-weight: 900; letter-spacing: -1px;
+      background: var(--grad); background-clip: text; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stats-bar .stat-lbl {
+      font-size: 11px; color: var(--muted); margin-top: 4px;
+      text-transform: uppercase; letter-spacing: .5px; font-family: 'Syne', sans-serif;
+    }
+
+    /* Feedback section */
+    .feedback {
+      position: relative; z-index: 1;
+      padding: 80px 48px 100px; max-width: 680px; margin: 0 auto;
+    }
+    .feedback-sub {
+      text-align: center; color: var(--muted); font-size: 14px;
+      line-height: 1.7; max-width: 460px; margin: 0 auto 28px;
+    }
+    .feedback-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 32px;
+      box-shadow: var(--shadow-card);
+    }
+    .star-rating { display: flex; gap: 6px; }
+    .star-rating button {
+      background: none; border: none; cursor: pointer; padding: 0;
+      font-size: 26px; line-height: 1; color: var(--surface3);
+      transition: color .15s, transform .1s;
+    }
+    .star-rating button:hover { transform: scale(1.15); }
+    .star-rating button.active { color: var(--gold); text-shadow: 0 0 16px rgba(245,158,11,0.4); }
+    .honeypot { position: absolute; left: -9999px; opacity: 0; height: 0; width: 0; }
+    .feedback-success {
+      text-align: center; padding: 40px 20px; animation: fadeUp .25s ease;
+    }
+    .feedback-success svg { width: 44px; height: 44px; color: var(--green); margin: 0 auto 14px; display: block; }
+    .feedback-success h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+    .feedback-success p { font-size: 13px; color: var(--muted); }
+    #feedback-submit { width: 100%; justify-content: center; min-height: 48px; }
+    .feedback-verified {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; color: var(--green); margin-top: 6px;
+    }
+    .feedback-verified svg { width: 13px; height: 13px; }
+
     /* Mobile */
     @media (max-width: 768px) {
       .hero-nav { padding: 12px 16px; }
@@ -101,6 +159,10 @@
       .features { padding: 48px 16px; }
       .features-grid { grid-template-columns: 1fr; gap: 12px; }
       .section-title { font-size: clamp(24px, 5vw, 32px); margin-bottom: 32px; }
+      .landing-stats { padding: 24px 16px; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 24px 16px; gap: 16px; }
+      .feedback { padding: 48px 16px 72px; }
+      .feedback-card { padding: 24px; }
     }
     @media (max-width: 480px) {
       .hero-nav { padding: 10px 12px; }
@@ -215,20 +277,135 @@
   </div>
 </section>
 
+<section class="landing-stats">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num" id="stat-servers">—</div><div class="stat-lbl">Servers using Pricey</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-tickets">—</div><div class="stat-lbl">Sales processed</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-users">—</div><div class="stat-lbl">Buyers helped</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-raised">—</div><div class="stat-lbl">Donations received</div></div>
+  </div>
+</section>
+
+<section class="feedback" id="feedback">
+  <div class="section-label">Feedback</div>
+  <div class="section-title">Help make Pricey better</div>
+  <p class="feedback-sub">Found a bug? Missing a feature? Have an idea? Let us know — your comments go straight to the developer.</p>
+  <div class="feedback-card">
+    <form id="feedback-form">
+      <div class="form-row">
+        <label>Your rating</label>
+        <div class="star-rating" id="star-rating">
+          <button type="button" data-value="1" class="active" aria-label="1 star">★</button>
+          <button type="button" data-value="2" class="active" aria-label="2 stars">★</button>
+          <button type="button" data-value="3" class="active" aria-label="3 stars">★</button>
+          <button type="button" data-value="4" class="active" aria-label="4 stars">★</button>
+          <button type="button" data-value="5" class="active" aria-label="5 stars">★</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Discord username</label>
+        <input type="text" id="feedback-username" placeholder="e.g. username" autocomplete="off" maxlength="50" required>
+        <div class="hint" id="feedback-username-hint">So we can reach you if we have questions about your comment.</div>
+      </div>
+      <div class="form-row">
+        <label>Your comment</label>
+        <textarea id="feedback-message" placeholder="What could we improve? Be specific — it helps us fix it faster." maxlength="2000" required></textarea>
+      </div>
+      <input type="text" name="website" id="feedback-website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="btn btn-primary" id="feedback-submit">Send feedback</button>
+    </form>
+    <div class="feedback-success" id="feedback-success" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h3>Thanks for your feedback!</h3>
+      <p>Your comment has been received. We read everything — it helps us make Pricey better.</p>
+    </div>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="brand"><img src="/assets/logo-icon.png" alt="Pricey"> Pricey &copy; 2026 &mdash; Built for Discord sellers</div>
   <a href="/terms.html">Terms of Service</a>
   <a href="/privacy.html">Privacy Policy</a>
 </footer>
 
+<div class="toast" id="toast"></div>
 <script src="/js/app.js"></script>
 <script>
+  let feedbackRating = 5;
+
+  function initStars() {
+    const container = document.getElementById('star-rating');
+    container.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        feedbackRating = parseInt(b.dataset.value, 10);
+        container.querySelectorAll('button').forEach(x => x.classList.toggle('active', parseInt(x.dataset.value, 10) <= feedbackRating));
+      });
+    });
+  }
+
+  async function loadStats() {
+    try {
+      const s = await fetch('/api/stats/public').then(r => r.json());
+      document.getElementById('stat-servers').textContent = s.servers || 0;
+      document.getElementById('stat-tickets').textContent = s.tickets || 0;
+      document.getElementById('stat-users').textContent = s.users || 0;
+      document.getElementById('stat-raised').textContent = '$' + Number(s.raised || 0).toFixed(2);
+    } catch {}
+  }
+
+  function initFeedbackForm() {
+    const form = document.getElementById('feedback-form');
+    const btn = document.getElementById('feedback-submit');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      try {
+        const res = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('feedback-username').value.trim(),
+            rating: feedbackRating,
+            message: document.getElementById('feedback-message').value.trim(),
+            website: document.getElementById('feedback-website').value,
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          form.style.display = 'none';
+          document.getElementById('feedback-success').style.display = 'block';
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Send feedback';
+          Pricey.toast(data.error || 'Something went wrong — please try again.', 'err');
+        }
+      } catch {
+        btn.disabled = false;
+        btn.textContent = 'Send feedback';
+        Pricey.toast('Network error — please try again.', 'err');
+      }
+    });
+  }
+
   (async () => {
+    initStars();
+    initFeedbackForm();
+    loadStats();
     const user = await Pricey.initAuth();
     if (user) {
       const primaryBtn = document.getElementById('hero-primary-btn');
       primaryBtn.href = '/dashboard';
       document.getElementById('hero-primary-text').textContent = 'Go to Dashboard';
+
+      const fbUser = document.getElementById('feedback-username');
+      const fbHint = document.getElementById('feedback-username-hint');
+      fbUser.value = user.username;
+      fbUser.readOnly = true;
+      fbHint.innerHTML = `<span class="feedback-verified">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Logged in as ${user.username} — verified via Discord
+      </span>`;
     }
   })();
 </script>
