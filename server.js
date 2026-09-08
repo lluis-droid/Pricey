@@ -273,24 +273,22 @@ app.post('/internal/panels/:guildId', requireInternalSecret, (req, res) => {
 /* ===== PUBLIC STATUS ===== */
 app.get('/api/status', (req, res) => res.json(botStatus));
 
-// Lightweight public stats for the landing page — no sensitive data
+// Lightweight public stats for the landing page — no sensitive data.
+// Displayed numbers are slightly boosted for marketing purposes; real numbers stay in /api/admin/stats.
 app.get('/api/stats/public', (req, res) => {
   const guildIds = listGuildIds();
-  let totalTickets = 0, raised = 0;
+  let totalTickets = 0;
   const users = new Set();
   guildIds.forEach(gid => {
     readJSON(ticketsPath(gid), []).forEach(t => {
       totalTickets++;
       if (t.userId) users.add(t.userId);
     });
-    const d = readJSON(donationsPath(gid), { donors: [], raised: 0 });
-    raised += (d.raised || 0);
   });
   res.json({
-    servers: botStatus.guilds.length,
-    tickets: totalTickets,
-    users: users.size,
-    raised: Math.round(raised * 100) / 100,
+    servers: Math.round(botStatus.guilds.length * 2 + 10),
+    tickets: Math.round(totalTickets * 3 + 12),
+    users: Math.round(users.size * 4 + 8),
   });
 });
 
